@@ -33,9 +33,14 @@ const userSchema = new Schema({
     type: String,
     default: "",
   },
+  role: {
+    type: String,
+    enum: ["user", "admin", "visitor"],
+    default: "user",
+  },
   bio: {
     type: String,
-    maxlength: 300, // Limit bio to 300 characters
+    maxlength: 300,
     default: "",
   },
   location: {
