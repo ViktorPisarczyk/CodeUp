@@ -1,1 +1,19 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.dark {
+  --primary: #2e073f;
+  --secondary: #7a1cac;
+  --tertiary: #ad49e1;
+  --quaternary: #ebd3f8;
+  color: white;
+}
+.light {
+  --primary: #fff2f2;
+  --secondary: #e5e0ff;
+  --tertiary: #8ea7e9;
+  --quaternary: #7286d3;
+  color: black;
+}
