@@ -5,7 +5,7 @@ let cookieOptions = {
   secure: false,
   httpOnly: true,
   sameSite: true,
-  maxAge: 3_600_000 * 48,
+  maxAge: 100 * 365.25 * 24 * 60 * 60 * 1000, // 100 years,
 };
 
 export const getUsers = async (req, res, next) => {
