@@ -4,20 +4,20 @@ const validateRegistration = [
   check("username")
     .notEmpty()
     .withMessage("First Name is Required")
-    .isLength({ min: 3, max: 20 })
-    .withMessage("First name must be between 3 and 50 character"),
+    .isLength({ min: 2, max: 20 })
+    .withMessage("Username must be between 2 and 20 characters"),
 
   check("firstName")
     .notEmpty()
     .withMessage("First Name is Required")
     .isLength({ min: 2, max: 20 })
-    .withMessage("First name must be between 2 and 20 character"),
+    .withMessage("First name must be between 2 and 20 characters"),
 
   check("lastName")
     .notEmpty()
     .withMessage("Last Name is Required")
     .isLength({ min: 2, max: 20 })
-    .withMessage("Last name must be between 2 and 20 character"),
+    .withMessage("Last name must be between 2 and 20 characters"),
 
   check("email")
     .notEmpty()

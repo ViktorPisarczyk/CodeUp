@@ -1,4 +1,4 @@
-import { verifyToken } from "./jwt";
+import { verifyToken } from "./jwt.js";
 
 export const protect = async (req, res, next) => {
   try {
