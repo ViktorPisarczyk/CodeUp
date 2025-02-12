@@ -13,7 +13,7 @@ import commentRoutes from './routes/commentRoutes.js';
 
 // Import routes & middleware
 import { userRouter } from "./routes/userRouter.js";
-// import { recordRouter } from "./routes/recordRouter.js";
+import { postRouter } from "./routes/postRouter.js";
 import { errorHandler, notFound } from "./middlewares/errors.js";
 
 const app = express();
@@ -33,7 +33,7 @@ const PORT = process.env.PORT || 5000;
 
 // API Routes
 app.use("/users", userRouter);
-// app.use("/records", recordRouter);
+app.use("/posts", postRouter);
 
 // Error Handling Middleware
 app.use(notFound);

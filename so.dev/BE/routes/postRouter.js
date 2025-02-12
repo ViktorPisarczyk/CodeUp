@@ -1,26 +1,23 @@
-// import { Router } from "express";
+import { Router } from "express";
+import {
+  createPost,
+  getPosts,
+  getPostById,
+  updatePost,
+  deletePost,
+  likePost,
+  commentOnPost,
+} from "../controllers/postController.js";
+import { protect } from "../middlewares/auth.js";
 
-// import {
-//   getSingleRecord,
-//   getRecords,
-//   createRecord,
-//   updateRecord,
-//   deleteRecord,
-//   seedRecords,
-// } from "../controllers/recordController.js";
-// import { seedRecords } from "../controllers/recordController.js";
-// import { restrictTo, protect } from "../middlewares/auth.js";
+export const postRouter = Router();
 
-// export const recordRouter = Router();
-
-// recordRouter
-//   .route("/")
-//   .get(protect, restrictTo("admin", "customer"), getRecords);
-// recordRouter.route("/:id").get(protect, getSingleRecord);
-// recordRouter.route("/").post(protect, restrictTo("admin"), createRecord);
-// recordRouter
-//   .route("/:id")
-//   .patch(protect, restrictTo("admin", "customer"), updateRecord)
-//   .delete(protect, restrictTo("admin", "customer"), deleteRecord);
-
-// recordRouter.route("/seed").post(protect, restrictTo("admin"), seedRecords);
+postRouter.route("/").post(protect, createPost);
+postRouter.route("/").get(getPosts);
+postRouter
+  .route("/:id")
+  .get(getPostById)
+  .patch(protect, updatePost)
+  .delete(protect, deletePost);
+postRouter.route("/:id/like").post(protect, likePost);
+postRouter.route("/:id/comment").post(protect, commentOnPost);

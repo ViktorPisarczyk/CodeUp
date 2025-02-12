@@ -47,19 +47,12 @@ const userSchema = new Schema({
     type: String,
     default: "",
   },
-  posts: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Post",
-    },
-  ],
   createdAt: {
     type: Date,
     default: Date.now,
   },
 });
 
-// Hash password before saving
 userSchema.pre("save", async function (next) {
   try {
     if (!this.isModified("password")) {
@@ -74,7 +67,6 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-// Authenticate user
 userSchema.methods.auth = async function (plainTextPass) {
   return await bcrypt.compare(plainTextPass, this.password);
 };
