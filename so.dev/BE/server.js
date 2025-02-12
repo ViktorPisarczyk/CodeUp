@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
+import postRoutes from './routes/postRoutes.js';
+import commentRoutes from './routes/commentRoutes.js';
 
 // import { fileURLToPath } from "url";
 // import { dirname, join } from "path";
@@ -36,6 +38,10 @@ app.use("/users", userRouter);
 // Error Handling Middleware
 app.use(notFound);
 app.use(errorHandler);
+
+// Use Routes
+app.use('/api/posts', postRoutes);
+app.use('/api/comments', commentRoutes);
 
 // MongoDB Connection
 mongoose
