@@ -2,10 +2,10 @@ import { createToken } from "../middlewares/jwt.js";
 import { User } from "../models/userModel.js";
 
 let cookieOptions = {
-  secure: false,
+  secure: true,
   httpOnly: true,
-  sameSite: true,
-  maxAge: 3_600_000 * 48,
+  sameSite: "Strict",
+  maxAge: 3600000,
 };
 
 export const signup = async (req, res, next) => {
@@ -34,7 +34,6 @@ export const login = async (req, res, next) => {
 
     const matchedPWD = await user.auth(req.body.password);
 
-    // if(!user || !(user.password===req.body.password)){
     if (!user || !matchedPWD) {
       const error = new Error("wrong credentials");
       error.status = "404";

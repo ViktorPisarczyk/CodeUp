@@ -1,23 +1,21 @@
 import { Schema, model } from "mongoose";
 
-const postSchema = new Schema(
+const commentSchema = new Schema(
   {
-    author: {
+    post: {
+      type: Schema.Types.ObjectId,
+      ref: "Post",
+      required: true,
+    },
+    user: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    description: {
+    text: {
       type: String,
       required: true,
       trim: true,
-      maxlength: 500,
-    },
-    code: {
-      type: String,
-    },
-    image: {
-      type: String,
     },
     likes: [
       {
@@ -25,14 +23,8 @@ const postSchema = new Schema(
         ref: "User",
       },
     ],
-    comments: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Comment",
-      },
-    ],
   },
   { timestamps: true }
 );
 
-export const Post = model("Post", postSchema);
+export const Comment = model("Comment", commentSchema);

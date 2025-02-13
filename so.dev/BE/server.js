@@ -3,8 +3,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
-import postRoutes from './routes/postRoutes.js';
-import commentRoutes from './routes/commentRoutes.js';
 
 // import { fileURLToPath } from "url";
 // import { dirname, join } from "path";
@@ -14,6 +12,7 @@ import commentRoutes from './routes/commentRoutes.js';
 // Import routes & middleware
 import { userRouter } from "./routes/userRouter.js";
 import { postRouter } from "./routes/postRouter.js";
+import { commentRouter } from "./routes/commentRouter.js";
 import { errorHandler, notFound } from "./middlewares/errors.js";
 
 const app = express();
@@ -34,14 +33,11 @@ const PORT = process.env.PORT || 5000;
 // API Routes
 app.use("/users", userRouter);
 app.use("/posts", postRouter);
+app.use("/comments", commentRouter);
 
 // Error Handling Middleware
 app.use(notFound);
 app.use(errorHandler);
-
-// Use Routes
-app.use('/api/posts', postRoutes);
-app.use('/api/comments', commentRoutes);
 
 // MongoDB Connection
 mongoose
