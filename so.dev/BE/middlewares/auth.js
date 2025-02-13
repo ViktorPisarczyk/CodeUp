@@ -2,14 +2,16 @@ import { verifyToken } from "./jwt.js";
 
 export const protect = async (req, res, next) => {
   try {
-    // const token=req.headers.authorization.split(' ')[1]
     const token = req.cookies.access_token;
     if (!token) {
-      const error = new Error();
-      error.status = "401";
-      throw error;
+      return res.status(401).json({ message: "No token provided" });
     }
+
     const decodedToken = await verifyToken(token);
+    if (!decodedToken) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+
     req.token = decodedToken;
     next();
   } catch (error) {
