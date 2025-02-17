@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
+const imageRoutes = require('./routes/imageRoutes.js');
 
 // import { fileURLToPath } from "url";
 // import { dirname, join } from "path";
@@ -47,3 +48,7 @@ mongoose
 
 // Start Server
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+// Use image routes
+app.use('/images', imageRoutes);
+
