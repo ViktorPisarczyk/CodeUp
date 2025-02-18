@@ -11,9 +11,70 @@ export default function Login() {
   });
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // For now, just navigate to feed page
+
+    const data = {
+      email: formData.email,
+      password: formData.password,
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Login successful", result);
+        // You can redirect or update state here based on the result
+      } else {
+        const errorData = await response.json();
+        console.error("Login failed:", errorData.message);
+        // Show error message in your UI
+      }
+    } catch (error) {
+      console.error("Error during login:", error);
+      // Handle network or other errors
+    }
+    navigate("/feed");
+  };
+
+  const handleSubmitSignup = async (e) => {
+    e.preventDefault();
+
+    const data = {
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/users/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Signup successful", result);
+        // You can redirect or update state here based on the result
+      } else {
+        const errorData = await response.json();
+        console.error("Signup failed:", errorData.message);
+        // Show error message in your UI
+      }
+    } catch (error) {
+      console.error("Error during signup:", error);
+      // Handle network or other errors
+    }
     navigate("/feed");
   };
 
@@ -31,7 +92,10 @@ export default function Login() {
           {isLogin ? "Welcome Back!" : "Join So.Dev"}
         </h1>
         <Toggle />
-        <form onSubmit={handleSubmit} className="text-(--text) space-y-4">
+        <form
+          onSubmit={isLogin ? handleSubmit : handleSubmitSignup}
+          className="text-(--text) space-y-4"
+        >
           {!isLogin && (
             <div>
               <label className="block text-sm font-medium">Username</label>
@@ -79,6 +143,15 @@ export default function Login() {
             {isLogin ? "Sign In" : "Sign Up"}
           </button>
         </form>
+
+        <div className="mt-4 text-center">
+          <button
+            onClick={() => navigate("/forgot-password")}
+            className=" hover:text-(--primary)  "
+          >
+            Forgot Password?
+          </button>
+        </div>
 
         <div className="mt-4 text-center">
           <button
