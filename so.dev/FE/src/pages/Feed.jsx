@@ -84,7 +84,7 @@ export default function Feed() {
   return (
     <div className="flex flex-row divide-x divide-(--primary)min-h-screen bg-(--primary)">
       <AsideMenu />
-      <Toggle />
+      
       <div className="max-w-2xl mx-auto pt-8 px-4">
         {/* Create Post */}
         <form
