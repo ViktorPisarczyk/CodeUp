@@ -8,7 +8,7 @@ const Toggle = () => {
   const { darkMode, setDarkMode } = useContext(MyContext);
   return (
     <div
-      className={`absolute top-10 right-10 grid  place-content-center bg-transparent border-[2px] ${
+      className={`grid w-fit m-auto place-content-center bg-transparent border-[2px] ${
         darkMode ? "border-white" : "border-tertiary"
       } rounded-full`}
     >
@@ -28,7 +28,7 @@ const SliderToggle = ({ darkMode, setDarkMode }) => {
         }}
       >
         <FiSun className="relative z-10 text-lg md:text-sm" />
-        <span className="relative z-10">Light</span>
+        
       </button>
       <button
         className={`${TOGGLE_CLASSES} ${
@@ -39,7 +39,7 @@ const SliderToggle = ({ darkMode, setDarkMode }) => {
         }}
       >
         <FiMoon className="relative z-10 text-lg md:text-sm" />
-        <span className="relative z-10">Dark</span>
+        
       </button>
       <div
         className={`absolute inset-0 z-0 flex ${
