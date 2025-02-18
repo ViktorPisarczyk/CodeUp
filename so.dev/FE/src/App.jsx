@@ -9,6 +9,8 @@ import "./App.css";
 import Login from "./pages/Login";
 import Feed from "./pages/Feed";
 import MyContextProvider from "./context/ThemeContext";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword.jsx";
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/feed" element={<Feed />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
