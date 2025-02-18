@@ -17,3 +17,6 @@
   --quaternary: #7286d3;
   color: black;
 }
+button {
+  cursor: pointer;
+}
