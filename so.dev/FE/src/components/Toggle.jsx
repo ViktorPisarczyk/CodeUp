@@ -8,7 +8,7 @@ const Toggle = () => {
   const { darkMode, setDarkMode } = useContext(MyContext);
   return (
     <div
-      className={`grid w-fit m-auto place-content-center bg-transparent border-[2px] ${
+      className={`grid w-fit mt-2 ml-3 place-content-center bg-transparent border-[2px] ${
         darkMode ? "border-white" : "border-tertiary"
       } rounded-full`}
     >
