@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Toggle from "../components/Toggle";
+
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -91,7 +91,7 @@ export default function Login() {
         <h1 className="text-3xl font-bold text-center mb-8 text-(--text)">
           {isLogin ? "Welcome Back!" : "Join So.Dev"}
         </h1>
-        <Toggle />
+        
         <form
           onSubmit={isLogin ? handleSubmit : handleSubmitSignup}
           className="text-(--text) space-y-4"
