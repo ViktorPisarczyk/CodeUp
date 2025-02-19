@@ -29,7 +29,10 @@ export const getPosts = async (req, res, next) => {
       .populate("author", "username profilePicture")
       .populate({
         path: "comments",
-        populate: { path: "user", select: "username profilePicture" },
+        populate: {
+          path: "user",
+          select: "username profilePicture",
+        },
       })
       .sort({ createdAt: -1 });
 

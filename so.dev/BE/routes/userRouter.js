@@ -12,10 +12,10 @@ import { protect } from "../middlewares/auth.js";
 export const userRouter = Router();
 
 userRouter.route("/signup").post(signup);
-userRouter.route("/login").post(protect, login);
+userRouter.route("/login").post(login);
 userRouter.route("/").get(getUsers);
 userRouter
   .route("/:id")
   .get(protect, getSingleUser)
-  .delete(deleteUser)
-  .patch(updateUser);
+  .delete(protect, deleteUser)
+  .patch(protect, updateUser);
