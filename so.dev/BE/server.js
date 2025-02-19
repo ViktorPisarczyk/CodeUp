@@ -3,7 +3,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
-const imageRoutes = require('./routes/imageRoutes.js');
 
 // import { fileURLToPath } from "url";
 // import { dirname, join } from "path";
@@ -14,6 +13,7 @@ const imageRoutes = require('./routes/imageRoutes.js');
 import { userRouter } from "./routes/userRouter.js";
 import { postRouter } from "./routes/postRouter.js";
 import { commentRouter } from "./routes/commentRouter.js";
+import { imageRouter } from "./routes/imageRouter.js";
 import { errorHandler, notFound } from "./middlewares/errors.js";
 
 const app = express();
@@ -35,6 +35,8 @@ const PORT = process.env.PORT || 5000;
 app.use("/users", userRouter);
 app.use("/posts", postRouter);
 app.use("/comments", commentRouter);
+app.use("/images", imageRouter);
+app.use("/image", imageRoutes);
 
 // Error Handling Middleware
 app.use(notFound);
@@ -48,7 +50,3 @@ mongoose
 
 // Start Server
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
-// Use image routes
-app.use('/images', imageRoutes);
-
