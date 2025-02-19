@@ -36,6 +36,7 @@ app.use("/users", userRouter);
 app.use("/posts", postRouter);
 app.use("/comments", commentRouter);
 app.use("/images", imageRouter);
+app.use("/image", imageRoutes);
 
 // Error Handling Middleware
 app.use(notFound);
