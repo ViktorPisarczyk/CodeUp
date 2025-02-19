@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -31,17 +30,17 @@ export default function Login() {
       if (response.ok) {
         const result = await response.json();
         console.log("Login successful", result);
-        // You can redirect or update state here based on the result
+
+        localStorage.setItem("token", result.token);
+
+        navigate("/feed");
       } else {
         const errorData = await response.json();
         console.error("Login failed:", errorData.message);
-        // Show error message in your UI
       }
     } catch (error) {
       console.error("Error during login:", error);
-      // Handle network or other errors
     }
-    navigate("/feed");
   };
 
   const handleSubmitSignup = async (e) => {
@@ -64,18 +63,22 @@ export default function Login() {
 
       if (response.ok) {
         const result = await response.json();
-        console.log("Signup successful", result);
-        // You can redirect or update state here based on the result
+        console.log("Signup successful:", result);
+
+        localStorage.setItem("token", result.token);
+
+        setTimeout(() => {
+          navigate("/login");
+        }, 1000); // Small delay to ensure smooth transition
       } else {
         const errorData = await response.json();
         console.error("Signup failed:", errorData.message);
-        // Show error message in your UI
+        alert(errorData.message);
       }
     } catch (error) {
       console.error("Error during signup:", error);
-      // Handle network or other errors
+      alert("Something went wrong. Please try again.");
     }
-    navigate("/feed");
   };
 
   const handleChange = (e) => {
@@ -91,7 +94,7 @@ export default function Login() {
         <h1 className="text-3xl font-bold text-center mb-8 text-(--text)">
           {isLogin ? "Welcome Back!" : "Join So.Dev"}
         </h1>
-        
+
         <form
           onSubmit={isLogin ? handleSubmit : handleSubmitSignup}
           className="text-(--text) space-y-4"

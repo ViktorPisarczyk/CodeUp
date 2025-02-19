@@ -30,27 +30,30 @@ export const signup = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
   try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
+
     const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     const matchedPWD = await user.auth(req.body.password);
-
-    if (!user || !matchedPWD) {
-      const error = new Error("wrong credentials");
-      error.status = "404";
-      throw error;
+    if (!matchedPWD) {
+      return res.status(401).json({ message: "Wrong credentials" });
     }
 
-    if (matchedPWD) {
-      const token = await createToken({
-        id: user._id,
-        role: user.role,
-      });
-
-      res
-        .cookie("access_token", token, cookieOptions)
-        .send({ message: "login successful!", user, token });
-    }
+    const token = await createToken({ id: user._id, role: user.role });
+    res
+      .cookie("access_token", token, cookieOptions)
+      .send({ message: "Login successful!", user, token });
   } catch (error) {
+    console.error("Login error:", error);
     next(error);
   }
 };

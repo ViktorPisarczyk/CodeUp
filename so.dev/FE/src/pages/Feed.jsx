@@ -1,92 +1,113 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
-import Toggle from "../components/Toggle";
-// Temporary mock data
-const initialPosts = [
-  {
-    id: 1,
-    username: "johndoe",
-    content: "Just deployed my first React app! 🚀",
-    image: "https://placehold.co/600x400",
-    likes: 42,
-    comments: [{ id: 1, username: "jane", content: "Awesome work!" }],
-  },
-  {
-    id: 2,
-    username: "jane_dev",
-    content:
-      "Working on a new open source project. Anyone interested in contributing?",
-    likes: 28,
-    comments: [],
-  },
-];
+
+const API_URL = "http://localhost:5000";
 
 export default function Feed() {
-  // const Post = ({ postId, initialLikes }) => {
+  const [posts, setPosts] = useState([]);
+  const [newPost, setNewPost] = useState("");
+  const [likedPosts, setLikedPosts] = useState({});
+  const navigate = useNavigate();
 
-  const [liked, setLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(0); //(initialLikes);
-
-  const handleLike = () => {
-    //async
-    setLiked(!liked);
-
-    if (liked) {
-      setLikesCount(likesCount - 1);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
     } else {
-      setLikesCount(likesCount + 1);
+      fetchPosts();
+    }
+  }, []);
+
+  const fetchPosts = async () => {
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch(`${API_URL}/posts`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch posts");
+      }
+
+      const data = await response.json();
+      setPosts(data || []);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+  };
+
+  const handleLike = async (postId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("You must be logged in to like posts.");
+      return;
     }
 
-    // try {
-    //   const response = await fetch(
-    //     `http://localhost:5000/posts/like`, //${postId}/like`,
-    //     {
-    //       method: "POST",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //       },
-    //       body: JSON.stringify({ liked: !liked }),
-    //     }
-    //   );
+    try {
+      const response = await fetch(`${API_URL}/posts/${postId}/like`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    //   if (!response.ok) {
-    //     throw new Error("Failed to update like status");
-    //   }
+      if (!response.ok) {
+        throw new Error("Failed to like the post");
+      }
 
-    //   const data = await response.json();
-    //   setLikesCount(data.likes);
-    // } catch (error) {
-    //   console.error("Error while updating like status:", error);
-    // }
+      setLikedPosts((prev) => ({
+        ...prev,
+        [postId]: !prev[postId],
+      }));
 
-    // setLiked(liked);
-    // setLikesCount(likesCount);
+      fetchPosts();
+    } catch (error) {
+      console.error("Error while liking post:", error);
+    }
   };
-  const [posts, setPosts] = useState(initialPosts);
-  const [newPost, setNewPost] = useState("");
 
-  const handlePostSubmit = (e) => {
+  const handlePostSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
+
     if (!newPost.trim()) return;
+    if (!token) {
+      alert("You must be logged in to post.");
+      return;
+    }
 
-    const post = {
-      id: posts.length + 1,
-      username: "currentUser",
-      content: newPost,
-      likes: 0,
-      comments: [],
-    };
+    try {
+      const response = await fetch(`${API_URL}/posts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: newPost }),
+      });
 
-    setPosts([post, ...posts]);
-    setNewPost("");
+      if (!response.ok) {
+        throw new Error("Failed to create post");
+      }
+
+      setNewPost("");
+      fetchPosts();
+    } catch (error) {
+      console.error("Error creating post:", error);
+    }
   };
 
   return (
-    <div className="flex flex-row divide-x divide-(--primary)min-h-screen bg-(--primary)">
+    <div className="flex flex-row divide-x min-h-screen bg-(--primary)">
       <AsideMenu />
-      
+
       <div className="max-w-2xl mx-auto pt-8 px-4">
-        {/* Create Post */}
         <form
           onSubmit={handlePostSubmit}
           className="bg-(--secondary) rounded-lg p-4 mb-6 shadow-md"
@@ -95,69 +116,70 @@ export default function Feed() {
             value={newPost}
             onChange={(e) => setNewPost(e.target.value)}
             placeholder="What's on your mind?"
-            className="w-full p-2 rounded-md border-gray-300 focus:border-blue-400 focus:ring-blue-400  bg-(--tertiary)"
+            className="w-full p-2 rounded-md border-gray-300 focus:border-blue-400 focus:ring-blue-400 bg-(--tertiary)"
             rows="3"
           />
           <div className="mt-2 flex justify-between items-center">
-            <button type="button" className=" hover:text-(--primary) ">
-              📷 Add Photo
-            </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-(--tertiary)  rounded-md hover:bg-(--primary) "
+              className="px-4 py-2 bg-(--tertiary) rounded-md hover:bg-(--primary)"
             >
               Post
             </button>
           </div>
         </form>
 
-        {/* Posts Feed */}
         <div className="space-y-6">
-          {posts.map((post) => (
-            <div
-              key={post.id}
-              className="bg-(--secondary)  rounded-lg shadow-md"
-            >
-              <div className="p-4">
-                <div className="flex items-center mb-2">
-                  <div className="w-10 h-10 rounded-full bg-blue-400 dark:bg-purple-500 flex items-center justify-center text-white">
-                    {post.username[0].toUpperCase()}
-                  </div>
-                  <span className="ml-2 font-medium ">{post.username}</span>
-                </div>
-                <p className="">{post.content}</p>
-                {post.image && (
-                  <img
-                    src={post.image}
-                    alt="Post content"
-                    className="rounded-md w-full mb-4"
-                  />
-                )}
-                <div className="flex items-center space-x-4 ">
-                  <button className="flex items-center space-x-1">
-                    <button onClick={handleLike}>
-                      {liked ? "🩶" : "❤️"} ({likesCount})
-                    </button>
-                    <span>{post.likes}</span>
-                  </button>
-                  <button className="flex items-center space-x-1">
-                    <span>💬</span>
-                    <span>{post.comments.length}</span>
-                  </button>
-                </div>
-              </div>
-              {post.comments.length > 0 && (
-                <div className="border-t border-gray-200 dark:border-purple-700 p-4">
-                  {post.comments.map((comment) => (
-                    <div key={comment.id} className="text-sm ">
-                      <span className="font-medium">{comment.username}:</span>{" "}
-                      {comment.content}
+          {posts.length === 0 ? (
+            <p>No posts available</p>
+          ) : (
+            posts.map((post) => (
+              <div
+                key={post._id}
+                className="bg-(--secondary) max-w-300 rounded-lg shadow-md"
+              >
+                <div className="p-4">
+                  <div className="flex items-center mb-2">
+                    <div className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white">
+                      {post.author && post.author.username
+                        ? post.author.username[0].toUpperCase()
+                        : "?"}
                     </div>
-                  ))}
+                    <span className="ml-2 font-medium">
+                      {post.author ? post.author.username : "Unknown User"}
+                    </span>
+                  </div>
+                  <p>{post.description}</p>{" "}
+                  {post.image && (
+                    <img
+                      src={post.image}
+                      alt="Post content"
+                      className="rounded-md w-full mb-4"
+                    />
+                  )}
+                  <div className="flex items-center space-x-4">
+                    <button onClick={() => handleLike(post._id)}>
+                      {likedPosts[post._id] ? "🩶" : "❤️"} ({post.likes.length})
+                    </button>
+                    <span>💬 {post.comments?.length || 0}</span>{" "}
+                    {/* Safe check */}
+                  </div>
                 </div>
-              )}
-            </div>
-          ))}
+                {post.comments && post.comments.length > 0 && (
+                  <div className="border-t border-gray-200 p-4">
+                    {post.comments.map((comment) => (
+                      <div key={comment._id} className="text-sm">
+                        <span className="font-medium">
+                          {comment.user?.username}:
+                        </span>
+                        {comment.text}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
