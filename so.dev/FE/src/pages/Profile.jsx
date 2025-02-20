@@ -25,6 +25,8 @@ function Profile() {
   const [posts, setPosts] = useState(initialPosts);
   const [newPost, setNewPost] = useState("");
 
+  const navigate = useNavigate();
+
   const handlePostSubmit = (e) => {
     e.preventDefault();
     if (!newPost.trim()) return;
@@ -57,7 +59,10 @@ function Profile() {
             <div className="m-auto">
               <h2 className="text-3xl mb-5">John Doe</h2>
               <h4>Employer by DCI</h4>
-              <button className="hover:bg-(--primary) rounded-md">
+              <button
+                onClick={() => navigate("/edit-profile")}
+                className="hover:bg-(--primary) rounded-md"
+              >
                 Edit Profile
               </button>
             </div>
