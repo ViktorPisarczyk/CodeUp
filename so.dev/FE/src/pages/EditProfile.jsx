@@ -34,6 +34,7 @@ const EditProfile = () => {
 
   return (
     <div className="bg-(--primary) h-screen flex flex-col justify-center items-center">
+      <AsideMenu />
       <h2 className="text-(--tertiary) text-3xl font-bold mb-5">
         Edit Profile
       </h2>
