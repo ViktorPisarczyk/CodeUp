@@ -10,7 +10,7 @@ export default function Login() {
   });
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const loginHandler = async (e) => {
     e.preventDefault();
 
     const data = {
@@ -29,21 +29,34 @@ export default function Login() {
 
       if (response.ok) {
         const result = await response.json();
-        console.log("Login successful", result);
 
         localStorage.setItem("token", result.token);
 
         navigate("/feed");
       } else {
         const errorData = await response.json();
+
+        if (errorData.message === "Email not found") {
+          alert(
+            "The email you entered does not exist. Please check and try again."
+          );
+        } else if (errorData.message === "Incorrect password") {
+          alert("The password you entered is incorrect. Please try again.");
+        } else {
+          alert(
+            "Login failed: " + (errorData.message || "Invalid credentials.")
+          );
+        }
+
         console.error("Login failed:", errorData.message);
       }
     } catch (error) {
+      alert("An error occurred during login. Please try again later.");
       console.error("Error during login:", error);
     }
   };
 
-  const handleSubmitSignup = async (e) => {
+  const signupHandler = async (e) => {
     e.preventDefault();
 
     const data = {
@@ -63,7 +76,6 @@ export default function Login() {
 
       if (response.ok) {
         const result = await response.json();
-        console.log("Signup successful:", result);
 
         localStorage.setItem("token", result.token);
 
@@ -96,7 +108,7 @@ export default function Login() {
         </h1>
 
         <form
-          onSubmit={isLogin ? handleSubmit : handleSubmitSignup}
+          onSubmit={isLogin ? loginHandler : signupHandler}
           className="text-(--text) space-y-4"
         >
           {!isLogin && (
