@@ -5,9 +5,9 @@ const postSchema = new Schema(
     author: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: false,
     },
-    description: {
+    content: {
       type: String,
       required: true,
       trim: true,

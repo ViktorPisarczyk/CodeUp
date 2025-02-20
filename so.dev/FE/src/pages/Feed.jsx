@@ -35,12 +35,14 @@ export default function Feed() {
       }
 
       const data = await response.json();
+      // console.log(data);
+
       setPosts(data || []);
     } catch (error) {
       console.error("Error fetching posts:", error);
     }
   };
-
+console.log(posts);
   const handleLike = async (postId) => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -74,9 +76,13 @@ export default function Feed() {
 
   const handlePostSubmit = async (e) => {
     e.preventDefault();
+
     const token = localStorage.getItem("token");
 
-    if (!newPost.trim()) return;
+    if (!newPost.trim()) {
+      alert("Please enter a text.");
+      return;
+    }
     if (!token) {
       alert("You must be logged in to post.");
       return;
@@ -86,12 +92,13 @@ export default function Feed() {
       const response = await fetch(`${API_URL}/posts`, {
         method: "POST",
         headers: {
+          Accept: "application/json",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ content: newPost }),
       });
-
+      console.log(response);
       if (!response.ok) {
         throw new Error("Failed to create post");
       }
@@ -149,7 +156,7 @@ export default function Feed() {
                       {post.author ? post.author.username : "Unknown User"}
                     </span>
                   </div>
-                  <p>{post.description}</p>{" "}
+                  <p>{post.content}</p>{" "}
                   {post.image && (
                     <img
                       src={post.image}

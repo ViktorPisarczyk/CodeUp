@@ -18,11 +18,11 @@ import { errorHandler, notFound } from "./middlewares/errors.js";
 
 const app = express();
 
+app.use(cors());
 dotenv.config();
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cors());
 
 const PORT = process.env.PORT || 5000;
 

@@ -38,14 +38,14 @@ export const login = async (req, res, next) => {
         .json({ message: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email: req.body.email });
+    const user = await User.findOne({ email: email });
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "Email not found" });
     }
 
-    const matchedPWD = await user.auth(req.body.password);
+    const matchedPWD = await user.auth(password);
     if (!matchedPWD) {
-      return res.status(401).json({ message: "Wrong credentials" });
+      return res.status(401).json({ message: "Incorrect password" });
     }
 
     const token = await createToken({ id: user._id, role: user.role });
