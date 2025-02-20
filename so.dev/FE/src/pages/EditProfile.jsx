@@ -41,7 +41,7 @@ const EditProfile = () => {
         onSubmit={handleSubmit}
         className="bg-(--secondary) p-8 rounded-lg shadow-xl w-full max-w-md"
       >
-        <div className="">
+        <div>
           <label className="block text-sm font-medium" htmlFor="profilePicture">
             + Change Picture
           </label>
@@ -54,7 +54,7 @@ const EditProfile = () => {
           />
         </div>
 
-        <div className="form-group">
+        <div>
           <label className="mt-5 block text-sm font-medium" htmlFor="firstName">
             First Name
           </label>
@@ -69,7 +69,7 @@ const EditProfile = () => {
           />
         </div>
 
-        <div className="form-group">
+        <div>
           <label className="block text-sm font-medium" htmlFor="lastName">
             Last Name
           </label>
@@ -84,7 +84,7 @@ const EditProfile = () => {
           />
         </div>
 
-        <div className="form-group">
+        <div>
           <label className="block text-sm font-medium" htmlFor="username">
             Username
           </label>
@@ -99,7 +99,7 @@ const EditProfile = () => {
           />
         </div>
 
-        <div className="form-group">
+        <div>
           <label className="block text-sm font-medium" htmlFor="email">
             Email
           </label>
@@ -114,7 +114,7 @@ const EditProfile = () => {
           />
         </div>
 
-        <div className="form-group">
+        <div>
           <label className="block text-sm font-medium" htmlFor="location">
             Location
           </label>
@@ -128,7 +128,7 @@ const EditProfile = () => {
           />
         </div>
 
-        <div className="form-group">
+        <div>
           <label className="block text-sm font-medium" htmlFor="role">
             Role
           </label>
@@ -143,7 +143,7 @@ const EditProfile = () => {
           />
         </div>
 
-        <div className="form-group">
+        <div>
           <label className="block text-sm font-medium" htmlFor="bio">
             Bio
           </label>
