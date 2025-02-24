@@ -8,6 +8,8 @@ export default function Feed() {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState("");
   const [likedPosts, setLikedPosts] = useState({});
+  const [showCommentForm, setShowCommentForm] = useState(null); // Track which post is selected for commenting
+  const [newComment, setNewComment] = useState({}); // Store new comment for each post
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -103,6 +105,51 @@ export default function Feed() {
     }
   };
 
+  const handleCommentSubmit = async (postId, e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+
+    if (!newComment[postId]?.trim()) return; // Ensure there's a comment
+
+    if (!token) {
+      alert("You must be logged in to comment.");
+      return;
+    }
+
+    try {
+      console.log("Submitting comment:", newComment[postId]); // Debugging log
+
+      const response = await fetch(`${API_URL}/posts/${postId}/comment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: newComment[postId] }), // Ensure this matches your API structure
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add comment");
+      }
+
+      // Clear the comment input
+      setNewComment((prev) => ({
+        ...prev,
+        [postId]: "",
+      }));
+
+      // Hide comment form and refetch posts (including comments)
+      setShowCommentForm(null);
+      fetchPosts();
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
+
+  const toggleCommentForm = (postId) => {
+    setShowCommentForm(postId === showCommentForm ? null : postId); // Toggle visibility of comment form
+  };
+
   return (
     <div className="flex flex-row divide-x min-h-screen bg-(--primary)">
       <AsideMenu />
@@ -159,12 +206,15 @@ export default function Feed() {
                   )}
                   <div className="flex items-center space-x-4">
                     <button onClick={() => handleLike(post._id)}>
-                      {likedPosts[post._id] ? "🩶" : "❤️"} ({post.likes.length})
+                      {likedPosts[post._id] ? "🩶" : "❤️"} {post.likes.length}
                     </button>
-                    <span>💬 {post.comments?.length || 0}</span>{" "}
-                    {/* Safe check */}
+                    <button onClick={() => toggleCommentForm(post._id)}>
+                      💬 {post.comments?.length || 0}
+                    </button>
                   </div>
                 </div>
+
+                {/* Show comments */}
                 {post.comments && post.comments.length > 0 && (
                   <div className="border-t border-gray-200 p-4">
                     {post.comments.map((comment) => (
@@ -175,6 +225,32 @@ export default function Feed() {
                         {comment.text}
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* Comment form toggle */}
+                {showCommentForm === post._id && (
+                  <div className="p-4 border-t border-gray-200">
+                    <form onSubmit={(e) => handleCommentSubmit(post._id, e)}>
+                      <textarea
+                        value={newComment[post._id] || ""}
+                        onChange={(e) =>
+                          setNewComment({
+                            ...newComment,
+                            [post._id]: e.target.value,
+                          })
+                        }
+                        placeholder="Add a comment"
+                        className="w-full p-2 rounded-md border-gray-300 focus:border-blue-400 focus:ring-blue-400 bg-(--tertiary)"
+                        rows="3"
+                      />
+                      <button
+                        type="submit"
+                        className="mt-2 px-4 py-2 bg-(--tertiary) rounded-md hover:bg-(--primary)"
+                      >
+                        Comment
+                      </button>
+                    </form>
                   </div>
                 )}
               </div>
