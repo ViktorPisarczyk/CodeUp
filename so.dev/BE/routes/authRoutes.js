@@ -1,12 +1,16 @@
-const express = require('express');
-const {requestPasswordReset, resetPassword} = require('../controllers/authController.js');
+import express from 'express';
+import { requestPasswordReset, resetPassword } from '../controllers/authController.js';
+
 
 
 const router = express.Router();
 
 
-router.post('/reset-password', requestPasswordReset);  // Send reset email
-router.post('/new-password/:token', resetPassword);  // Update password
+router.route('/reset-password')
+  .post(requestPasswordReset);
+
+router.route('/new-password/:token')
+  .post(resetPassword); // Update password
 
 
 module.exports = router;

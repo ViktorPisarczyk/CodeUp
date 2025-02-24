@@ -1,7 +1,7 @@
-const crypto = require('crypto');
-const bcrypt = require('bcryptjs');
-const User = require('../models/userModel.js');
-const transporter = require('../config/emailConfig.js');
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import User from '../models/userModel.js';
+import transporter from '../config/emailConfig.js';
 
 
 // Request password reset
