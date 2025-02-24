@@ -9,6 +9,7 @@ let cookieOptions = {
 };
 
 export const signup = async (req, res, next) => {
+  console.log(req.body);
   try {
     const { username, firstName, lastName, email, password, role } = req.body;
     const newUser = await User.create({
