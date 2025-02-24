@@ -15,7 +15,7 @@ import { postRouter } from "./routes/postRouter.js";
 import { commentRouter } from "./routes/commentRouter.js";
 import { imageRouter } from "./routes/imageRouter.js";
 import { errorHandler, notFound } from "./middlewares/errors.js";
-import {authRoutes } from "./routes/authRoutes.js";
+import { authRouter } from "./routes/authRouter.js";
 
 const app = express();
 
@@ -37,7 +37,7 @@ app.use("/users", userRouter);
 app.use("/posts", postRouter);
 app.use("/comments", commentRouter);
 app.use("/images", imageRouter);
-app.use("/auth", authRoutes);
+app.use("/auth", authRouter);
 
 // Error Handling Middleware
 app.use(notFound);
