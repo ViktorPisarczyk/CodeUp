@@ -25,7 +25,7 @@ function Profile() {
   const [posts, setPosts] = useState(initialPosts);
   const [newPost, setNewPost] = useState("");
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const handlePostSubmit = (e) => {
     e.preventDefault();
