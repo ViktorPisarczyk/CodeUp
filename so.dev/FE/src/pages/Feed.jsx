@@ -214,6 +214,21 @@ export default function Feed() {
                   </div>
                 </div>
 
+                <span className="ml-2 font-medium">{post.author ? post.author.username : "Unknown User"}</span>
+              </div>
+
+              <p>{post.content}</p>
+              {post.image && (
+                <img src={post.image} alt="Post content" className="rounded-md w-full mb-4" />
+              )}
+
+              <div className="flex items-center space-x-4">
+                <button onClick={() => handleLike(post._id)}>
+                  {likedPosts[post._id] ? "🩶" : "❤️"} ({post.likes.length})
+                </button>
+                <span>💬 {post.comments?.length || 0}</span>
+              </div>
+
                 {/* Show comments */}
                 {post.comments && post.comments.length > 0 && (
                   <div className="border-t border-gray-200 p-4">
@@ -259,5 +274,6 @@ export default function Feed() {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
