@@ -162,7 +162,6 @@ export default function Feed() {
                 <span className="ml-2 font-medium">{post.author ? post.author.username : "Unknown User"}</span>
               </div>
 
-              {/* Post Content */}
               <p>{post.content}</p>
               {post.image && (
                 <img src={post.image} alt="Post content" className="rounded-md w-full mb-4" />
@@ -205,4 +204,4 @@ export default function Feed() {
     </div>
   </div>
 );
-                  }
+}
