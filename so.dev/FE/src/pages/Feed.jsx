@@ -37,6 +37,7 @@ export default function Feed() {
       }
 
       const data = await response.json();
+
       setPosts(data || []);
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -111,31 +112,43 @@ export default function Feed() {
 
   const handleCommentSubmit = async (postId, e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token");
 
-    if (!newComment[postId]?.trim()) return; // Ensure there's a comment
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+
+    if (!token) {
+      alert("You must be logged in to comment.");
+      return;
+    }
+
+    if (!newComment[postId]?.trim()) {
+      alert("Please enter a comment.");
+      return;
+    }
 
     try {
-      const response = await fetch(`${API_URL}/posts/${postId}/comment`, {
+      const response = await fetch(`${API_URL}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ text: newComment[postId] }), // Make sure the backend expects this format
+        body: JSON.stringify({
+          text: newComment[postId],
+          post: postId,
+          user: userId,
+        }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to add comment");
       }
 
-      // Clear the comment input
       setNewComment((prev) => ({
         ...prev,
         [postId]: "",
       }));
 
-      // Hide the comment form and refetch posts (including comments)
       setShowCommentForm(null);
       fetchPosts();
     } catch (error) {

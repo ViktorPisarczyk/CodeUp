@@ -6,7 +6,7 @@ export const createToken = async (payload) => {
   return await asyncSign(payload, process.env.JWT_SECRET, { expiresIn: "5h" });
 };
 
-export const verifyToken = async (token) => {
-  const asyncVerify = promisify(jwt.verify);
-  return await asyncVerify(token, process.env.JWT_SECRET);
-};
+const asyncVerify = promisify(jwt.verify);
+
+export const verifyToken = (token) =>
+  asyncVerify(token, process.env.JWT_SECRET);
