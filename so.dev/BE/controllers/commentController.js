@@ -1,25 +1,41 @@
 import { Comment } from "../models/commentModel.js";
 import { Post } from "../models/postModel.js";
+import { User } from "../models/userModel.js";
+import { verifyToken } from "../middlewares/jwt.js";
 
 export const createComment = async (req, res, next) => {
   try {
-    const { post, text } = req.body;
-    const userId = req.token.id;
+    const { text, post } = req.body;
+    const token = req.headers.authorization?.split(" ")[1];
 
-    if (!post || !text) {
-      return res.status(400).json({ message: "Post ID and text are required" });
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const newComment = await Comment.create({
-      post: post,
-      user: userId,
+    const decoded_token = await verifyToken(token);
+    const user = await User.findById(decoded_token.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const newComment = new Comment({
       text,
+      post,
+      user: user._id,
     });
 
-    // Add the comment ID to the post's comments array
-    await Post.findByIdAndUpdate(post, {
-      $push: { comments: newComment._id },
-    });
+    await newComment.save();
+
+    const updatedPost = await Post.findByIdAndUpdate(
+      post,
+      { $push: { comments: newComment._id } },
+      { new: true }
+    );
+
+    if (!updatedPost) {
+      return res.status(404).json({ message: "Post not found" });
+    }
 
     res.status(201).json(newComment);
   } catch (error) {
@@ -65,7 +81,6 @@ export const updateComment = async (req, res, next) => {
       return res.status(404).json({ message: "Comment not found" });
     }
 
-    // Check if the user is the owner or an admin
     if (
       comment.user.toString() !== req.token.id &&
       req.token.role !== "admin"
@@ -90,7 +105,6 @@ export const deleteComment = async (req, res, next) => {
       return res.status(404).json({ message: "Comment not found" });
     }
 
-    // Check if the user is the owner or an admin
     if (
       comment.user.toString() !== req.token.id &&
       req.token.role !== "admin"
@@ -100,7 +114,6 @@ export const deleteComment = async (req, res, next) => {
 
     await comment.deleteOne();
 
-    // Remove the comment reference from the Post model
     await Post.findByIdAndUpdate(comment.post, {
       $pull: { comments: comment._id },
     });
