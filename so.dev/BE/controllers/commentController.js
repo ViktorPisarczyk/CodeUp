@@ -3,21 +3,21 @@ import { Post } from "../models/postModel.js";
 
 export const createComment = async (req, res, next) => {
   try {
-    const { postId, text } = req.body;
+    const { post, text } = req.body;
     const userId = req.token.id;
 
-    if (!postId || !text) {
+    if (!post || !text) {
       return res.status(400).json({ message: "Post ID and text are required" });
     }
 
     const newComment = await Comment.create({
-      post: postId,
+      post: post,
       user: userId,
       text,
     });
 
     // Add the comment ID to the post's comments array
-    await Post.findByIdAndUpdate(postId, {
+    await Post.findByIdAndUpdate(post, {
       $push: { comments: newComment._id },
     });
 
@@ -46,7 +46,7 @@ export const getComment = async (req, res, next) => {
 
 export const getAllComments = async (req, res, next) => {
   try {
-    const comments = await Comment.find({ post: req.params.postId }).populate(
+    const comments = await Comment.find({ post: req.params.post }).populate(
       "user",
       "username"
     );

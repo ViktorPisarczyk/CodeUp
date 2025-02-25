@@ -12,7 +12,7 @@ import { protect } from "../middlewares/auth.js";
 
 export const postRouter = Router();
 
-postRouter.route("/").post(protect, createPost);
+postRouter.route("/").post(createPost);
 postRouter.route("/").get(getPosts);
 postRouter
   .route("/:id")

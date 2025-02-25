@@ -1,22 +1,43 @@
 import { Post } from "../models/postModel.js";
 import { Comment } from "../models/commentModel.js";
+import { verifyToken } from "../middlewares/jwt.js";
+import { User } from "../models/userModel.js";
 
 export const createPost = async (req, res, next) => {
   try {
-    const { description, code, image } = req.body;
-    const userId = req.token.id;
+    const { author, content, code, image } = req.body;
+    const token = req.headers.authorization?.split(" ")[1];
 
-    if (!description) {
-      return res.status(400).json({ message: "Description is required." });
+    if (!token) {
+      const error = new Error("sorry, you need to log in first");
+      error.status = "401";
+      throw error;
     }
 
+    const decoded_token = await verifyToken(token);
+
+    const user = await User.findById(decoded_token.id);
+
+    if (!user) {
+      const error = new Error(
+        "The user belongs to given token is deleted recently!"
+      );
+      throw error;
+    }
+
+    req.token = decoded_token;
+
+    if (!content) {
+      return res.status(400).json({ message: "Description is required." });
+    }
+    console.log(req.body);
     const newPost = await Post.create({
-      author: userId,
-      description,
+      author: user,
+      content,
       code,
       image,
     });
-
+    console.log(newPost);
     res.status(201).json(newPost);
   } catch (error) {
     next(error);
@@ -63,7 +84,7 @@ export const getPostById = async (req, res, next) => {
 
 export const updatePost = async (req, res, next) => {
   try {
-    const { description, image, code } = req.body;
+    const { content, image, code } = req.body;
     const userId = req.token.id;
 
     const post = await Post.findById(req.params.id);
@@ -78,7 +99,7 @@ export const updatePost = async (req, res, next) => {
         .json({ message: "Unauthorized: You can only update your own post." });
     }
 
-    post.description = description || post.description;
+    post.content = content || post.content;
     post.image = image || post.image;
     post.code = code || post.code;
 
