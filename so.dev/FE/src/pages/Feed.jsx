@@ -232,12 +232,35 @@ export default function Feed() {
                 {/* Show comments */}
                 {showCommentForm === post._id && (
                   <div className="border-t border-gray-200 p-4">
+                    {/* Comment Input */}
+                    <form onSubmit={(e) => handleCommentSubmit(post._id, e)}>
+                      <textarea
+                        value={newComment[post._id] || ""}
+                        onChange={(e) =>
+                          setNewComment({
+                            ...newComment,
+                            [post._id]: e.target.value,
+                          })
+                        }
+                        placeholder="Add a comment"
+                        className="w-full p-2 rounded-md border-gray-300 focus:border-blue-400 focus:ring-blue-400"
+                        style={{ backgroundColor: "var(--tertiary)" }}
+                        rows="3"
+                      />
+                      <button
+                        type="submit"
+                        className="mt-2 px-4 py-2 mb-3 rounded-md hover:opacity-80"
+                        style={{ backgroundColor: "var(--tertiary)" }}
+                      >
+                        Comment
+                      </button>
+                    </form>
                     {post.comments && post.comments.length > 0 && (
                       <div>
                         {post.comments.map((comment) => (
                           <div
                             key={comment._id}
-                            className="text-sm flex items-center space-x-2 mb-2"
+                            className="text-m flex items-center space-x-2 mb-2"
                           >
                             <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white overflow-hidden">
                               {comment.user?.profilePicture ? (
@@ -262,30 +285,6 @@ export default function Feed() {
                         ))}
                       </div>
                     )}
-
-                    {/* Comment Input */}
-                    <form onSubmit={(e) => handleCommentSubmit(post._id, e)}>
-                      <textarea
-                        value={newComment[post._id] || ""}
-                        onChange={(e) =>
-                          setNewComment({
-                            ...newComment,
-                            [post._id]: e.target.value,
-                          })
-                        }
-                        placeholder="Add a comment"
-                        className="w-full p-2 rounded-md border-gray-300 focus:border-blue-400 focus:ring-blue-400"
-                        style={{ backgroundColor: "var(--tertiary)" }}
-                        rows="3"
-                      />
-                      <button
-                        type="submit"
-                        className="mt-2 px-4 py-2 rounded-md hover:opacity-80"
-                        style={{ backgroundColor: "var(--tertiary)" }}
-                      >
-                        Comment
-                      </button>
-                    </form>
                   </div>
                 )}
               </div>
