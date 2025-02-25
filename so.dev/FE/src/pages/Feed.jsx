@@ -8,6 +8,8 @@ export default function Feed() {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState("");
   const [likedPosts, setLikedPosts] = useState({});
+  const [newComment, setNewComment] = useState({}); // Track new comments for each post
+  const [showCommentForm, setShowCommentForm] = useState(null); // Track which post has the comment form
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,14 +37,12 @@ export default function Feed() {
       }
 
       const data = await response.json();
-      // console.log(data);
-
       setPosts(data || []);
     } catch (error) {
       console.error("Error fetching posts:", error);
     }
   };
-  console.log(posts);
+
   const handleLike = async (postId) => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -98,7 +98,6 @@ export default function Feed() {
         },
         body: JSON.stringify({ content: newPost }),
       });
-      console.log(response);
       if (!response.ok) {
         throw new Error("Failed to create post");
       }
@@ -110,99 +109,190 @@ export default function Feed() {
     }
   };
 
+  const handleCommentSubmit = async (postId, e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+
+    if (!newComment[postId]?.trim()) return; // Ensure there's a comment
+
+    try {
+      const response = await fetch(`${API_URL}/posts/${postId}/comment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: newComment[postId] }), // Make sure the backend expects this format
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add comment");
+      }
+
+      // Clear the comment input
+      setNewComment((prev) => ({
+        ...prev,
+        [postId]: "",
+      }));
+
+      // Hide the comment form and refetch posts (including comments)
+      setShowCommentForm(null);
+      fetchPosts();
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
+
+  const toggleCommentForm = (postId) => {
+    setShowCommentForm(postId === showCommentForm ? null : postId); // Toggle visibility of comment form
+  };
+
   return (
-  <div className="flex flex-row divide-x min-h-screen" style={{ backgroundColor: "var(--primary)" }}>
-    <AsideMenu />
+    <div
+      className="flex flex-row divide-x min-h-screen"
+      style={{ backgroundColor: "var(--primary)" }}
+    >
+      <AsideMenu />
 
-    <div className="max-w-2xl mx-auto pt-8 px-4">
-      <form
-        onSubmit={handlePostSubmit}
-        className="rounded-lg p-4 mb-6 shadow-md"
-        style={{ backgroundColor: "var(--secondary)" }}
-      >
-        <textarea
-          value={newPost}
-          onChange={(e) => setNewPost(e.target.value)}
-          placeholder="What's on your mind?"
-          className="w-full p-2 rounded-md border-gray-300 focus:border-blue-400 focus:ring-blue-400"
-          style={{ backgroundColor: "var(--tertiary)" }}
-          rows="3"
-        />
-        <div className="mt-2 flex justify-between items-center">
-          <button
-            type="submit"
-            className="px-4 py-2 rounded-md hover:opacity-80"
+      <div className="max-w-2xl mx-auto pt-8 px-4">
+        <form
+          onSubmit={handlePostSubmit}
+          className="rounded-lg p-4 mb-6 shadow-md"
+          style={{ backgroundColor: "var(--secondary)" }}
+        >
+          <textarea
+            value={newPost}
+            onChange={(e) => setNewPost(e.target.value)}
+            placeholder="What's on your mind?"
+            className="w-full p-2 rounded-md border-gray-300 focus:border-blue-400 focus:ring-blue-400"
             style={{ backgroundColor: "var(--tertiary)" }}
-          >
-            Post
-          </button>
-        </div>
-      </form>
+            rows="3"
+          />
+          <div className="mt-2 flex justify-between items-center">
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-md hover:opacity-80"
+              style={{ backgroundColor: "var(--tertiary)" }}
+            >
+              Post
+            </button>
+          </div>
+        </form>
 
-      <div className="space-y-6">
-        {posts.length === 0 ? (
-          <p>No posts available</p>
-        ) : (
-          posts.map((post) => (
-            <div key={post._id} className="rounded-lg shadow-md p-4" style={{ backgroundColor: "var(--secondary)" }}>
-              <div className="flex items-center mb-2">
-                <div className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white overflow-hidden">
-                  {post.author?.profilePicture ? (
-                    <img
-                      src={post.author.profilePicture}
-                      alt="Profile"
-                      className="w-full h-full object-cover rounded-full"
-                    />
-                  ) : (
-                    <span>
-                      {post.author?.username ? post.author.username[0].toUpperCase() : "?"}
-                    </span>
-                  )}
+        <div className="space-y-6">
+          {posts.length === 0 ? (
+            <p>No posts available</p>
+          ) : (
+            posts.map((post) => (
+              <div
+                key={post._id}
+                className="rounded-lg shadow-md p-4"
+                style={{ backgroundColor: "var(--secondary)" }}
+              >
+                <div className="flex items-center mb-2">
+                  <div className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white overflow-hidden">
+                    {post.author?.profilePicture ? (
+                      <img
+                        src={post.author.profilePicture}
+                        alt="Profile"
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <span>
+                        {post.author?.username
+                          ? post.author.username[0].toUpperCase()
+                          : "?"}
+                      </span>
+                    )}
+                  </div>
+                  <span className="ml-2 font-medium">
+                    {post.author ? post.author.username : "Unknown User"}
+                  </span>
                 </div>
-                <span className="ml-2 font-medium">{post.author ? post.author.username : "Unknown User"}</span>
-              </div>
 
-              {/* Post Content */}
-              <p>{post.content}</p>
-              {post.image && (
-                <img src={post.image} alt="Post content" className="rounded-md w-full mb-4" />
-              )}
+                {/* Post Content */}
+                <p>{post.content}</p>
+                {post.image && (
+                  <img
+                    src={post.image}
+                    alt="Post content"
+                    className="rounded-md w-full mb-4"
+                  />
+                )}
 
-              <div className="flex items-center space-x-4">
-                <button onClick={() => handleLike(post._id)}>
-                  {likedPosts[post._id] ? "🩶" : "❤️"} ({post.likes.length})
-                </button>
-                <span>💬 {post.comments?.length || 0}</span>
-              </div>
+                <div className="flex items-center space-x-4">
+                  <button onClick={() => handleLike(post._id)}>
+                    {likedPosts[post._id] ? "🩶" : "❤️"} {post.likes.length}
+                  </button>
+                  <button onClick={() => toggleCommentForm(post._id)}>
+                    💬 {post.comments?.length || 0}
+                  </button>
+                </div>
 
-              {post.comments && post.comments.length > 0 && (
-                <div className="border-t border-gray-200 p-4">
-                  {post.comments.map((comment) => (
-                    <div key={comment._id} className="text-sm flex items-center space-x-2 mb-2">
-                      <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white overflow-hidden">
-                        {comment.user?.profilePicture ? (
-                          <img
-                            src={comment.user.profilePicture}
-                            alt="Profile"
-                            className="w-full h-full object-cover rounded-full"
-                          />
-                        ) : (
-                          <span>
-                            {comment.user?.username ? comment.user.username[0].toUpperCase() : "?"}
-                          </span>
-                        )}
+                {/* Show comments */}
+                {showCommentForm === post._id && (
+                  <div className="border-t border-gray-200 p-4">
+                    {post.comments && post.comments.length > 0 && (
+                      <div>
+                        {post.comments.map((comment) => (
+                          <div
+                            key={comment._id}
+                            className="text-sm flex items-center space-x-2 mb-2"
+                          >
+                            <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white overflow-hidden">
+                              {comment.user?.profilePicture ? (
+                                <img
+                                  src={comment.user.profilePicture}
+                                  alt="Profile"
+                                  className="w-full h-full object-cover rounded-full"
+                                />
+                              ) : (
+                                <span>
+                                  {comment.user?.username
+                                    ? comment.user.username[0].toUpperCase()
+                                    : "?"}
+                                </span>
+                              )}
+                            </div>
+                            <span className="font-medium">
+                              {comment.user?.username}
+                            </span>
+                            <span>{comment.text}</span>
+                          </div>
+                        ))}
                       </div>
-                      <span className="font-medium">{comment.user?.username}</span>
-                      <span>{comment.text}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))
-        )}
+                    )}
+
+                    {/* Comment Input */}
+                    <form onSubmit={(e) => handleCommentSubmit(post._id, e)}>
+                      <textarea
+                        value={newComment[post._id] || ""}
+                        onChange={(e) =>
+                          setNewComment({
+                            ...newComment,
+                            [post._id]: e.target.value,
+                          })
+                        }
+                        placeholder="Add a comment"
+                        className="w-full p-2 rounded-md border-gray-300 focus:border-blue-400 focus:ring-blue-400"
+                        style={{ backgroundColor: "var(--tertiary)" }}
+                        rows="3"
+                      />
+                      <button
+                        type="submit"
+                        className="mt-2 px-4 py-2 rounded-md hover:opacity-80"
+                        style={{ backgroundColor: "var(--tertiary)" }}
+                      >
+                        Comment
+                      </button>
+                    </form>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
-                  }
+  );
+}
