@@ -1,24 +1,26 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
+import { jwtDecode } from "jwt-decode";
 
 const API_URL = "http://localhost:5000";
 
 export default function Feed() {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState("");
-  const [likedPosts, setLikedPosts] = useState({});
-  const [newComment, setNewComment] = useState({}); // Track new comments for each post
-  const [showCommentForm, setShowCommentForm] = useState(null); // Track which post has the comment form
+  const [newComment, setNewComment] = useState({});
+  const [showCommentForm, setShowCommentForm] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+
     if (!token) {
       navigate("/login");
     } else {
       fetchPosts();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchPosts = async () => {
@@ -37,7 +39,6 @@ export default function Feed() {
       }
 
       const data = await response.json();
-
       setPosts(data || []);
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -63,11 +64,6 @@ export default function Feed() {
       if (!response.ok) {
         throw new Error("Failed to like the post");
       }
-
-      setLikedPosts((prev) => ({
-        ...prev,
-        [postId]: !prev[postId],
-      }));
 
       fetchPosts();
     } catch (error) {
@@ -157,8 +153,23 @@ export default function Feed() {
   };
 
   const toggleCommentForm = (postId) => {
-    setShowCommentForm(postId === showCommentForm ? null : postId); // Toggle visibility of comment form
+    setShowCommentForm(postId === showCommentForm ? null : postId);
   };
+
+  const getUserIdFromToken = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+      const decoded = jwtDecode(token);
+      return decoded.id;
+    } catch (error) {
+      console.error("Invalid token", error);
+      return null;
+    }
+  };
+
+  const userId = getUserIdFromToken();
 
   return (
     <div
@@ -235,17 +246,16 @@ export default function Feed() {
 
                 <div className="flex items-center space-x-4">
                   <button onClick={() => handleLike(post._id)}>
-                    {likedPosts[post._id] ? "🩶" : "❤️"} {post.likes.length}
+                    {post.likes.includes(userId) ? "❤️" : "🩶"}{" "}
+                    {post.likes.length}
                   </button>
                   <button onClick={() => toggleCommentForm(post._id)}>
                     💬 {post.comments?.length || 0}
                   </button>
                 </div>
 
-                {/* Show comments */}
                 {showCommentForm === post._id && (
                   <div className="border-t border-gray-200 p-4">
-                    {/* Comment Input */}
                     <form onSubmit={(e) => handleCommentSubmit(post._id, e)}>
                       <textarea
                         value={newComment[post._id] || ""}
