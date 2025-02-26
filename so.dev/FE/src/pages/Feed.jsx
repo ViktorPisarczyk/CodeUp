@@ -80,7 +80,7 @@ export default function Feed() {
 
   return (
     <div
-      className="flex flex-row divide-x min-h-screen"
+      className="flex flex-row  min-h-screen"
       style={{ backgroundColor: "var(--primary)" }}
     >
       <AsideMenu />
@@ -115,7 +115,9 @@ export default function Feed() {
             <p>No posts available</p>
           ) : (
             posts.map((post) => (
+
               <Post key={post._id} post={post} onPostUpdate={fetchPosts} />
+
             ))
           )}
         </div>
