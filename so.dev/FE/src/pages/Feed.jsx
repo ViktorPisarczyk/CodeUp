@@ -162,7 +162,7 @@ export default function Feed() {
 
   return (
     <div
-      className="flex flex-row divide-x min-h-screen"
+      className="flex flex-row  min-h-screen"
       style={{ backgroundColor: "var(--primary)" }}
     >
       <AsideMenu />
@@ -218,7 +218,7 @@ export default function Feed() {
                       </span>
                     )}
                   </div>
-                  <span className="ml-2 font-medium">
+                  <span className="ml-2 font-bold">
                     {post.author ? post.author.username : "Unknown User"}
                   </span>
                 </div>
@@ -290,7 +290,7 @@ export default function Feed() {
                                 </span>
                               )}
                             </div>
-                            <span className="font-medium">
+                            <span className="font-bold">
                               {comment.user?.username}
                             </span>
                             <span>{comment.text}</span>
