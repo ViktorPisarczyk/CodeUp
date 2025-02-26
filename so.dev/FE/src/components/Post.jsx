@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
+import { BsThreeDots } from "react-icons/bs";
 
 const API_URL = "http://localhost:5001";
 
@@ -7,6 +8,8 @@ export default function Post({ post, onPostUpdate }) {
   const [newComment, setNewComment] = useState("");
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [likedPosts, setLikedPosts] = useState({});
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
 
   // Initialize like status when post changes
   useEffect(() => {
@@ -18,6 +21,18 @@ export default function Post({ post, onPostUpdate }) {
       }));
     }
   }, [post._id, post.likes]);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowMenu(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleLike = async (postId) => {
     const token = localStorage.getItem("token");
@@ -94,11 +109,101 @@ export default function Post({ post, onPostUpdate }) {
     }
   };
 
+  const handleEditPost = () => {
+    // TODO: Implement edit functionality
+    setShowMenu(false);
+  };
+
+  const handleDeletePost = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${API_URL}/posts/${post._id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete post");
+      }
+
+      onPostUpdate();
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post. Please try again.");
+    }
+    setShowMenu(false);
+  };
+
+  const handleReportPost = () => {
+    // TODO: Implement report functionality
+    alert("Post reported successfully");
+    setShowMenu(false);
+  };
+
+  const isCurrentUserAuthor =
+    post.author?._id === localStorage.getItem("userId");
+
   return (
     <div
-      className="rounded-lg shadow-md p-4"
+      className="relative rounded-lg shadow-md p-4"
       style={{ backgroundColor: "var(--secondary)" }}
     >
+      <div className="relative" ref={menuRef}>
+        <button
+          className="absolute right-0 top-0 p-2 hover:bg-gray-100 rounded-full"
+          onClick={() => setShowMenu(!showMenu)}
+        >
+          <BsThreeDots />
+        </button>
+
+        {showMenu && (
+          <div
+            className="absolute right-0 top-8 w-48 py-2 bg-white rounded-md shadow-xl z-10"
+            style={{ backgroundColor: "var(--secondary)" }}
+          >
+            {isCurrentUserAuthor ? (
+              <>
+                <button
+                  onClick={handleEditPost}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  style={{
+                    backgroundColor: "var(--secondary)",
+                    ":hover": { backgroundColor: "var(--tertiary)" },
+                  }}
+                >
+                  Edit Post
+                </button>
+                <button
+                  onClick={handleDeletePost}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                  style={{
+                    backgroundColor: "var(--secondary)",
+                    ":hover": { backgroundColor: "var(--tertiary)" },
+                  }}
+                >
+                  Delete Post
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={handleReportPost}
+                className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-red-500"
+                style={{
+                  backgroundColor: "var(--secondary)",
+                  ":hover": { backgroundColor: "var(--tertiary)" },
+                }}
+              >
+                Report Post
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
       <div className="flex items-center mb-2">
         <div className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white overflow-hidden">
           {post.author?.profilePicture ? (
