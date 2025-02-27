@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
 import { jwtDecode } from "jwt-decode";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "http://localhost:5001";
 
 export default function Feed() {
   const [posts, setPosts] = useState([]);
