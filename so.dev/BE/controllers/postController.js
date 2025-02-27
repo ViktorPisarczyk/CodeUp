@@ -30,14 +30,13 @@ export const createPost = async (req, res, next) => {
     if (!content) {
       return res.status(400).json({ message: "Description is required." });
     }
-    console.log(req.body);
+
     const newPost = await Post.create({
       author: user,
       content,
       code,
       image,
     });
-    console.log(newPost);
     res.status(201).json(newPost);
   } catch (error) {
     next(error);
@@ -138,27 +137,38 @@ export const deletePost = async (req, res, next) => {
   }
 };
 
-export const likePost = async (req, res, next) => {
+export const likePost = async (req, res) => {
   try {
-    const userId = req.user.id;
     const post = await Post.findById(req.params.id);
 
     if (!post) {
-      const error = new Error("Post not found.");
-      error.status = 404;
-      throw error;
+      console.error("Post not found!");
+      return res.status(404).json({ message: "Post not found" });
     }
 
-    if (post.likes.includes(userId)) {
-      post.likes = post.likes.filter((id) => id.toString() !== userId);
+    if (!req.user) {
+      console.error("User ID is undefined!");
+      return res.status(400).json({ message: "Invalid user ID" });
+    }
+
+    const userId = req.user.toString();
+
+    const hasLiked = post.likes.includes(userId);
+
+    if (hasLiked) {
+      post.likes = post.likes.filter((like) => like !== userId);
     } else {
       post.likes.push(userId);
     }
 
     await post.save();
-    res.status(200).send(post);
+
+    res.json({
+      success: true,
+    });
   } catch (error) {
-    next(error);
+    console.error("Error in likePost:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 

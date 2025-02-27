@@ -37,6 +37,8 @@ export const createComment = async (req, res, next) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
+    console.log("hello");
+
     res.status(201).json(newComment);
   } catch (error) {
     next(error);
