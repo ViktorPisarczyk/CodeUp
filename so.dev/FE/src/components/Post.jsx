@@ -113,7 +113,7 @@ const Post = ({
     </div>
   );
 };
-// for development purposes
+
 Post.propTypes = {
   post: PropTypes.shape({
     _id: PropTypes.string.isRequired,
