@@ -71,7 +71,7 @@ const ChatBot = ({ isOpen, onClose }) => {
             ))}
           </div>
 
-          {/* Input */}
+          {/* =Input= */}
           <div className="p-4 border-t dark:border-gray-700">
             <div className="flex gap-2">
               <input
