@@ -7,11 +7,13 @@ import { MdHome } from "react-icons/md";
 import { MyContext } from "../context/ThemeContext";
 import { motion } from "framer-motion";
 import Toggle from "./Toggle";
+import ChatBot from './ChatBot';
 
 const AsideMenu = () => {
   const navigate = useNavigate();
   const { darkMode } = useContext(MyContext);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   return (
     <div className="flex flex-col sticky w-50 h-screen top-0 bg-(--secondary)">
@@ -75,7 +77,10 @@ const AsideMenu = () => {
         <button className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full">
           Notification
         </button>
-        <button className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full">
+        <button 
+          onClick={() => setIsChatOpen(true)} 
+          className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full"
+        >
           Help
         </button>
         <button className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full">
@@ -83,6 +88,7 @@ const AsideMenu = () => {
         </button>
         <Toggle />
       </motion.div>
+      <ChatBot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       <button className="flex absolute bottom-0 left-3 items-center justify-center h-10 hover:bg-(--primary) rounded-full">
         <IoLogOutOutline size={24} color={darkMode ? "white" : "black"} />
         Logout
