@@ -14,6 +14,12 @@ import ResetPassword from "./pages/ResetPassword.jsx";
 import EditProfile from "./pages/EditProfile";
 import Profile from "./pages/Profile.jsx";
 
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+
+  return token ? children : <Navigate to="/login" replace />;
+};
+
 function App() {
   return (
     <MyContextProvider>
@@ -22,7 +28,14 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/feed" element={<Feed />} />
+          <Route
+            path="/feed"
+            element={
+              <ProtectedRoute>
+                <Feed />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/edit-profile" element={<EditProfile />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" />} />

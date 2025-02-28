@@ -4,11 +4,6 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 
-// import { fileURLToPath } from "url";
-// import { dirname, join } from "path";
-// import { mkdir } from "fs/promises";
-// import multer from "multer";
-
 // Import routes & middleware
 import { userRouter } from "./routes/userRouter.js";
 import { postRouter } from "./routes/postRouter.js";
@@ -19,18 +14,18 @@ import { authRouter } from "./routes/authRouter.js";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 dotenv.config();
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 const PORT = process.env.PORT || 5001;
-
-// const __dirname = dirname(fileURLToPath(import.meta.url));
-
-// Serve uploaded files statically
-// app.use("/uploads", express.static(join(__dirname, "uploads")));
 
 // API Routes
 app.use("/users", userRouter);
