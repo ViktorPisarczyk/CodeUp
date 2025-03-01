@@ -1,6 +1,6 @@
 import AsideMenu from "../components/AsideMenu";
 import { useState } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { useNavigate, Route, Routes } from "react-router-dom";
 
 const initialPosts = [
   {
@@ -25,7 +25,7 @@ function Profile() {
   const [posts, setPosts] = useState(initialPosts);
   const [newPost, setNewPost] = useState("");
 
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handlePostSubmit = (e) => {
     e.preventDefault();
@@ -47,7 +47,7 @@ function Profile() {
     <div className="flex flex-row bg-(--primary)">
       <AsideMenu />
       <div className="flex flex-col m-auto w-screen ">
-        <div className="flex flex-row  justify-center   rounded-xl p-5 m-20 bg-(--secondary)">
+        <div className="flex flex-row relative justify-center   rounded-xl p-5 m-20 bg-(--secondary)">
           <div className="flex w-full  items-center space-y-6">
             <div>
               <img
@@ -58,14 +58,21 @@ function Profile() {
             </div>
             <div className="m-auto">
               <h2 className="text-3xl mb-5">John Doe</h2>
+              <h4>Berlin</h4>
               <h4>Employer by DCI</h4>
-              <button
-                onClick={() => navigate("/edit-profile")}
-                className="hover:bg-(--primary) rounded-md"
-              >
-                Edit Profile
-              </button>
             </div>
+            <div className="w-100">
+              <h4>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                Assumenda omnis ducimus voluptatem
+              </h4>
+            </div>
+            <button
+              onClick={() => navigate("/edit-profile")}
+              className="hover:bg-(--primary) absolute bottom-3 right-3 rounded-md"
+            >
+              Edit Profile
+            </button>
           </div>
         </div>
         <div className="divide-y-1 w-max-screen m-auto ">
