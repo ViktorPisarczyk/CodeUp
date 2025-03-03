@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
 import Post from "../components/Post";
 import { jwtDecode } from "jwt-decode";
+import logoLM from "../assets/logoLM.png";
+import logoDM from "../assets/logoDM.png";
 
 const API_URL = "http://localhost:5001";
 
@@ -180,6 +182,7 @@ export default function Feed() {
       <AsideMenu />
 
       <div className="max-w-2xl mx-auto pt-8 px-4">
+        <img src={logoLM} alt="logo" />
         <form
           onSubmit={handlePostSubmit}
           className="rounded-lg p-4 mb-6 shadow-md"
