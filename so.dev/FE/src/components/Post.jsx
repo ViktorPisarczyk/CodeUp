@@ -1,5 +1,6 @@
-import React from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
+import { BsThreeDots } from "react-icons/bs";
 
 const Post = ({
   post,
@@ -10,10 +11,19 @@ const Post = ({
   setNewComment,
   handleCommentSubmit,
   userId,
+  onDelete,
+  onEdit,
+  onReport,
 }) => {
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
   return (
     <div
-      className="rounded-lg shadow-md p-4"
+      className="rounded-lg relative shadow-md p-4"
       style={{ backgroundColor: "var(--secondary)" }}
     >
       <div className="flex items-center mb-2">
@@ -36,6 +46,50 @@ const Post = ({
           {post.author ? post.author.username : "Unknown User"}
         </span>
       </div>
+
+      <BsThreeDots
+        className="absolute right-4 top-4 cursor-pointer hover:opacity-70"
+        onClick={toggleDropdown}
+      />
+      {showDropdown && (
+        <div
+          className="absolute right-4 top-6 rounded-lg shadow-lg py-2 z-10"
+          style={{ backgroundColor: "var(--tertiary)", minWidth: "150px" }}
+        >
+          {post.author?._id === userId ? (
+            <>
+              <button
+                className="w-full text-left px-4 py-2 hover:opacity-70"
+                onClick={() => {
+                  onEdit(post._id);
+                  setShowDropdown(false);
+                }}
+              >
+                Edit Post
+              </button>
+              <button
+                className="w-full text-left px-4 py-2 hover:opacity-70"
+                onClick={() => {
+                  onDelete(post._id);
+                  setShowDropdown(false);
+                }}
+              >
+                Delete Post
+              </button>
+            </>
+          ) : (
+            <button
+              className="w-full text-left px-4 py-2 hover:opacity-70"
+              onClick={() => {
+                onReport(post._id);
+                setShowDropdown(false);
+              }}
+            >
+              Report Post
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Post Content */}
       <p>{post.content}</p>
@@ -118,30 +172,25 @@ Post.propTypes = {
   post: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
-    image: PropTypes.string,
     author: PropTypes.shape({
+      _id: PropTypes.string,
       username: PropTypes.string,
       profilePicture: PropTypes.string,
     }),
-    likes: PropTypes.array.isRequired,
-    comments: PropTypes.arrayOf(
-      PropTypes.shape({
-        _id: PropTypes.string.isRequired,
-        text: PropTypes.string.isRequired,
-        user: PropTypes.shape({
-          username: PropTypes.string,
-          profilePicture: PropTypes.string,
-        }),
-      })
-    ),
+    image: PropTypes.string,
+    likes: PropTypes.array,
+    comments: PropTypes.array,
   }).isRequired,
   handleLike: PropTypes.func.isRequired,
-  showCommentForm: PropTypes.string,
+  showCommentForm: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   toggleCommentForm: PropTypes.func.isRequired,
   newComment: PropTypes.object.isRequired,
   setNewComment: PropTypes.func.isRequired,
   handleCommentSubmit: PropTypes.func.isRequired,
   userId: PropTypes.string.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onReport: PropTypes.func.isRequired,
 };
 
 export default Post;
