@@ -206,7 +206,7 @@ export default function Feed() {
             rows="3"
           />
           <div className="mt-2 flex items-center justify-between">
-            {/* Buttons to Attach Picture and Code Snippet */}
+            {/* Buttons to Attach Picture, Code Snippet, and Post */}
             <div className="flex space-x-2">
               <button
                 type="button"
@@ -232,6 +232,15 @@ export default function Feed() {
                 Attach Code Snippet
               </button>
             </div>
+
+            {/* Post Button */}
+            <button
+              type="submit"
+              className="px-4 py-2 ml-3 rounded-md hover:opacity-80"
+              style={{ backgroundColor: "var(--tertiary)" }}
+            >
+              Post
+            </button>
           </div>
 
           {/* Conditionally render code snippet textarea based on state, moved below the button */}
@@ -245,18 +254,8 @@ export default function Feed() {
               rows="4"
             />
           )}
-
-          {/* Post Button moved to the right */}
-          <div className="mt-4 flex justify-end">
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-md hover:opacity-80"
-              style={{ backgroundColor: "var(--tertiary)" }}
-            >
-              Post
-            </button>
-          </div>
         </form>
+
         <div className="space-y-6">
           {posts.length === 0 ? (
             <p>No posts available</p>

@@ -55,7 +55,7 @@ const EditProfile = () => {
         </h2>
         <form
           onSubmit={handleSubmit}
-          className="bg-(--secondary) p-8 rounded-lg shadow-xl w-full max-w-md"
+          className="bg-(--secondary) p-8 rounded-lg shadow-xl w-xs md:w-xl max-w-xl mx-4 "
         >
           <div>
             <label

@@ -164,7 +164,7 @@ function Profile() {
       <AsideMenu />
       <div className="flex flex-col m-auto w-full max-w-screen-lg px-4">
         {/* Profile Section */}
-        <div className="flex flex-col md:flex-row justify-center items-center rounded-xl p-5 my-10 bg-(--secondary)">
+        <div className="flex flex-col md:flex-row pb-10 justify-center items-center relative rounded-xl p-5 my-10 bg-(--secondary)">
           <div className="flex flex-col items-center md:items-start md:w-1/3">
             {/* Profile Picture */}
             <img
@@ -200,10 +200,7 @@ function Profile() {
         {/* Posts Section */}
         <div className="w-full divide-y divide-gray-300">
           <div className="mt-10 mb-6">
-            <h1 className="text-3xl font-bold">Posts</h1>
-            <button className="mt-5 px-6 py-2 bg-(--secondary) rounded-md hover:bg-gray-400">
-              Create Post
-            </button>
+            <h1 className="text-3xl mb-2 font-bold">Posts</h1>
           </div>
 
           {/* Posts List */}
