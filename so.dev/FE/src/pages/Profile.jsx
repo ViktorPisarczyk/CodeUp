@@ -72,7 +72,6 @@ function Profile() {
         });
 
         if (!response.ok) throw new Error("Failed to fetch user data");
-        console.log("hello");
         const data = await response.json();
         setUser(data);
       } catch (error) {
