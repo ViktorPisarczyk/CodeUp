@@ -162,6 +162,9 @@ function Profile() {
   const toggleCommentForm = (postId) => {
     setShowCommentForm(postId === showCommentForm ? null : postId);
   };
+  console.log(user);
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -169,42 +172,48 @@ function Profile() {
   return (
     <div className="flex flex-row bg-(--primary)">
       <AsideMenu />
-      <div className="flex flex-col m-auto w-screen">
-        <div className="flex flex-row relative justify-center rounded-xl p-5 m-20 bg-(--secondary)">
-          <div className="flex w-full items-center space-y-6">
-            <div>
-              <img
-                className="rounded-full h-50"
-                src={
-                  user.profilePicture ||
-                  "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png"
-                }
-                alt="avatar"
-              />
-            </div>
-            <div className="m-auto">
-              <h2 className="text-3xl mb-5">{user.username || "User"}</h2>
-              <h4>{user.location || "Berlin"}</h4>
-              <h4>{user.role || "Web Developer"}</h4>
-            </div>
-            <div className="w-100">
-              <h4>{user.bio || "This user has not updated their bio yet."}</h4>
-            </div>
+      <div className="flex flex-col m-auto w-full max-w-screen-lg px-4">
+        {/* Profile Section */}
+        <div className="flex flex-col md:flex-row justify-center items-center rounded-xl p-5 my-10 bg-(--secondary)">
+          <div className="flex flex-col items-center md:items-start md:w-1/3">
+            {/* Profile Picture */}
+            <img
+              className="rounded-full h-32 w-32 md:h-40 md:w-40 object-cover"
+              src={
+                user.profilePicture ||
+                "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png"
+              } // Fallback if profile picture is not set
+              alt="avatar"
+            />
+          </div>
+          <div className="mt-4 md:mt-0 md:ml-8 text-center md:text-left">
+            <h2 className="text-2xl md:text-3xl font-semibold mb-2">
+              {user.username || "User"}
+            </h2>
+            <h4 className="text-lg ">{user.location || "Please add your location"}</h4>
+            <p className="mt-4 ">
+              {user.bio || "This user has not updated their bio yet."}
+            </p>
             {loggedInUserId === userId && (
               <button
                 onClick={() => navigate("/edit-profile")}
-                className="hover:bg-(--primary) absolute bottom-3 right-3 rounded-md"
+                className="mt-4 px-4 py-2 bg-(--tertiary) text-white rounded-md hover:bg-blue-600"
               >
                 Edit Profile
               </button>
-            )}
           </div>
         </div>
 
-        <div className="divide-y-1 w-max-screen m-auto">
-          <div className="mt-10 mb-6 h-25">
+        {/* Posts Section */}
+        <div className="w-full divide-y divide-gray-300">
+          <div className="mt-10 mb-6">
             <h1 className="text-3xl font-bold">Posts</h1>
+            <button className="mt-5 px-6 py-2 bg-(--secondary) rounded-md hover:bg-gray-400">
+              Create Post
+            </button>
           </div>
+
+          {/* Posts List */}
           <div className="space-y-6">
             {posts.length === 0 ? (
               <p>No posts available</p>
@@ -222,6 +231,7 @@ function Profile() {
                   userId={userId}
                 />
               ))
+
             )}
           </div>
         </div>

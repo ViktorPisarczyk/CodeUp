@@ -1,6 +1,8 @@
-import React from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
+import { BsThreeDots } from "react-icons/bs";
+import { IoClose } from "react-icons/io5";
 
 const Post = ({
   post,
@@ -11,10 +13,31 @@ const Post = ({
   setNewComment,
   handleCommentSubmit,
   userId,
+  onDelete,
+  onEdit,
+  onReport,
+  onCommentDelete,
+  onCommentEdit,
+  onCommentReport,
 }) => {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [activeCommentDropdown, setActiveCommentDropdown] = useState(null);
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+    setActiveCommentDropdown(null); // Close any open comment dropdowns
+  };
+
+  const toggleCommentDropdown = (commentId) => {
+    setActiveCommentDropdown(
+      activeCommentDropdown === commentId ? null : commentId
+    );
+    setShowDropdown(false); // Close post dropdown if open
+  };
+
   return (
     <div
-      className="rounded-lg shadow-md p-4"
+      className="rounded-lg relative shadow-md p-4"
       style={{ backgroundColor: "var(--secondary)" }}
     >
       <Link to={`/profile/${post.author._id}`}>
@@ -39,6 +62,56 @@ const Post = ({
           </span>
         </div>
       </Link>
+
+      <BsThreeDots
+        className="absolute right-4 top-4 cursor-pointer hover:opacity-70"
+        onClick={toggleDropdown}
+      />
+      {showDropdown && (
+        <div
+          className="absolute right-4 top-6 rounded-lg shadow-lg py-2 z-10"
+          style={{ backgroundColor: "var(--tertiary)", minWidth: "150px" }}
+        >
+          <div className="flex justify-end px-2">
+            <IoClose
+              className="cursor-pointer hover:opacity-70 text-xl"
+              onClick={() => setShowDropdown(false)}
+            />
+          </div>
+          {post.author?._id === userId ? (
+            <>
+              <button
+                className="w-full text-left px-4 py-2 hover:opacity-70"
+                onClick={() => {
+                  onEdit(post._id);
+                  setShowDropdown(false);
+                }}
+              >
+                Edit Post
+              </button>
+              <button
+                className="w-full text-left px-4 py-2 hover:opacity-70"
+                onClick={() => {
+                  onDelete(post._id);
+                  setShowDropdown(false);
+                }}
+              >
+                Delete Post
+              </button>
+            </>
+          ) : (
+            <button
+              className="w-full text-left px-4 py-2 hover:opacity-70"
+              onClick={() => {
+                onReport(post._id);
+                setShowDropdown(false);
+              }}
+            >
+              Report Post
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Post Content */}
       <p>{post.content}</p>
@@ -88,7 +161,9 @@ const Post = ({
               {post.comments.map((comment) => (
                 <div
                   key={comment._id}
-                  className="text-sm flex items-center space-x-2 mb-2"
+
+                  className="text-sm flex items-center space-x-2 mb-2 relative"
+
                 >
                   <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white overflow-hidden">
                     {comment.user?.profilePicture ? (
@@ -105,8 +180,63 @@ const Post = ({
                       </span>
                     )}
                   </div>
+
                   <span className="font-bold">{comment.user?.username}</span>
                   <span>{comment.text}</span>
+
+                  <BsThreeDots
+                    className="ml-2 cursor-pointer hover:opacity-70"
+                    onClick={() => toggleCommentDropdown(comment._id)}
+                  />
+
+                  {activeCommentDropdown === comment._id && (
+                    <div
+                      className="absolute left-0 top-0 rounded-lg shadow-lg py-2 z-10"
+                      style={{
+                        backgroundColor: "var(--tertiary)",
+                        minWidth: "150px",
+                      }}
+                    >
+                      <div className="flex justify-end px-2">
+                        <IoClose
+                          className="cursor-pointer hover:opacity-70 text-xl"
+                          onClick={() => setActiveCommentDropdown(null)}
+                        />
+                      </div>
+                      {comment.user?._id === userId ? (
+                        <>
+                          <button
+                            className="w-full text-left px-4 py-2 hover:opacity-70"
+                            onClick={() => {
+                              onCommentEdit(post._id, comment._id);
+                              setActiveCommentDropdown(null);
+                            }}
+                          >
+                            Edit Comment
+                          </button>
+                          <button
+                            className="w-full text-left px-4 py-2 hover:opacity-70"
+                            onClick={() => {
+                              onCommentDelete(post._id, comment._id);
+                              setActiveCommentDropdown(null);
+                            }}
+                          >
+                            Delete Comment
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          className="w-full text-left px-4 py-2 hover:opacity-70"
+                          onClick={() => {
+                            onCommentReport(post._id, comment._id);
+                            setActiveCommentDropdown(null);
+                          }}
+                        >
+                          Report Comment
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -121,18 +251,19 @@ Post.propTypes = {
   post: PropTypes.shape({
     _id: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
-    image: PropTypes.string,
     author: PropTypes.shape({
-      _id: PropTypes.string.isRequired, // Added required _id
+      _id: PropTypes.string.isRequired,
       username: PropTypes.string,
       profilePicture: PropTypes.string,
     }),
-    likes: PropTypes.array.isRequired,
+    image: PropTypes.string,
+    likes: PropTypes.array,
     comments: PropTypes.arrayOf(
       PropTypes.shape({
         _id: PropTypes.string.isRequired,
         text: PropTypes.string.isRequired,
         user: PropTypes.shape({
+          _id: PropTypes.string,
           username: PropTypes.string,
           profilePicture: PropTypes.string,
         }),
@@ -140,12 +271,18 @@ Post.propTypes = {
     ),
   }).isRequired,
   handleLike: PropTypes.func.isRequired,
-  showCommentForm: PropTypes.string,
+  showCommentForm: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   toggleCommentForm: PropTypes.func.isRequired,
   newComment: PropTypes.object.isRequired,
   setNewComment: PropTypes.func.isRequired,
   handleCommentSubmit: PropTypes.func.isRequired,
   userId: PropTypes.string.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onReport: PropTypes.func.isRequired,
+  onCommentDelete: PropTypes.func.isRequired,
+  onCommentEdit: PropTypes.func.isRequired,
+  onCommentReport: PropTypes.func.isRequired,
 };
 
 export default Post;
