@@ -4,7 +4,6 @@ import AsideMenu from "../components/AsideMenu";
 import Post from "../components/Post";
 import { jwtDecode } from "jwt-decode";
 import logoLM from "../assets/logoLM.png";
-import logoDM from "../assets/logoDM.png";
 
 const API_URL = "http://localhost:5001";
 

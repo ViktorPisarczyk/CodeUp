@@ -6,6 +6,7 @@ import { IoLogOutOutline } from "react-icons/io5";
 import { MdHome } from "react-icons/md";
 import { MyContext } from "../context/ThemeContext";
 import { motion } from "framer-motion";
+import { jwtDecode } from "jwt-decode";
 import Toggle from "./Toggle";
 import ChatBot from "./ChatBot";
 
@@ -29,6 +30,21 @@ const AsideMenu = () => {
     }
   };
 
+  const getUserIdFromToken = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+      const decoded = jwtDecode(token);
+      return decoded.id;
+    } catch (error) {
+      console.error("Invalid token", error);
+      return null;
+    }
+  };
+
+  const loggedInUserId = getUserIdFromToken();
+
   return (
     <div className="flex flex-col sticky w-50 h-screen top-0 bg-(--secondary)">
       <img
@@ -48,7 +64,7 @@ const AsideMenu = () => {
         Home
       </button>
       <button
-        onClick={() => navigate("/profile")}
+        onClick={() => navigate(`/profile/${loggedInUserId}`)}
         className="flex items-center  pl-5  h-10 hover:bg-(--primary) rounded-full"
       >
         <CgProfile
