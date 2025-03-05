@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { BsThreeDots } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
+import { jwtDecode } from "jwt-decode";
 
 const Post = ({
   post,
@@ -34,6 +35,24 @@ const Post = ({
     );
     setShowDropdown(false); // Close post dropdown if open
   };
+
+  const getUserIdFromToken = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+      const decoded = jwtDecode(token);
+      return decoded.id;
+    } catch (error) {
+      console.error("Invalid token", error);
+      return null;
+    }
+  };
+
+  const loggedInUserId = getUserIdFromToken();
+
+  console.log(userId);
+  console.log(loggedInUserId);
 
   return (
     <div
@@ -125,7 +144,7 @@ const Post = ({
 
       <div className="flex items-center space-x-4">
         <button onClick={() => handleLike(post._id)}>
-          {post.likes.includes(userId) ? "❤️" : "🩶"} {post.likes.length}
+          {post.likes.includes(loggedInUserId) ? "❤️" : "🩶"} {post.likes.length}
         </button>
         <button onClick={() => toggleCommentForm(post._id)}>
           💬 {post.comments?.length || 0}
