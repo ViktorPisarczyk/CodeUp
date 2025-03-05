@@ -190,17 +190,20 @@ function Profile() {
             <h2 className="text-2xl md:text-3xl font-semibold mb-2">
               {user.username || "User"}
             </h2>
-            <h4 className="text-lg ">{user.location || "Please add your location"}</h4>
+            <h4 className="text-lg ">
+              {user.location || "Please add your location"}
+            </h4>
             <p className="mt-4 ">
               {user.bio || "This user has not updated their bio yet."}
             </p>
             {loggedInUserId === userId && (
               <button
                 onClick={() => navigate("/edit-profile")}
-                className="mt-4 px-4 py-2 bg-(--tertiary) text-white rounded-md hover:bg-blue-600"
+                className="hover:bg-(--primary) absolute bottom-3 right-3 rounded-md"
               >
                 Edit Profile
               </button>
+            )}
           </div>
         </div>
 
@@ -231,7 +234,6 @@ function Profile() {
                   userId={userId}
                 />
               ))
-
             )}
           </div>
         </div>
