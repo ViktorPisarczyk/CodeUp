@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logoLM from "../assets/logoLM.png";
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -101,7 +102,10 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-(--primary)">
+    <div className="min-h-screen flex flex-col items-center  bg-(--primary)">
+      <div>
+        <img src={logoLM} alt="logo" className="w-200" />
+      </div>
       <div className=" bg-(--tertiary) p-8 rounded-lg shadow-xl w-full max-w-md">
         <h1 className="text-3xl font-bold text-center mb-8 text-(--text)">
           {isLogin ? "Welcome Back!" : "Join So.Dev"}

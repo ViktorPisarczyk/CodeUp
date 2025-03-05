@@ -8,6 +8,7 @@ import { MyContext } from "../context/ThemeContext";
 import { motion } from "framer-motion";
 import Toggle from "./Toggle";
 import ChatBot from "./ChatBot";
+import onlyLogoLM from "../assets/onlyLogoLM.png";
 
 const AsideMenu = () => {
   const navigate = useNavigate();
@@ -31,6 +32,11 @@ const AsideMenu = () => {
 
   return (
     <div className="flex flex-col sticky max-w-50 h-screen top-0 bg-(--secondary)">
+      <img
+        src={onlyLogoLM}
+        alt="logo"
+        className="size-20 self-center mt-5 mb-10"
+      />
       <img
         className="sticky top-0 rounded-full box-content self-center h-20 w-20 p-4"
         src="https://img.freepik.com/free-vector/smiling-young-man-illustration_1308-173524.jpg?t=st=1739442424~exp=1739446024~hmac=8fdf51934914a44f0c6c6e31f4896f6b8d3ce8e30f70a496347ede2af6634fad&w=740"
