@@ -1,5 +1,6 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 import { BsThreeDots } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
 
@@ -39,26 +40,28 @@ const Post = ({
       className="rounded-lg relative shadow-md p-4"
       style={{ backgroundColor: "var(--secondary)" }}
     >
-      <div className="flex items-center mb-2">
-        <div className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white overflow-hidden">
-          {post.author?.profilePicture ? (
-            <img
-              src={post.author.profilePicture}
-              alt="Profile"
-              className="w-full h-full object-cover rounded-full"
-            />
-          ) : (
-            <span>
-              {post.author?.username
-                ? post.author.username[0].toUpperCase()
-                : "?"}
-            </span>
-          )}
+      <Link to={`/profile/${post.author._id}`}>
+        <div className="flex items-center mb-2">
+          <div className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white overflow-hidden">
+            {post.author?.profilePicture ? (
+              <img
+                src={post.author.profilePicture}
+                alt="Profile"
+                className="w-full h-full object-cover rounded-full"
+              />
+            ) : (
+              <span>
+                {post.author?.username
+                  ? post.author.username[0].toUpperCase()
+                  : "?"}
+              </span>
+            )}
+          </div>
+          <span className="ml-2 font-bold">
+            {post.author ? post.author.username : "Unknown User"}
+          </span>
         </div>
-        <span className="ml-2 font-bold">
-          {post.author ? post.author.username : "Unknown User"}
-        </span>
-      </div>
+      </Link>
 
       <BsThreeDots
         className="absolute right-4 top-4 cursor-pointer hover:opacity-70"
@@ -133,7 +136,7 @@ const Post = ({
         <div className="border-t border-gray-200 p-4">
           <form onSubmit={(e) => handleCommentSubmit(post._id, e)}>
             <textarea
-              value={newComment[post._id] || ""}
+              value={newComment?.[post._id] || ""}
               onChange={(e) =>
                 setNewComment({
                   ...newComment,
@@ -158,7 +161,9 @@ const Post = ({
               {post.comments.map((comment) => (
                 <div
                   key={comment._id}
-                  className="text-m flex items-center space-x-2 mb-2 relative"
+
+                  className="text-sm flex items-center space-x-2 mb-2 relative"
+
                 >
                   <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white overflow-hidden">
                     {comment.user?.profilePicture ? (
@@ -247,7 +252,7 @@ Post.propTypes = {
     _id: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
     author: PropTypes.shape({
-      _id: PropTypes.string,
+      _id: PropTypes.string.isRequired,
       username: PropTypes.string,
       profilePicture: PropTypes.string,
     }),

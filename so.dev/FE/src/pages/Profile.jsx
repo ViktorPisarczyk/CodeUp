@@ -1,74 +1,171 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
-import { useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // Make sure you import jwtDecode
-
-// Function to get user ID from token
-const getUserIdFromToken = () => {
-  const token = localStorage.getItem("token");
-  if (!token) return null;
-
-  try {
-    const decoded = jwtDecode(token);
-    return decoded.id; // Assuming the JWT contains the 'id' of the user
-  } catch (error) {
-    console.error("Invalid token", error);
-    return null;
-  }
-};
+import { jwtDecode } from "jwt-decode";
+import Post from "../components/Post";
 
 function Profile() {
-  const [user, setUser] = useState({}); // State to hold user data
-  const [posts, setPosts] = useState([]); // State to hold posts
-  const [loading, setLoading] = useState(false); // Loading state. !!!Set to True later on!!!
-  const [error, setError] = useState(null); // Error state
+  const { id } = useParams();
+  const [user, setUser] = useState({});
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showCommentForm, setShowCommentForm] = useState(null);
+  const [newComment, setNewComment] = useState({});
 
   const navigate = useNavigate();
 
-  const userId = getUserIdFromToken();
+  const getUserIdFromToken = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
 
-  // useEffect(() => {
-  //   if (!userId) {
-  //     navigate("/login"); // If no user ID, redirect to login page
-  //     return;
-  //   }
+    try {
+      const decoded = jwtDecode(token);
+      return decoded.id;
+    } catch (error) {
+      console.error("Invalid token", error);
+      return null;
+    }
+  };
 
-  //   // Fetch user data from backend
-  //   const fetchUserData = async () => {
-  //     try {
-  //       setLoading(true);
-  //       const response = await fetch(`http://localhost:5001/users/${userId}`);
-  //       if (!response.ok) {
-  //         throw new Error("Failed to fetch user data");
-  //       }
-  //       const data = await response.json();
-  //       setUser(data); // Set the user data
-  //     } catch (error) {
-  //       setError("Error fetching user data");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
+  const loggedInUserId = getUserIdFromToken();
+  const userId = id || loggedInUserId;
 
-  //   fetchUserData();
-  // }, [userId, navigate]);
+  const fetchUserPosts = async () => {
+    if (!userId) return;
 
-  const handlePostSubmit = (e) => {
-    e.preventDefault();
-    if (!newPost.trim()) return;
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
 
-    const post = {
-      id: posts.length + 1,
-      username: "currentUser",
-      content: newPost,
-      likes: 0,
-      comments: [],
+      const response = await fetch("http://localhost:5001/posts", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch posts");
+
+      const data = await response.json();
+
+      const userPosts = data.filter((post) => post.author._id === userId);
+
+      setPosts(userPosts);
+    } catch (error) {
+      setError("Error fetching posts");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!loggedInUserId) {
+      navigate("/login");
+      return;
+    }
+
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
+
+        const response = await fetch(`http://localhost:5001/users/${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch user data");
+
+        const data = await response.json();
+        setUser(data);
+      } catch (error) {
+        setError("Error fetching user data");
+      }
     };
 
-    setPosts([post, ...posts]);
-    setNewPost("");
+    fetchUserData();
+    fetchUserPosts();
+  }, []);
+
+  const handleLike = async (postId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("You must be logged in to like posts.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:5001/posts/${postId}/like`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to like the post");
+
+      fetchUserPosts();
+    } catch (error) {
+      console.error("Error while liking post:", error);
+    }
+  };
+
+  const handleCommentSubmit = async (postId, e) => {
+    e.preventDefault();
+
+    const token = localStorage.getItem("token");
+    const userId = loggedInUserId;
+
+    if (!token) {
+      alert("You must be logged in to comment.");
+      return;
+    }
+
+    if (!newComment[postId]?.trim()) {
+      alert("Please enter a comment.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5001/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          text: newComment[postId],
+          post: postId,
+          user: userId,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to add comment");
+
+      setNewComment((prev) => ({
+        ...prev,
+        [postId]: "",
+      }));
+
+      setShowCommentForm(null);
+      fetchUserPosts();
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
+
+  const toggleCommentForm = (postId) => {
+    setShowCommentForm(postId === showCommentForm ? null : postId);
   };
   console.log(user);
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
@@ -91,19 +188,19 @@ function Profile() {
           </div>
           <div className="mt-4 md:mt-0 md:ml-8 text-center md:text-left">
             <h2 className="text-2xl md:text-3xl font-semibold mb-2">
-              {userId.username || "John"} {user.lastname || "Doe"}
+              {user.username || "User"}
             </h2>
-            <h4 className="text-lg ">{user.location || "Berlin"}</h4>
-            <h4 className="text-lg">{user.role || "Web Developer"}</h4>
+            <h4 className="text-lg ">{user.location || "Please add your location"}</h4>
             <p className="mt-4 ">
               {user.bio || "This user has not updated their bio yet."}
             </p>
-            <button
-              onClick={() => navigate("/edit-profile")}
-              className="mt-4 px-4 py-2 bg-(--tertiary) text-white rounded-md hover:bg-blue-600"
-            >
-              Edit Profile
-            </button>
+            {loggedInUserId === userId && (
+              <button
+                onClick={() => navigate("/edit-profile")}
+                className="mt-4 px-4 py-2 bg-(--tertiary) text-white rounded-md hover:bg-blue-600"
+              >
+                Edit Profile
+              </button>
           </div>
         </div>
 
@@ -118,52 +215,23 @@ function Profile() {
 
           {/* Posts List */}
           <div className="space-y-6">
-            {posts.length > 0 ? (
-              posts.map((post) => (
-                <div
-                  key={post.id}
-                  className="bg-(--secondary) rounded-lg shadow-md p-4"
-                >
-                  <div className="flex items-center mb-4">
-                    <div className="w-10 h-10 rounded-full bg-blue-400 dark:bg-purple-500 flex items-center justify-center text-white">
-                      {post.username[0].toUpperCase()}
-                    </div>
-                    <span className="ml-2 font-medium">{post.username}</span>
-                  </div>
-                  <p className="mb-4">{post.content}</p>
-                  {post.image && (
-                    <img
-                      src={post.image}
-                      alt="Post content"
-                      className="rounded-md w-full mb-4 object-cover"
-                    />
-                  )}
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
-                    <button className="flex items-center space-x-1">
-                      <span>🩶</span>
-                      <span>{post.likes}</span>
-                    </button>
-                    <button className="flex items-center space-x-1">
-                      <span>💬</span>
-                      <span>{post.comments.length}</span>
-                    </button>
-                  </div>
-                  {post.comments.length > 0 && (
-                    <div className="border-t border-gray-200 dark:border-purple-700 p-4">
-                      {post.comments.map((comment) => (
-                        <div key={comment.id} className="text-sm">
-                          <span className="font-medium">
-                            {comment.username}:
-                          </span>{" "}
-                          {comment.content}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))
+            {posts.length === 0 ? (
+              <p>No posts available</p>
             ) : (
-              <div>No posts yet. Be the first to post!</div>
+              posts.map((post) => (
+                <Post
+                  key={post._id}
+                  post={post}
+                  handleLike={handleLike}
+                  showCommentForm={showCommentForm}
+                  toggleCommentForm={toggleCommentForm}
+                  newComment={newComment}
+                  setNewComment={setNewComment}
+                  handleCommentSubmit={handleCommentSubmit}
+                  userId={userId}
+                />
+              ))
+
             )}
           </div>
         </div>

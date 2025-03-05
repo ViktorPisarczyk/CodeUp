@@ -57,7 +57,6 @@ export default function Feed() {
       alert("You must be logged in to like posts.");
       return;
     }
-
     try {
       const response = await fetch(`${API_URL}/posts/${postId}/like`, {
         method: "POST",
@@ -259,7 +258,6 @@ export default function Feed() {
             </button>
           </div>
         </form>
-
         <div className="space-y-6">
           {posts.length === 0 ? (
             <p>No posts available</p>
