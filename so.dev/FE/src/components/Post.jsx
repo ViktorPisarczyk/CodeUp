@@ -4,6 +4,9 @@ import { Link } from "react-router-dom";
 import { BsThreeDots } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
 import { jwtDecode } from "jwt-decode";
+import { SlBubbles } from "react-icons/sl";
+import { CiHeart } from "react-icons/ci";
+import { FaHeart } from "react-icons/fa";
 
 const Post = ({
   post,
@@ -13,11 +16,9 @@ const Post = ({
   newComment,
   setNewComment,
   handleCommentSubmit,
+  fetchPosts,
   onEdit,
-  onReport,
-  onCommentDelete,
   onCommentEdit,
-  onCommentReport,
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeCommentDropdown, setActiveCommentDropdown] = useState(null);
@@ -51,25 +52,102 @@ const Post = ({
 
   const onDelete = async (postId) => {
     try {
+      const confirmDelete = window.confirm(
+        "Are you sure you want to delete this post?"
+      );
+      if (!confirmDelete) return;
+
       const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You need to be logged in to delete a post.");
+        return;
+      }
+
       const response = await fetch(`http://localhost:5001/posts/${postId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      const data = await response.json();
       if (!response.ok) {
+        const data = await response.json();
         throw new Error(data.message || "Failed to delete post");
       }
 
       alert("Post deleted successfully!");
+
+      fetchPosts();
     } catch (error) {
       console.error("Error deleting post:", error);
+      alert(error.message);
+    }
+  };
+
+  const onReport = async () => {
+    try {
+      const confirmDelete = window.confirm(
+        "Are you sure you want to report this post?"
+      );
+      if (!confirmDelete) return;
+
+      alert("Post reported successfully!");
+      fetchPosts();
+    } catch (error) {
+      console.error("Error reporting post:", error);
+      alert(error.message);
+    }
+  };
+
+  const onCommentDelete = async (commentId) => {
+    try {
+      const confirmDelete = window.confirm(
+        "Are you sure you want to delete this comment?"
+      );
+      if (!confirmDelete) return;
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You need to be logged in to delete a comment.");
+        return;
+      }
+
+      const response = await fetch(
+        `http://localhost:5001/comments/${commentId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to delete comment");
+      }
+
+      alert("Comment deleted successfully!");
+      fetchPosts();
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      alert(error.message);
+    }
+  };
+
+  const onCommentReport = async () => {
+    try {
+      const confirmDelete = window.confirm(
+        "Are you sure you want to report this comment?"
+      );
+      if (!confirmDelete) return;
+
+      alert("Comment reported successfully!");
+      fetchPosts();
+    } catch (error) {
+      console.error("Error reporting comment:", error);
       alert(error.message);
     }
   };
@@ -166,11 +244,22 @@ const Post = ({
       )}
 
       <div className="flex items-center space-x-4">
-        <button onClick={() => handleLike(post._id)}>
-          {post.likes.includes(loggedInUserId) ? "❤️" : "🩶"} {post.likes.length}
+        <button
+          className="flex items-center gap-1"
+          onClick={() => handleLike(post._id)}
+        >
+          {post.likes.includes(loggedInUserId) ? (
+            <FaHeart className="text-red-500" />
+          ) : (
+            <CiHeart />
+          )}{" "}
+          {post.likes.length}
         </button>
-        <button onClick={() => toggleCommentForm(post._id)}>
-          💬 {post.comments?.length || 0}
+        <button
+          className="flex items-center gap-1"
+          onClick={() => toggleCommentForm(post._id)}
+        >
+          <SlBubbles /> {post.comments?.length || 0}
         </button>
       </div>
 
@@ -271,7 +360,7 @@ const Post = ({
                           <button
                             className="w-full text-left px-4 py-2 hover:opacity-70"
                             onClick={() => {
-                              onCommentDelete(post._id, comment._id);
+                              onCommentDelete(comment._id);
                               setActiveCommentDropdown(null);
                             }}
                           >
@@ -337,6 +426,7 @@ Post.propTypes = {
   onCommentDelete: PropTypes.func.isRequired,
   onCommentEdit: PropTypes.func.isRequired,
   onCommentReport: PropTypes.func.isRequired,
+  fetchPosts: PropTypes.func.isRequired,
 };
 
 export default Post;
