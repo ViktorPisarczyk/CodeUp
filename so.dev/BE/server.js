@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
+import multer from "multer";
 
 // Import routes & middleware
 import { userRouter } from "./routes/userRouter.js";
@@ -13,6 +14,7 @@ import { errorHandler, notFound } from "./middlewares/errors.js";
 import { authRouter } from "./routes/authRouter.js";
 
 const app = express();
+const upload = multer({ dest: "uploads/" });
 
 app.use(
   cors({

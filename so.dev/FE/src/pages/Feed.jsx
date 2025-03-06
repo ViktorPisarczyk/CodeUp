@@ -91,6 +91,7 @@ export default function Feed() {
 
     const formData = new FormData();
     formData.append("content", newPost);
+
     if (imageFile) {
       formData.append("image", imageFile); // Add image if exists
     }
