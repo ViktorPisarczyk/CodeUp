@@ -10,6 +10,7 @@ import { jwtDecode } from "jwt-decode";
 import Toggle from "./Toggle";
 import ChatBot from "./ChatBot";
 import onlyLogoLM from "../assets/onlyLogoLM.png";
+import onlyLogoDM from "../assets/onlyLogoDM.png";
 
 const AsideMenu = () => {
   const navigate = useNavigate();
@@ -47,9 +48,9 @@ const AsideMenu = () => {
   const loggedInUserId = getUserIdFromToken();
 
   return (
-    <div className="flex flex-col sticky max-w-50 h-screen top-0 bg-(--secondary)">
+    <div className="flex flex-col sticky w-50 h-screen top-0 bg-(--secondary)">
       <img
-        src={onlyLogoLM}
+        src={darkMode ? onlyLogoDM : onlyLogoLM}
         alt="logo"
         className="size-20 self-center mt-5 mb-10"
       />
