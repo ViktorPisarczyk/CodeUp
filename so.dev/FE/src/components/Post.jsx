@@ -13,8 +13,6 @@ const Post = ({
   newComment,
   setNewComment,
   handleCommentSubmit,
-  userId,
-  onDelete,
   onEdit,
   onReport,
   onCommentDelete,
@@ -50,6 +48,31 @@ const Post = ({
   };
 
   const loggedInUserId = getUserIdFromToken();
+
+  const onDelete = async (postId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5001/posts/${postId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to delete post");
+      }
+
+      alert("Post deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert(error.message);
+    }
+  };
 
   return (
     <div
