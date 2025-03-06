@@ -13,6 +13,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import EditProfile from "./pages/EditProfile";
 import Profile from "./pages/Profile.jsx";
+import { FaBars } from "react-icons/fa";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
