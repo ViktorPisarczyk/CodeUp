@@ -12,6 +12,7 @@ export default function MyContextProvider({ children }) {
     document.body.classList.toggle("dark", darkMode);
     document.body.classList.toggle("light", !darkMode);
   }, [darkMode]);
+
   return (
     <MyContext.Provider value={{ darkMode, setDarkMode }}>
       {children}
