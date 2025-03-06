@@ -9,10 +9,21 @@ import {
   commentOnPost,
 } from "../controllers/postController.js";
 import { protect } from "../middlewares/auth.js";
+import multer from "multer";
 
 export const postRouter = Router();
 
-postRouter.route("/").post(createPost);
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+const upload = multer({ storage: storage });
+
+postRouter.route("/").post(upload.single("image"), createPost);
 postRouter.route("/").get(getPosts);
 postRouter
   .route("/:id")

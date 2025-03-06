@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { BsThreeDots } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
+import { jwtDecode } from "jwt-decode";
 
 const Post = ({
   post,
@@ -12,8 +13,6 @@ const Post = ({
   newComment,
   setNewComment,
   handleCommentSubmit,
-  userId,
-  onDelete,
   onEdit,
   onReport,
   onCommentDelete,
@@ -35,14 +34,57 @@ const Post = ({
     setShowDropdown(false); // Close post dropdown if open
   };
 
+  const getUserIdFromToken = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+      const decoded = jwtDecode(token);
+      return decoded.id;
+    } catch (error) {
+      console.error("Invalid token", error);
+      return null;
+    }
+  };
+
+  const loggedInUserId = getUserIdFromToken();
+
+  const onDelete = async (postId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`http://localhost:5001/posts/${postId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to delete post");
+      }
+
+      alert("Post deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert(error.message);
+    }
+  };
+
   return (
     <div
       className="rounded-lg relative shadow-md p-4"
       style={{ backgroundColor: "var(--secondary)" }}
     >
-      <Link to={`/profile/${post.author._id}`}>
-        <div className="flex items-center mb-2">
-          <div className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white overflow-hidden">
+      <div className="flex items-center mb-2">
+        <Link
+          to={`/profile/${post.author._id}`}
+          className="w-10 h-10 rounded-full overflow-hidden"
+        >
+          <div className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white">
             {post.author?.profilePicture ? (
               <img
                 src={post.author.profilePicture}
@@ -57,11 +99,11 @@ const Post = ({
               </span>
             )}
           </div>
-          <span className="ml-2 font-bold">
-            {post.author ? post.author.username : "Unknown User"}
-          </span>
-        </div>
-      </Link>
+        </Link>
+        <Link to={`/profile/${post.author._id}`} className="ml-2 font-bold">
+          {post.author ? post.author.username : "Unknown User"}
+        </Link>
+      </div>
 
       <BsThreeDots
         className="absolute right-4 top-4 cursor-pointer hover:opacity-70"
@@ -78,8 +120,8 @@ const Post = ({
               onClick={() => setShowDropdown(false)}
             />
           </div>
-          {post.author?._id === userId ? (
-            <>
+          {post.author?._id === loggedInUserId ? (
+            <div>
               <button
                 className="w-full text-left px-4 py-2 hover:opacity-70"
                 onClick={() => {
@@ -98,7 +140,7 @@ const Post = ({
               >
                 Delete Post
               </button>
-            </>
+            </div>
           ) : (
             <button
               className="w-full text-left px-4 py-2 hover:opacity-70"
@@ -125,7 +167,7 @@ const Post = ({
 
       <div className="flex items-center space-x-4">
         <button onClick={() => handleLike(post._id)}>
-          {post.likes.includes(userId) ? "❤️" : "🩶"} {post.likes.length}
+          {post.likes.includes(loggedInUserId) ? "❤️" : "🩶"} {post.likes.length}
         </button>
         <button onClick={() => toggleCommentForm(post._id)}>
           💬 {post.comments?.length || 0}
@@ -156,32 +198,44 @@ const Post = ({
               Comment
             </button>
           </form>
+
           {post.comments && post.comments.length > 0 && (
             <div>
               {post.comments.map((comment) => (
                 <div
                   key={comment._id}
-
                   className="text-sm flex items-center space-x-2 mb-2 relative"
-
                 >
-                  <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white overflow-hidden">
-                    {comment.user?.profilePicture ? (
-                      <img
-                        src={comment.user.profilePicture}
-                        alt="Profile"
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    ) : (
-                      <span>
-                        {comment.user?.username
-                          ? comment.user.username[0].toUpperCase()
-                          : "?"}
-                      </span>
-                    )}
-                  </div>
+                  {/* Commenter Profile Picture */}
+                  <Link
+                    to={`/profile/${comment.user._id}`}
+                    className="w-8 h-8 rounded-full overflow-hidden"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white">
+                      {comment.user?.profilePicture ? (
+                        <img
+                          src={comment.user.profilePicture}
+                          alt="Profile"
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <span>
+                          {comment.user?.username
+                            ? comment.user.username[0].toUpperCase()
+                            : "?"}
+                        </span>
+                      )}
+                    </div>
+                  </Link>
 
-                  <span className="font-bold">{comment.user?.username}</span>
+                  {/* Commenter Username */}
+                  <Link
+                    to={`/profile/${comment.user._id}`}
+                    className="font-bold"
+                  >
+                    {comment.user?.username}
+                  </Link>
+
                   <span>{comment.text}</span>
 
                   <BsThreeDots
@@ -203,7 +257,7 @@ const Post = ({
                           onClick={() => setActiveCommentDropdown(null)}
                         />
                       </div>
-                      {comment.user?._id === userId ? (
+                      {comment.user?._id === loggedInUserId ? (
                         <>
                           <button
                             className="w-full text-left px-4 py-2 hover:opacity-70"

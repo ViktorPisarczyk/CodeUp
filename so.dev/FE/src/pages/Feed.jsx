@@ -4,8 +4,10 @@ import AsideMenu from "../components/AsideMenu";
 import Post from "../components/Post";
 import { jwtDecode } from "jwt-decode";
 import logoLM from "../assets/logoLM.png";
+
 import logoDM from "../assets/logoDM.png";
 import { MyContext } from "../context/ThemeContext";
+
 
 const API_URL = "http://localhost:5001";
 
@@ -93,6 +95,7 @@ export default function Feed() {
 
     const formData = new FormData();
     formData.append("content", newPost);
+
     if (imageFile) {
       formData.append("image", imageFile); // Add image if exists
     }

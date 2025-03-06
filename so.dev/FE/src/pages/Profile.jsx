@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
 import { jwtDecode } from "jwt-decode";
@@ -8,8 +8,6 @@ function Profile() {
   const { id } = useParams();
   const [user, setUser] = useState({});
   const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [showCommentForm, setShowCommentForm] = useState(null);
   const [newComment, setNewComment] = useState({});
 
@@ -50,9 +48,7 @@ function Profile() {
 
       setPosts(userPosts);
     } catch (error) {
-      setError("Error fetching posts");
-    } finally {
-      setLoading(false);
+      console.error("Error fetching posts", error);
     }
   };
 
@@ -76,17 +72,16 @@ function Profile() {
         });
 
         if (!response.ok) throw new Error("Failed to fetch user data");
-
         const data = await response.json();
         setUser(data);
       } catch (error) {
-        setError("Error fetching user data");
+        console.error("Error fetching user data", error);
       }
     };
 
     fetchUserData();
     fetchUserPosts();
-  }, []);
+  }, [id]);
 
   const handleLike = async (postId) => {
     const token = localStorage.getItem("token");
@@ -162,9 +157,6 @@ function Profile() {
   const toggleCommentForm = (postId) => {
     setShowCommentForm(postId === showCommentForm ? null : postId);
   };
-  console.log(user);
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
 
   return (
     <div className="flex flex-row bg-(--primary)">
