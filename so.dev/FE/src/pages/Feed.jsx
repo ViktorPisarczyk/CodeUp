@@ -272,6 +272,7 @@ export default function Feed() {
                 setNewComment={setNewComment}
                 handleCommentSubmit={handleCommentSubmit}
                 userId={userId}
+                fetchPosts={fetchPosts}
               />
             ))
           )}

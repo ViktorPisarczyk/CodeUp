@@ -105,21 +105,22 @@ export const deleteComment = async (req, res, next) => {
       return res.status(404).json({ message: "Comment not found" });
     }
 
-    if (
-      comment.user.toString() !== req.token.id &&
-      req.token.role !== "admin"
-    ) {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized: No user found" });
+    }
+
+    if (comment.user.toString() !== req.user && req.user.role !== "admin") {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
     await comment.deleteOne();
-
     await Post.findByIdAndUpdate(comment.post, {
       $pull: { comments: comment._id },
     });
 
     res.status(200).json({ message: "Comment deleted successfully" });
   } catch (error) {
+    console.error("Error in deleteComment:", error);
     next(error);
   }
 };
