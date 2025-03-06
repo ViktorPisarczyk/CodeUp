@@ -49,7 +49,7 @@ const EditProfile = () => {
   return (
     <div className="flex">
       <AsideMenu />
-      <div className="bg-(--primary) h-screen w-screen flex flex-col justify-center items-center">
+      <div className="bg-(--primary) h-screen w-full flex flex-col justify-center items-center">
         <h2 className="text-(--tertiary) text-3xl font-bold mb-5">
           Edit Profile
         </h2>
@@ -184,7 +184,7 @@ const EditProfile = () => {
           <button
             onClick={() => navigate(`/profile/${loggedInUserId}`)}
             type="submit"
-            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm  hover:bg-(--primary) focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500   bg-(--primary) hover:text-(--quaternary)"
+            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm  hover:bg-(--primary) focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500   bg-(--tertiary) hover:text-(--quaternary)"
           >
             Save Changes
           </button>

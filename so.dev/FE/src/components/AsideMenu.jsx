@@ -48,7 +48,7 @@ const AsideMenu = () => {
   const loggedInUserId = getUserIdFromToken();
 
   return (
-    <div className="flex flex-col sticky w-50 h-screen top-0 bg-(--secondary)">
+    <div className="flex flex-col sticky w-45 min-w-45 h-screen top-0 bg-(--secondary)">
       <img
         src={darkMode ? onlyLogoDM : onlyLogoLM}
         alt="logo"
