@@ -112,7 +112,8 @@ export const updatePost = async (req, res, next) => {
 
 export const deletePost = async (req, res, next) => {
   try {
-    const userId = req.token.id;
+    const userId = req.user;
+
     const post = await Post.findById(req.params.id);
 
     if (!post) {
