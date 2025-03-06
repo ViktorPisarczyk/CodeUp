@@ -207,8 +207,8 @@ export default function Feed() {
             value={newPost}
             onChange={(e) => setNewPost(e.target.value)}
             placeholder="What's on your mind?"
-            className="w-full p-2 rounded-md border-gray-300 focus:border-blue-400 focus:ring-blue-400"
-            style={{ backgroundColor: "var(--tertiary)" }}
+            className="w-full p-2 rounded-md text-black border-gray-300 focus:border-blue-400 focus:ring-blue-400"
+            style={{ backgroundColor: "var(--textarea)" }}
             rows="3"
           />
           <div className="mt-2 flex items-center justify-between">
@@ -255,8 +255,8 @@ export default function Feed() {
               value={codeSnippet}
               onChange={(e) => setCodeSnippet(e.target.value)}
               placeholder="Add your code snippet"
-              className="w-full p-2 mt-2 rounded-md border-gray-300 focus:border-blue-400 focus:ring-blue-400"
-              style={{ backgroundColor: "var(--tertiary)" }}
+              className="w-full p-2 mt-2 text-black rounded-md border-gray-300 focus:border-blue-400 focus:ring-blue-400"
+              style={{ backgroundColor: "var(--textarea)" }}
               rows="4"
             />
           )}
