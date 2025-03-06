@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import Toggle from "../components/Toggle";
+
 import logoLM from "../assets/logoLM.png";
 
 export default function ForgotPassword() {
@@ -30,7 +30,7 @@ export default function ForgotPassword() {
         <h1 className="text-3xl font-bold text-center mb-8 text-(--text)">
           Forgot Password
         </h1>
-        <Toggle />
+
         <h2 className="text-sm font-medium text-center mb-8 text-(--text)">
           Enter your email to reset the password
         </h2>
