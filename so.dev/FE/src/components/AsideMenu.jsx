@@ -175,7 +175,9 @@ const AsideMenu = () => {
             <button className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full">
               About
             </button>
+            
             <Toggle />
+            
           </motion.div>
           <ChatBot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
           <button
@@ -193,13 +195,20 @@ const AsideMenu = () => {
 
       {/* Overlay for mobile */}
       {menuToggle && (
+        // <motion.div
+        //   initial={{ opacity: 0 }}
+        //   animate={{ opacity: 0.5 }}
+        //   exit={{ opacity: 0 }}
+        //   onClick={handleMenuToggle}
+        //   className="fixed inset-0 bg-black z-30 sm:hidden"
+        // />
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
-          exit={{ opacity: 0 }}
-          onClick={handleMenuToggle}
-          className="fixed inset-0 bg-black z-30 sm:hidden"
-        />
+  initial={{ backdropFilter: "blur(0px)" }}
+  animate={{ backdropFilter: "blur(5px)" }}
+  exit={{ backdropFilter: "blur(0px)" }}
+  onClick={handleMenuToggle}
+  className="fixed inset-0 bg-black/30 z-30 sm:hidden backdrop-blur-md"
+/>
       )}
     </>
   );
