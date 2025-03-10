@@ -129,7 +129,7 @@ const AsideMenu = () => {
           }}
           exit={{ x: window.innerWidth < 640 ? "-100%" : 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className={`flex flex-col fixed sm:sticky w-64 sm:w-50 h-screen top-0 left-0 bg-(--secondary) z-4 
+          className={`flex flex-col fixed sm:sticky w-64 sm:w-50 h-screen top-0 left-0 bg-(--secondary) z-31 
             ${menuToggle ? "block" : "hidden sm:flex"}`}
         >
           <Link to={`/feed`} className="size-20 self-center mt-10 mb-10">
@@ -138,7 +138,7 @@ const AsideMenu = () => {
 
           <Link
             to={`/profile/${loggedInUserId}`}
-            className="w-20 h-20 rounded-full bg-blue-400 flex items-center self-center text-center justify-center text-white"
+            className="w-20 h-20 rounded-full  bg-blue-400 flex items-center self-center text-center justify-center text-white"
           >
             {userData?.profilePicture ? (
               <img
@@ -153,7 +153,7 @@ const AsideMenu = () => {
             )}
           </Link>
 
-          <p className="text-center mt-4 mb-2">
+          <p className="text-center mt-4 mb-10">
             Welcome back, <br />
             <Link to={`/profile/${loggedInUserId}`}>
               <strong> {userData.username}</strong>!
@@ -248,13 +248,6 @@ const AsideMenu = () => {
 
       {/* Overlay for mobile */}
       {menuToggle && (
-        // <motion.div
-        //   initial={{ opacity: 0 }}
-        //   animate={{ opacity: 0.5 }}
-        //   exit={{ opacity: 0 }}
-        //   onClick={handleMenuToggle}
-        //   className="fixed inset-0 bg-black z-30 sm:hidden"
-        // />
         <motion.div
           initial={{ backdropFilter: "blur(0px)" }}
           animate={{ backdropFilter: "blur(5px)" }}

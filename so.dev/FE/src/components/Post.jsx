@@ -245,11 +245,11 @@ const Post = ({
       {showDropdown && (
         <>
           <div
-            className="fixed inset-0 z-10"
+            className="fixed inset-0 z-32"
             onClick={() => setShowDropdown(false)}
           />
           <div
-            className="absolute right-4 top-8 rounded-lg shadow-lg py-2 z-20"
+            className="absolute right-4 top-8 rounded-lg shadow-lg py-2 z-33"
             style={{ backgroundColor: "var(--tertiary)", minWidth: "150px" }}
           >
             <div className="flex justify-end px-2">
@@ -393,7 +393,7 @@ const Post = ({
                     {activeCommentDropdown === comment._id && (
                       <>
                         <div
-                          className="fixed inset-0 z-10"
+                          className="fixed inset-0 z-32"
                           onClick={() => setActiveCommentDropdown(null)}
                         />
                         <div
