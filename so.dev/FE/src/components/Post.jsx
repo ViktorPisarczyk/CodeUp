@@ -188,49 +188,55 @@ const Post = ({
         onClick={toggleDropdown}
       />
       {showDropdown && (
-        <div
-          className="absolute right-4 top-6 rounded-lg shadow-lg py-2 z-10"
-          style={{ backgroundColor: "var(--tertiary)", minWidth: "150px" }}
-        >
-          <div className="flex justify-end px-2">
-            <IoClose
-              className="cursor-pointer hover:opacity-70 text-xl"
-              onClick={() => setShowDropdown(false)}
-            />
-          </div>
-          {post.author?._id === loggedInUserId ? (
-            <div>
-              <button
-                className="w-full text-left px-4 py-2 hover:opacity-70"
-                onClick={() => {
-                  onEdit(post._id);
-                  setShowDropdown(false);
-                }}
-              >
-                Edit Post
-              </button>
-              <button
-                className="w-full text-left px-4 py-2 hover:opacity-70"
-                onClick={() => {
-                  onDelete(post._id);
-                  setShowDropdown(false);
-                }}
-              >
-                Delete Post
-              </button>
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setShowDropdown(false)}
+          />
+          <div
+            className="absolute right-4 top-8 rounded-lg shadow-lg py-2 z-20"
+            style={{ backgroundColor: "var(--tertiary)", minWidth: "150px" }}
+          >
+            <div className="flex justify-end px-2">
+              <IoClose
+                className="cursor-pointer hover:opacity-70 text-xl"
+                onClick={() => setShowDropdown(false)}
+              />
             </div>
-          ) : (
-            <button
-              className="w-full text-left px-4 py-2 hover:opacity-70"
-              onClick={() => {
-                onReport(post._id);
-                setShowDropdown(false);
-              }}
-            >
-              Report Post
-            </button>
-          )}
-        </div>
+            {post.author?._id === loggedInUserId ? (
+              <div>
+                <button
+                  className="w-full text-left px-4 py-2 hover:opacity-70"
+                  onClick={() => {
+                    onEdit(post._id);
+                    setShowDropdown(false);
+                  }}
+                >
+                  Edit Post
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 hover:opacity-70"
+                  onClick={() => {
+                    onDelete(post._id);
+                    setShowDropdown(false);
+                  }}
+                >
+                  Delete Post
+                </button>
+              </div>
+            ) : (
+              <button
+                className="w-full text-left px-4 py-2 hover:opacity-70"
+                onClick={() => {
+                  onReport(post._id);
+                  setShowDropdown(false);
+                }}
+              >
+                Report Post
+              </button>
+            )}
+          </div>
+        </>
       )}
 
       {/* Post Content */}
@@ -336,52 +342,58 @@ const Post = ({
                     </div>
 
                     {activeCommentDropdown === comment._id && (
-                      <div
-                        className="absolute right-0 top-6 rounded-lg shadow-lg py-2 z-10"
-                        style={{
-                          backgroundColor: "var(--tertiary)",
-                          minWidth: "150px",
-                        }}
-                      >
-                        <div className="flex justify-end px-2">
-                          <IoClose
-                            className="cursor-pointer hover:opacity-70 text-xl"
-                            onClick={() => setActiveCommentDropdown(null)}
-                          />
+                      <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setActiveCommentDropdown(null)}
+                        />
+                        <div
+                          className="absolute right-0 top-6 rounded-lg shadow-lg py-2 z-20"
+                          style={{
+                            backgroundColor: "var(--tertiary)",
+                            minWidth: "150px",
+                          }}
+                        >
+                          <div className="flex justify-end px-2">
+                            <IoClose
+                              className="cursor-pointer hover:opacity-70 text-xl"
+                              onClick={() => setActiveCommentDropdown(null)}
+                            />
+                          </div>
+                          {comment.user?._id === loggedInUserId ? (
+                            <>
+                              <button
+                                className="w-full text-left px-4 py-2 hover:opacity-70"
+                                onClick={() => {
+                                  onCommentEdit(post._id, comment._id);
+                                  setActiveCommentDropdown(null);
+                                }}
+                              >
+                                Edit Comment
+                              </button>
+                              <button
+                                className="w-full text-left px-4 py-2 hover:opacity-70"
+                                onClick={() => {
+                                  onCommentDelete(comment._id);
+                                  setActiveCommentDropdown(null);
+                                }}
+                              >
+                                Delete Comment
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              className="w-full text-left px-4 py-2 hover:opacity-70"
+                              onClick={() => {
+                                onCommentReport(post._id, comment._id);
+                                setActiveCommentDropdown(null);
+                              }}
+                            >
+                              Report Comment
+                            </button>
+                          )}
                         </div>
-                        {comment.user?._id === loggedInUserId ? (
-                          <>
-                            <button
-                              className="w-full text-left px-4 py-2 hover:opacity-70"
-                              onClick={() => {
-                                onCommentEdit(post._id, comment._id);
-                                setActiveCommentDropdown(null);
-                              }}
-                            >
-                              Edit Comment
-                            </button>
-                            <button
-                              className="w-full text-left px-4 py-2 hover:opacity-70"
-                              onClick={() => {
-                                onCommentDelete(comment._id);
-                                setActiveCommentDropdown(null);
-                              }}
-                            >
-                              Delete Comment
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            className="w-full text-left px-4 py-2 hover:opacity-70"
-                            onClick={() => {
-                              onCommentReport(post._id, comment._id);
-                              setActiveCommentDropdown(null);
-                            }}
-                          >
-                            Report Comment
-                          </button>
-                        )}
-                      </div>
+                      </>
                     )}
                   </div>
                 </div>
