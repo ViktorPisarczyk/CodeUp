@@ -14,6 +14,7 @@ import ResetPassword from "./pages/ResetPassword.jsx";
 import EditProfile from "./pages/EditProfile";
 import Profile from "./pages/Profile.jsx";
 
+
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
 
