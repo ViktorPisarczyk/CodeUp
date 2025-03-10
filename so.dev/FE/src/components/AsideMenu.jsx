@@ -73,9 +73,7 @@ const AsideMenu = () => {
   };
 
   return (
-
     <>
-
       <button
         onClick={handleMenuToggle}
         className="block sm:hidden fixed top-4 right-4 z-50"
@@ -175,9 +173,8 @@ const AsideMenu = () => {
             <button className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full">
               About
             </button>
-            
+
             <Toggle />
-            
           </motion.div>
           <ChatBot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
           <button
@@ -203,12 +200,12 @@ const AsideMenu = () => {
         //   className="fixed inset-0 bg-black z-30 sm:hidden"
         // />
         <motion.div
-  initial={{ backdropFilter: "blur(0px)" }}
-  animate={{ backdropFilter: "blur(5px)" }}
-  exit={{ backdropFilter: "blur(0px)" }}
-  onClick={handleMenuToggle}
-  className="fixed inset-0 bg-black/30 z-30 sm:hidden backdrop-blur-md"
-/>
+          initial={{ backdropFilter: "blur(0px)" }}
+          animate={{ backdropFilter: "blur(5px)" }}
+          exit={{ backdropFilter: "blur(0px)" }}
+          onClick={handleMenuToggle}
+          className="fixed inset-0 bg-black/30 z-30 sm:hidden backdrop-blur-md"
+        />
       )}
     </>
   );

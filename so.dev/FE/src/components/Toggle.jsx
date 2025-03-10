@@ -1,19 +1,22 @@
-
 import { useContext } from "react";
 import { MyContext } from "../context/ThemeContext";
-import DarkModeToggle from "react-dark-mode-toggle";
+import "./Toggle.css";
 
-const Toggle = () => {
+function Toggle() {
   const { darkMode, setDarkMode } = useContext(MyContext);
+
   return (
-    <>
-    <DarkModeToggle
-      onChange={() => setDarkMode((prev) => !prev)}
-      checked={darkMode}
-      size={50}
-      className="ml-2"
-    />
-    </>
+    <div className="wrapper">
+      <label className="switch">
+        <input
+          type="checkbox"
+          onChange={() => setDarkMode((prev) => !prev)}
+          checked={darkMode}
+        />
+        <span className="slider round"></span>
+      </label>
+    </div>
   );
-};
+}
+
 export default Toggle;
