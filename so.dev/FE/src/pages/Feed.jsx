@@ -31,6 +31,21 @@ export default function Feed() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const fetchImages = async () => {
+    try {
+      const response = await fetch(`${API_URL}/images`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch images");
+      }
+      const data = await response.json();
+      return data; // Assuming each image object has a `url` property
+    } catch (error) {
+      console.error("Error fetching images:", error);
+      return [];
+    }
+  };
+  fetchImages();
+
 
   const fetchPosts = async () => {
     const token = localStorage.getItem("token");
