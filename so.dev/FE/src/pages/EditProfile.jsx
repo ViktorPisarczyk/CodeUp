@@ -62,7 +62,9 @@ const EditProfile = () => {
               className="block text-sm font-medium"
               htmlFor="profilePicture"
             >
-              + Change Picture
+              <button className="mb-2 py-2 px-4 border border-transparent rounded-md shadow-sm  hover:bg-(--primary) focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500   bg-(--tertiary) hover:text-(--quaternary)">
+                Upload Picture
+              </button>
             </label>
             <input
               type="file"
@@ -146,21 +148,6 @@ const EditProfile = () => {
               value={user.location}
               onChange={handleInputChange}
               placeholder="Enter your location"
-              className="mt-1 mb-5 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring-blue-400 bg-white text-black"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium" htmlFor="role">
-              Role
-            </label>
-            <input
-              type="text"
-              id="role"
-              name="role"
-              value={user.role}
-              onChange={handleInputChange}
-              placeholder="Enter your role"
               className="mt-1 mb-5 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring-blue-400 bg-white text-black"
             />
           </div>
