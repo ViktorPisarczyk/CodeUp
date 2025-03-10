@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-
+import { useState, useContext } from "react";
 import logoLM from "../assets/logoLM.png";
+import logoDM from "../assets/logoDM.png";
+import { MyContext } from "../context/ThemeContext";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -21,10 +22,13 @@ export default function ForgotPassword() {
 
     navigate("/reset-password");
   };
+
+  const { darkMode } = useContext(MyContext);
+
   return (
     <div className="min-h-screen flex flex-col items-center bg-(--primary)">
       <div>
-        <img src={logoLM} alt="logo" className="w-200" />
+        <img src={darkMode ? logoDM : logoLM} alt="logo" className="w-200" />
       </div>
       <div className=" bg-(--tertiary) p-8 rounded-lg shadow-xl w-full max-w-md">
         <h1 className="text-3xl font-bold text-center mb-8 text-(--text)">
