@@ -138,7 +138,7 @@ const AsideMenu = () => {
 
           <Link
             to={`/profile/${loggedInUserId}`}
-            className="w-30 h-30 rounded-full bg-blue-400 flex items-center self-center text-center justify-center text-white"
+            className="w-20 h-20 rounded-full bg-blue-400 flex items-center self-center text-center justify-center text-white"
           >
             {userData?.profilePicture ? (
               <img

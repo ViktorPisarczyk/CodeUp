@@ -29,21 +29,6 @@ export default function Feed() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const fetchImages = async () => {
-    try {
-      const response = await fetch(`${API_URL}/images`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch images");
-      }
-      const data = await response.json();
-      return data; // Assuming each image object has a `url` property
-    } catch (error) {
-      console.error("Error fetching images:", error);
-      return [];
-    }
-  };
-  fetchImages();
-
 
   const fetchPosts = async () => {
     const token = localStorage.getItem("token");
@@ -230,7 +215,7 @@ export default function Feed() {
               <button
                 type="button"
                 onClick={() => document.getElementById("image-upload").click()}
-                className="px-4 py-2 rounded-md hover:opacity-80"
+                className="px-4 py-2 text-white rounded-md hover:opacity-80"
                 style={{ backgroundColor: "var(--tertiary)" }}
               >
                 Attach Picture
@@ -245,7 +230,7 @@ export default function Feed() {
               <button
                 type="button"
                 onClick={() => setIsCodeSnippetVisible(!isCodeSnippetVisible)} // Toggle the visibility of code snippet
-                className="px-4 py-2 rounded-md hover:opacity-80"
+                className="px-4 py-2 text-white rounded-md hover:opacity-80"
                 style={{ backgroundColor: "var(--tertiary)" }}
               >
                 Attach Code Snippet
@@ -255,7 +240,7 @@ export default function Feed() {
             {/* Post Button */}
             <button
               type="submit"
-              className="px-4 py-2 ml-3 rounded-md hover:opacity-80"
+              className="px-4 py-2 ml-3 text-white rounded-md hover:opacity-80"
               style={{ backgroundColor: "var(--tertiary)" }}
             >
               Post
