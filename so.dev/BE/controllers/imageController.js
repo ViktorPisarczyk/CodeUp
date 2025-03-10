@@ -6,10 +6,12 @@ export const uploadImage = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: "No image uploaded" });
     }
-
+      // Upload image to Cloudinary
+      const result = await cloudinary.uploader.upload(req.file.path);
     // Create new image entry in database
     const newImage = new Image({
-      imageUrl: req.file.path,
+      imageUrl:result.secure_url,
+      cloudinaryId:result.public_id
     });
 
     await newImage.save();
