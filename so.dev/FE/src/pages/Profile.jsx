@@ -161,9 +161,9 @@ function Profile() {
   return (
     <div className="flex flex-row bg-(--primary)">
       <AsideMenu />
-      <div className="flex flex-col m-auto w-full max-w-2xl px-4">
+      <div className="flex flex-col mx-auto  w-full max-w-2xl px-4">
         {/* Profile Section */}
-        <div className="flex flex-col md:flex-row pb-10 justify-center items-center relative rounded-xl p-5 my-10 bg-(--secondary)">
+        <div className="flex flex-col md:flex-row pb-10  items-center relative rounded-xl p-5 my-10 bg-(--secondary)">
           <div className="flex flex-col items-center md:items-start md:w-1/3">
             {/* Profile Picture */}
             <img
