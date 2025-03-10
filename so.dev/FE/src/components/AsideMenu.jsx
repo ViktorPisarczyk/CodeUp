@@ -24,7 +24,6 @@ const AsideMenu = () => {
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 640) {
-        // 640px is sm breakpoint in Tailwind
         setMenuToggle(true);
       }
     };
@@ -38,6 +37,14 @@ const AsideMenu = () => {
     // Cleanup
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Handle navigation and preserve menu state on larger screens
+  const handleNavigation = (path) => {
+    navigate(path);
+    if (window.innerWidth < 640) {
+      setMenuToggle(false);
+    }
+  };
 
   const logoutHandler = async () => {
     try {
@@ -83,9 +90,11 @@ const AsideMenu = () => {
 
       <AnimatePresence>
         <motion.div
-          initial={{ x: "-100%" }}
-          animate={{ x: menuToggle ? 0 : "-100%" }}
-          exit={{ x: "-100%" }}
+          initial={{ x: window.innerWidth < 640 ? "-100%" : 0 }}
+          animate={{
+            x: menuToggle ? 0 : window.innerWidth < 640 ? "-100%" : 0,
+          }}
+          exit={{ x: window.innerWidth < 640 ? "-100%" : 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className={`flex flex-col fixed sm:sticky w-64 sm:w-50 h-screen top-0 left-0 bg-(--secondary) z-40 
             ${menuToggle ? "block" : "hidden sm:flex"}`}
@@ -102,10 +111,7 @@ const AsideMenu = () => {
             alt="avatar"
           />
           <button
-            onClick={() => {
-              navigate("/feed");
-              setMenuToggle(false);
-            }}
+            onClick={() => handleNavigation("/feed")}
             className="flex items-center pl-5 h-10 hover:bg-(--primary) rounded-full"
           >
             <MdHome
@@ -116,10 +122,7 @@ const AsideMenu = () => {
             Home
           </button>
           <button
-            onClick={() => {
-              navigate(`/profile/${loggedInUserId}`);
-              setMenuToggle(false);
-            }}
+            onClick={() => handleNavigation(`/profile/${loggedInUserId}`)}
             className="flex items-center pl-5 h-10 hover:bg-(--primary) rounded-full"
           >
             <CgProfile
@@ -150,10 +153,7 @@ const AsideMenu = () => {
             className="overflow-hidden flex flex-col items-start pl-9"
           >
             <button
-              onClick={() => {
-                navigate("/edit-profile");
-                setMenuToggle(false);
-              }}
+              onClick={() => handleNavigation("/edit-profile")}
               className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full"
             >
               Edit Profile
@@ -178,9 +178,11 @@ const AsideMenu = () => {
           </motion.div>
           <ChatBot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
           <button
-            onClick={() => {
-              logoutHandler();
-              setMenuToggle(false);
+            onClick={async () => {
+              await logoutHandler();
+              if (window.innerWidth < 640) {
+                setMenuToggle(false);
+              }
             }}
             className="flex absolute bottom-0 left-3 items-center justify-center h-10 hover:bg-(--primary) rounded-full"
           >

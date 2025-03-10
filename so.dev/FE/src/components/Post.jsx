@@ -291,95 +291,99 @@ const Post = ({
           {post.comments && post.comments.length > 0 && (
             <div>
               {post.comments.map((comment) => (
-                <div
-                  key={comment._id}
-                  className="text-sm flex items-center space-x-2 mb-2 relative"
-                >
-                  {/* Commenter Profile Picture */}
-                  <Link
-                    to={`/profile/${comment.user._id}`}
-                    className="w-8 h-8 rounded-full overflow-hidden"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white">
-                      {comment.user?.profilePicture ? (
-                        <img
-                          src={comment.user.profilePicture}
-                          alt="Profile"
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      ) : (
-                        <span>
-                          {comment.user?.username
-                            ? comment.user.username[0].toUpperCase()
-                            : "?"}
-                        </span>
-                      )}
-                    </div>
-                  </Link>
-
-                  {/* Commenter Username */}
-                  <Link
-                    to={`/profile/${comment.user._id}`}
-                    className="font-bold"
-                  >
-                    {comment.user?.username}
-                  </Link>
-
-                  <span>{comment.text}</span>
-
-                  <BsThreeDots
-                    className="ml-2 cursor-pointer hover:opacity-70"
-                    onClick={() => toggleCommentDropdown(comment._id)}
+                <div key={comment._id}>
+                  <hr
+                    className="border-gray-400 my-4"
+                    style={{ opacity: 0.5 }}
                   />
+                  <div className="relative">
+                    <BsThreeDots
+                      className="absolute right-0 top-2 cursor-pointer hover:opacity-70"
+                      onClick={() => toggleCommentDropdown(comment._id)}
+                    />
+                    <div className="text-sm flex items-center space-x-2 mb-2">
+                      {/* Commenter Profile Picture */}
+                      <Link
+                        to={`/profile/${comment.user._id}`}
+                        className="w-8 h-8 rounded-full overflow-hidden"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white">
+                          {comment.user?.profilePicture ? (
+                            <img
+                              src={comment.user.profilePicture}
+                              alt="Profile"
+                              className="w-full h-full object-cover rounded-full"
+                            />
+                          ) : (
+                            <span>
+                              {comment.user?.username
+                                ? comment.user.username[0].toUpperCase()
+                                : "?"}
+                            </span>
+                          )}
+                        </div>
+                      </Link>
 
-                  {activeCommentDropdown === comment._id && (
-                    <div
-                      className="absolute left-0 top-0 rounded-lg shadow-lg py-2 z-10"
-                      style={{
-                        backgroundColor: "var(--tertiary)",
-                        minWidth: "150px",
-                      }}
-                    >
-                      <div className="flex justify-end px-2">
-                        <IoClose
-                          className="cursor-pointer hover:opacity-70 text-xl"
-                          onClick={() => setActiveCommentDropdown(null)}
-                        />
-                      </div>
-                      {comment.user?._id === loggedInUserId ? (
-                        <>
-                          <button
-                            className="w-full text-left px-4 py-2 hover:opacity-70"
-                            onClick={() => {
-                              onCommentEdit(post._id, comment._id);
-                              setActiveCommentDropdown(null);
-                            }}
-                          >
-                            Edit Comment
-                          </button>
-                          <button
-                            className="w-full text-left px-4 py-2 hover:opacity-70"
-                            onClick={() => {
-                              onCommentDelete(comment._id);
-                              setActiveCommentDropdown(null);
-                            }}
-                          >
-                            Delete Comment
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          className="w-full text-left px-4 py-2 hover:opacity-70"
-                          onClick={() => {
-                            onCommentReport(post._id, comment._id);
-                            setActiveCommentDropdown(null);
-                          }}
-                        >
-                          Report Comment
-                        </button>
-                      )}
+                      {/* Commenter Username */}
+                      <Link
+                        to={`/profile/${comment.user._id}`}
+                        className="font-bold"
+                      >
+                        {comment.user?.username}
+                      </Link>
+
+                      <span>{comment.text}</span>
                     </div>
-                  )}
+
+                    {activeCommentDropdown === comment._id && (
+                      <div
+                        className="absolute right-0 top-6 rounded-lg shadow-lg py-2 z-10"
+                        style={{
+                          backgroundColor: "var(--tertiary)",
+                          minWidth: "150px",
+                        }}
+                      >
+                        <div className="flex justify-end px-2">
+                          <IoClose
+                            className="cursor-pointer hover:opacity-70 text-xl"
+                            onClick={() => setActiveCommentDropdown(null)}
+                          />
+                        </div>
+                        {comment.user?._id === loggedInUserId ? (
+                          <>
+                            <button
+                              className="w-full text-left px-4 py-2 hover:opacity-70"
+                              onClick={() => {
+                                onCommentEdit(post._id, comment._id);
+                                setActiveCommentDropdown(null);
+                              }}
+                            >
+                              Edit Comment
+                            </button>
+                            <button
+                              className="w-full text-left px-4 py-2 hover:opacity-70"
+                              onClick={() => {
+                                onCommentDelete(comment._id);
+                                setActiveCommentDropdown(null);
+                              }}
+                            >
+                              Delete Comment
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            className="w-full text-left px-4 py-2 hover:opacity-70"
+                            onClick={() => {
+                              onCommentReport(post._id, comment._id);
+                              setActiveCommentDropdown(null);
+                            }}
+                          >
+                            Report Comment
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
