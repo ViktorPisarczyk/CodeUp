@@ -9,8 +9,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { jwtDecode } from "jwt-decode";
 import Toggle from "./Toggle";
 import ChatBot from "./ChatBot";
-import onlyLogoLM from "../assets/onlyLogoLM.png";
-import onlyLogoDM from "../assets/onlyLogoDM.png";
+import onlyLogoLM from "../assets/NewOnlyLogoLM.png";
+import onlyLogoDM from "../assets/NewOnlyLogoDM.png";
 import { FaBars } from "react-icons/fa";
 
 const AsideMenu = () => {

@@ -3,11 +3,9 @@ import { useNavigate } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
 import Post from "../components/Post";
 import { jwtDecode } from "jwt-decode";
-import logoLM from "../assets/logoLM.png";
-
-import logoDM from "../assets/logoDM.png";
+import logoLM from "../assets/newLogoLM.png";
+import logoDM from "../assets/newLogoDM.png";
 import { MyContext } from "../context/ThemeContext";
-
 
 const API_URL = "http://localhost:5001";
 
