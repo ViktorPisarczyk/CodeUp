@@ -96,7 +96,7 @@ const AsideMenu = () => {
           }}
           exit={{ x: window.innerWidth < 640 ? "-100%" : 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className={`flex flex-col fixed sm:sticky w-64 sm:w-50 h-screen top-0 left-0 bg-(--secondary) z-40 
+          className={`flex flex-col fixed sm:sticky w-64 sm:w-50 h-screen top-0 left-0 bg-(--secondary) z-4 
             ${menuToggle ? "block" : "hidden sm:flex"}`}
         >
           <img
