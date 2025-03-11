@@ -10,7 +10,6 @@ const EditProfile = () => {
     username: "",
     email: "",
     location: "",
-    role: "",
     bio: "",
     profilePicture: "",
   });
@@ -142,7 +141,7 @@ const EditProfile = () => {
             <label className="block text-sm font-medium" htmlFor="location">
               Location
             </label>
-            <textarea
+            <input
               id="location"
               name="location"
               value={user.location}
