@@ -9,6 +9,7 @@ import {
   updateUser,
 } from "../controllers/userController.js";
 import { protect } from "../middlewares/auth.js";
+import { uploadProfileImage } from "../config/cloudinaryConfig.js";
 
 export const userRouter = Router();
 
@@ -20,4 +21,4 @@ userRouter
   .route("/:id")
   .get(protect, getSingleUser)
   .delete(protect, deleteUser)
-  .patch(protect, updateUser);
+  .patch(protect, uploadProfileImage.single("profilePicture"), updateUser);

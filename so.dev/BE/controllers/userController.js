@@ -97,11 +97,17 @@ export const getSingleUser = async (req, res, next) => {
 
 export const updateUser = async (req, res, next) => {
   try {
-    let user = await User.findByIdAndUpdate(req.params.id, req.body, {
+    let updateData = req.body;
+
+    if (req.file) {
+      updateData.profilePicture = req.file.path;
+    }
+
+    const user = await User.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
     });
 
-    res.send({ message: "update successful", user });
+    res.send({ message: "Profile updated successfully", user });
   } catch (error) {
     next(error);
   }

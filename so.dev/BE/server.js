@@ -9,7 +9,6 @@ import multer from "multer";
 import { userRouter } from "./routes/userRouter.js";
 import { postRouter } from "./routes/postRouter.js";
 import { commentRouter } from "./routes/commentRouter.js";
-import { imageRouter } from "./routes/imageRouter.js";
 import { errorHandler, notFound } from "./middlewares/errors.js";
 import { authRouter } from "./routes/authRouter.js";
 
@@ -33,7 +32,6 @@ const PORT = process.env.PORT || 5001;
 app.use("/users", userRouter);
 app.use("/posts", postRouter);
 app.use("/comments", commentRouter);
-app.use("/images", imageRouter);
 app.use("/auth", authRouter);
 
 // Error Handling Middleware

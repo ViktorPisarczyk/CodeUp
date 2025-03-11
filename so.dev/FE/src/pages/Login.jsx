@@ -141,7 +141,7 @@ export default function Login() {
       <div>
         <img src={darkMode ? logoDM : logoLM} alt="logo" className="w-200" />
       </div>
-      <div className=" bg-(--tertiary) p-8 rounded-lg shadow-xl w-full max-w-md">
+      <div className=" bg-(--tertiary) p-8 rounded-lg shadow-xl w-full my-auto max-w-md">
         <h1 className="text-3xl font-bold text-center mb-8 text-(--text)">
           {isLogin ? "Welcome Back!" : "Join So.Dev"}
         </h1>
@@ -203,18 +203,16 @@ export default function Login() {
             onClick={() => navigate("/forgot-password")}
             className=" hover:text-(--primary)  "
           >
-            Forgot Password?
+            {isLogin ? "Forgot password?" : ""}
           </button>
         </div>
 
         <div className="mt-4 text-center">
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className=" hover:text-(--primary)  "
+            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm  hover:bg-(--primary) focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500   bg-(--secondary) hover:text-(--quaternary)"
           >
-            {isLogin
-              ? "Need an account? Sign up"
-              : "Already have an account? Sign in"}
+            {isLogin ? "Create an account" : "To the Login"}
           </button>
         </div>
       </div>
