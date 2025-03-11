@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import logoLM from "../assets/newLogoLM.png";
 import logoDM from "../assets/newLogoDM.png";
 import { MyContext } from "../context/ThemeContext";
+import Alert from "../components/Alert";
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -11,7 +12,12 @@ export default function Login() {
     password: "",
     username: "",
   });
+  const [alert, setAlert] = useState({ show: false, message: "", isSuccess: true });
   const navigate = useNavigate();
+
+  const closeAlert = () => {
+    setAlert({ show: false, message: "", isSuccess: true });
+  };
 
   const loginHandler = async (e) => {
     e.preventDefault();
@@ -40,21 +46,33 @@ export default function Login() {
         const errorData = await response.json();
 
         if (errorData.message === "Email not found") {
-          alert(
-            "The email you entered does not exist. Please check and try again."
-          );
+          setAlert({
+            show: true,
+            message: "The email you entered does not exist. Please check and try again.",
+            isSuccess: false
+          });
         } else if (errorData.message === "Incorrect password") {
-          alert("The password you entered is incorrect. Please try again.");
+          setAlert({
+            show: true,
+            message: "The password you entered is incorrect. Please try again.",
+            isSuccess: false
+          });
         } else {
-          alert(
-            "Login failed: " + (errorData.message || "Invalid credentials.")
-          );
+          setAlert({
+            show: true,
+            message: "Login failed: " + (errorData.message || "Invalid credentials."),
+            isSuccess: false
+          });
         }
 
         console.error("Login failed:", errorData.message);
       }
     } catch (error) {
-      alert("An error occurred during login. Please try again later.");
+      setAlert({
+        show: true,
+        message: "An error occurred during login. Please try again later.",
+        isSuccess: false
+      });
       console.error("Error during login:", error);
     }
   };
@@ -82,17 +100,30 @@ export default function Login() {
 
         localStorage.setItem("token", result.token);
 
+        setAlert({
+          show: true,
+          message: "Sign up successful! Redirecting to login...",
+          isSuccess: true
+        });
         setTimeout(() => {
           navigate("/login");
         }, 1000); // Small delay to ensure smooth transition
       } else {
         const errorData = await response.json();
         console.error("Signup failed:", errorData.message);
-        alert(errorData.message);
+        setAlert({
+          show: true,
+          message: errorData.message,
+          isSuccess: false
+        });
       }
     } catch (error) {
       console.error("Error during signup:", error);
-      alert("Something went wrong. Please try again.");
+      setAlert({
+        show: true,
+        message: "Something went wrong. Please try again.",
+        isSuccess: false
+      });
     }
   };
 
@@ -187,6 +218,14 @@ export default function Login() {
           </button>
         </div>
       </div>
+      {alert.show && (
+        <Alert
+          message={alert.message}
+          onConfirm={closeAlert}
+          onCancel={closeAlert}
+          isSuccess={alert.isSuccess}
+        />
+      )}
     </div>
   );
 }
