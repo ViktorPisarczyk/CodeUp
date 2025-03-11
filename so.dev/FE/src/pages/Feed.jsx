@@ -96,26 +96,20 @@ export default function Feed() {
 
   const handlePostSubmit = async (e) => {
     e.preventDefault();
-
     const token = localStorage.getItem("token");
 
     if (!newPost.trim()) {
       alert("Please enter a text.");
       return;
     }
-    if (!token) {
-      alert("You must be logged in to post.");
-      return;
-    }
 
     const formData = new FormData();
     formData.append("content", newPost);
-
     if (imageFile) {
-      formData.append("image", imageFile); // Add image if exists
+      formData.append("image", imageFile);
     }
     if (codeSnippet.trim()) {
-      formData.append("codeSnippet", codeSnippet); // Add code snippet if exists
+      formData.append("codeSnippet", codeSnippet);
     }
 
     try {
@@ -126,9 +120,8 @@ export default function Feed() {
         },
         body: formData,
       });
-      if (!response.ok) {
-        throw new Error("Failed to create post");
-      }
+
+      if (!response.ok) throw new Error("Failed to create post");
 
       setNewPost("");
       setImageFile(null);
