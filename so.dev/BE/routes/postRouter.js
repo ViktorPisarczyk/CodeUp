@@ -9,11 +9,11 @@ import {
   commentOnPost,
 } from "../controllers/postController.js";
 import { protect } from "../middlewares/auth.js";
-import { upload } from "../config/cloudinaryConfig.js";
+import { uploadPostImage } from "../config/cloudinaryConfig.js";
 
 export const postRouter = Router();
 
-postRouter.route("/").post(upload.single("image"), createPost);
+postRouter.route("/").post(uploadPostImage.single("image"), createPost);
 postRouter.route("/").get(getPosts);
 postRouter
   .route("/:id")
