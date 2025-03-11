@@ -215,7 +215,7 @@ export default function Feed() {
               <button
                 type="button"
                 onClick={() => document.getElementById("image-upload").click()}
-                className="px-4 py-2 rounded-md hover:opacity-80"
+                className="px-4 py-2 text-white rounded-md hover:opacity-80"
                 style={{ backgroundColor: "var(--tertiary)" }}
               >
                 Attach Picture
@@ -230,7 +230,7 @@ export default function Feed() {
               <button
                 type="button"
                 onClick={() => setIsCodeSnippetVisible(!isCodeSnippetVisible)} // Toggle the visibility of code snippet
-                className="px-4 py-2 rounded-md hover:opacity-80"
+                className="px-4 py-2 text-white rounded-md hover:opacity-80"
                 style={{ backgroundColor: "var(--tertiary)" }}
               >
                 Attach Code Snippet
@@ -240,7 +240,7 @@ export default function Feed() {
             {/* Post Button */}
             <button
               type="submit"
-              className="px-4 py-2 ml-3 rounded-md hover:opacity-80"
+              className="px-4 py-2 ml-3 text-white rounded-md hover:opacity-80"
               style={{ backgroundColor: "var(--tertiary)" }}
             >
               Post

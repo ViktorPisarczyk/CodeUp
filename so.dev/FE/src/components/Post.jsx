@@ -7,6 +7,7 @@ import { jwtDecode } from "jwt-decode";
 import { SlBubbles } from "react-icons/sl";
 import { CiHeart } from "react-icons/ci";
 import { FaHeart } from "react-icons/fa";
+import Alert from "./Alert";
 
 const Post = ({
   post,
@@ -22,6 +23,13 @@ const Post = ({
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [activeCommentDropdown, setActiveCommentDropdown] = useState(null);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [showReportAlert, setShowReportAlert] = useState(false);
+  const [showCommentDeleteAlert, setShowCommentDeleteAlert] = useState(false);
+  const [showCommentReportAlert, setShowCommentReportAlert] = useState(false);
+  const [selectedCommentId, setSelectedCommentId] = useState(null);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
@@ -52,11 +60,15 @@ const Post = ({
 
   const onDelete = async (postId) => {
     try {
-      const confirmDelete = window.confirm(
-        "Are you sure you want to delete this post?"
-      );
-      if (!confirmDelete) return;
+      setShowDeleteAlert(true);
+      setShowDropdown(false);
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
+  };
 
+  const handleDeleteConfirm = async (postId) => {
+    try {
       const token = localStorage.getItem("token");
       if (!token) {
         alert("You need to be logged in to delete a post.");
@@ -76,37 +88,37 @@ const Post = ({
         throw new Error(data.message || "Failed to delete post");
       }
 
-      alert("Post deleted successfully!");
-
-      fetchPosts();
+      setShowDeleteAlert(false);
+      setSuccessMessage("Post deleted successfully!");
+      setShowSuccessAlert(true);
     } catch (error) {
       console.error("Error deleting post:", error);
-      alert(error.message);
     }
   };
 
   const onReport = async () => {
-    try {
-      const confirmDelete = window.confirm(
-        "Are you sure you want to report this post?"
-      );
-      if (!confirmDelete) return;
+    setShowReportAlert(true);
+    setShowDropdown(false);
+  };
 
-      alert("Post reported successfully!");
-      fetchPosts();
+  const handleReportConfirm = async () => {
+    try {
+      setShowReportAlert(false);
+      setSuccessMessage("Post reported successfully!");
+      setShowSuccessAlert(true);
     } catch (error) {
       console.error("Error reporting post:", error);
-      alert(error.message);
     }
   };
 
   const onCommentDelete = async (commentId) => {
-    try {
-      const confirmDelete = window.confirm(
-        "Are you sure you want to delete this comment?"
-      );
-      if (!confirmDelete) return;
+    setSelectedCommentId(commentId);
+    setShowCommentDeleteAlert(true);
+    setActiveCommentDropdown(null);
+  };
 
+  const handleCommentDeleteConfirm = async () => {
+    try {
       const token = localStorage.getItem("token");
       if (!token) {
         alert("You need to be logged in to delete a comment.");
@@ -114,7 +126,7 @@ const Post = ({
       }
 
       const response = await fetch(
-        `http://localhost:5001/comments/${commentId}`,
+        `http://localhost:5001/comments/${selectedCommentId}`,
         {
           method: "DELETE",
           headers: {
@@ -129,27 +141,34 @@ const Post = ({
         throw new Error(data.message || "Failed to delete comment");
       }
 
-      alert("Comment deleted successfully!");
-      fetchPosts();
+      setShowCommentDeleteAlert(false);
+      setSuccessMessage("Comment deleted successfully!");
+      setShowSuccessAlert(true);
     } catch (error) {
       console.error("Error deleting comment:", error);
-      alert(error.message);
     }
   };
 
-  const onCommentReport = async () => {
-    try {
-      const confirmDelete = window.confirm(
-        "Are you sure you want to report this comment?"
-      );
-      if (!confirmDelete) return;
+  const onCommentReport = async (commentId) => {
+    setSelectedCommentId(commentId);
+    setShowCommentReportAlert(true);
+    setActiveCommentDropdown(null);
+  };
 
-      alert("Comment reported successfully!");
-      fetchPosts();
+  const handleCommentReportConfirm = async () => {
+    try {
+      setShowCommentReportAlert(false);
+      setSuccessMessage("Comment reported successfully!");
+      setShowSuccessAlert(true);
     } catch (error) {
       console.error("Error reporting comment:", error);
-      alert(error.message);
     }
+  };
+
+  const handleSuccessConfirm = () => {
+    setShowSuccessAlert(false);
+    setSelectedCommentId(null);
+    fetchPosts();
   };
 
   return (
@@ -157,6 +176,42 @@ const Post = ({
       className="rounded-lg relative shadow-md p-4"
       style={{ backgroundColor: "var(--secondary)" }}
     >
+      {showSuccessAlert && (
+        <Alert
+          message={successMessage}
+          onConfirm={handleSuccessConfirm}
+          onCancel={handleSuccessConfirm}
+          isSuccess={true}
+        />
+      )}
+      {showDeleteAlert && (
+        <Alert
+          message="Are you sure you want to delete this post?"
+          onConfirm={() => handleDeleteConfirm(post._id)}
+          onCancel={() => setShowDeleteAlert(false)}
+        />
+      )}
+      {showReportAlert && (
+        <Alert
+          message="Are you sure you want to report this post?"
+          onConfirm={handleReportConfirm}
+          onCancel={() => setShowReportAlert(false)}
+        />
+      )}
+      {showCommentDeleteAlert && (
+        <Alert
+          message="Are you sure you want to delete this comment?"
+          onConfirm={handleCommentDeleteConfirm}
+          onCancel={() => setShowCommentDeleteAlert(false)}
+        />
+      )}
+      {showCommentReportAlert && (
+        <Alert
+          message="Are you sure you want to report this comment?"
+          onConfirm={handleCommentReportConfirm}
+          onCancel={() => setShowCommentReportAlert(false)}
+        />
+      )}
       <div className="flex items-center mb-2">
         <Link
           to={`/profile/${post.author._id}`}
@@ -190,23 +245,23 @@ const Post = ({
       {showDropdown && (
         <>
           <div
-            className="fixed inset-0 z-10"
+            className="fixed inset-0 z-32"
             onClick={() => setShowDropdown(false)}
           />
           <div
-            className="absolute right-4 top-8 rounded-lg shadow-lg py-2 z-20"
+            className="absolute right-4 top-8 rounded-lg shadow-lg py-2 z-33"
             style={{ backgroundColor: "var(--tertiary)", minWidth: "150px" }}
           >
             <div className="flex justify-end px-2">
               <IoClose
-                className="cursor-pointer hover:opacity-70 text-xl"
+                className="cursor-pointer text-white hover:opacity-70 text-xl"
                 onClick={() => setShowDropdown(false)}
               />
             </div>
             {post.author?._id === loggedInUserId ? (
               <div>
                 <button
-                  className="w-full text-left px-4 py-2 hover:opacity-70"
+                  className="w-full text-white text-left px-4 py-2 hover:opacity-70"
                   onClick={() => {
                     onEdit(post._id);
                     setShowDropdown(false);
@@ -215,22 +270,16 @@ const Post = ({
                   Edit Post
                 </button>
                 <button
-                  className="w-full text-left px-4 py-2 hover:opacity-70"
-                  onClick={() => {
-                    onDelete(post._id);
-                    setShowDropdown(false);
-                  }}
+                  className="w-full text-left text-white px-4 py-2 hover:opacity-70"
+                  onClick={() => onDelete(post._id)}
                 >
                   Delete Post
                 </button>
               </div>
             ) : (
               <button
-                className="w-full text-left px-4 py-2 hover:opacity-70"
-                onClick={() => {
-                  onReport(post._id);
-                  setShowDropdown(false);
-                }}
+                className="w-full text-left px-4 text-white py-2 hover:opacity-70"
+                onClick={() => onReport()}
               >
                 Report Post
               </button>
@@ -287,7 +336,7 @@ const Post = ({
             />
             <button
               type="submit"
-              className="mt-2 px-4 py-2 mb-3 rounded-md hover:opacity-80"
+              className="mt-2 px-4 py-2 text-white mb-3 rounded-md hover:opacity-80"
               style={{ backgroundColor: "var(--tertiary)" }}
             >
               Comment
@@ -344,11 +393,11 @@ const Post = ({
                     {activeCommentDropdown === comment._id && (
                       <>
                         <div
-                          className="fixed inset-0 z-10"
+                          className="fixed inset-0 z-32"
                           onClick={() => setActiveCommentDropdown(null)}
                         />
                         <div
-                          className="absolute right-0 top-6 rounded-lg shadow-lg py-2 z-20"
+                          className="absolute right-0 top-6 rounded-lg shadow-lg py-2 z-35"
                           style={{
                             backgroundColor: "var(--tertiary)",
                             minWidth: "150px",
@@ -356,14 +405,14 @@ const Post = ({
                         >
                           <div className="flex justify-end px-2">
                             <IoClose
-                              className="cursor-pointer hover:opacity-70 text-xl"
+                              className="cursor-pointer text-white hover:opacity-70 text-xl"
                               onClick={() => setActiveCommentDropdown(null)}
                             />
                           </div>
                           {comment.user?._id === loggedInUserId ? (
                             <>
                               <button
-                                className="w-full text-left px-4 py-2 hover:opacity-70"
+                                className="w-full text-left text-white px-4 py-2 hover:opacity-70"
                                 onClick={() => {
                                   onCommentEdit(post._id, comment._id);
                                   setActiveCommentDropdown(null);
@@ -372,22 +421,16 @@ const Post = ({
                                 Edit Comment
                               </button>
                               <button
-                                className="w-full text-left px-4 py-2 hover:opacity-70"
-                                onClick={() => {
-                                  onCommentDelete(comment._id);
-                                  setActiveCommentDropdown(null);
-                                }}
+                                className="w-full text-left text-white px-4 py-2 hover:opacity-70"
+                                onClick={() => onCommentDelete(comment._id)}
                               >
                                 Delete Comment
                               </button>
                             </>
                           ) : (
                             <button
-                              className="w-full text-left px-4 py-2 hover:opacity-70"
-                              onClick={() => {
-                                onCommentReport(post._id, comment._id);
-                                setActiveCommentDropdown(null);
-                              }}
+                              className="w-full text-left text-white px-4 py-2 hover:opacity-70"
+                              onClick={() => onCommentReport(comment._id)}
                             >
                               Report Comment
                             </button>
@@ -412,36 +455,32 @@ Post.propTypes = {
     content: PropTypes.string.isRequired,
     author: PropTypes.shape({
       _id: PropTypes.string.isRequired,
-      username: PropTypes.string,
+      username: PropTypes.string.isRequired,
       profilePicture: PropTypes.string,
     }),
-    image: PropTypes.string,
-    likes: PropTypes.array,
+    likes: PropTypes.arrayOf(PropTypes.string),
     comments: PropTypes.arrayOf(
       PropTypes.shape({
         _id: PropTypes.string.isRequired,
-        text: PropTypes.string.isRequired,
-        user: PropTypes.shape({
-          _id: PropTypes.string,
-          username: PropTypes.string,
-          profilePicture: PropTypes.string,
+        content: PropTypes.string.isRequired,
+        author: PropTypes.shape({
+          _id: PropTypes.string.isRequired,
+          username: PropTypes.string.isRequired,
         }),
       })
     ),
   }).isRequired,
   handleLike: PropTypes.func.isRequired,
-  showCommentForm: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
+  showCommentForm: PropTypes.bool.isRequired,
   toggleCommentForm: PropTypes.func.isRequired,
-  newComment: PropTypes.object.isRequired,
+  newComment: PropTypes.string.isRequired,
   setNewComment: PropTypes.func.isRequired,
   handleCommentSubmit: PropTypes.func.isRequired,
-  userId: PropTypes.string.isRequired,
   onDelete: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
   onReport: PropTypes.func.isRequired,
   onCommentDelete: PropTypes.func.isRequired,
   onCommentEdit: PropTypes.func.isRequired,
-  onCommentReport: PropTypes.func.isRequired,
   fetchPosts: PropTypes.func.isRequired,
 };
 

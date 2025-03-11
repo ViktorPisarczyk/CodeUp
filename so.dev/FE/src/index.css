@@ -61,7 +61,7 @@ button {
   background-color: white;
   -webkit-transition: 0.4s;
   transition: 0.4s;
-  background-image: url("../assets/sun-2-svgrepo-com.svg");
+  background-image: url("./assets/sun-2-svgrepo-com.svg");
   background-repeat: no-repeat;
   background-size: 16px 16px;
   background-position: center;
@@ -79,7 +79,7 @@ input:checked + .slider:before {
   -webkit-transform: translateX(30px);
   -ms-transform: translateX(30x);
   transform: translateX(30px);
-  background-image: url("../assets/moon-svgrepo-com.svg");
+  background-image: url("./assets/moon-svgrepo-com.svg");
 }
 
 .slider.round {

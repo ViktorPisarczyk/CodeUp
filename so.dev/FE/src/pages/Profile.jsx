@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
 import { jwtDecode } from "jwt-decode";
@@ -161,7 +161,9 @@ function Profile() {
   return (
     <div className="flex flex-row min-h-full bg-(--primary)">
       <AsideMenu />
-      <div className="flex flex-col mx-auto  w-full max-w-2xl px-4">
+
+      <div className="flex flex-col mx-auto w-full max-w-2xl px-4">
+
         {/* Profile Section */}
         <div className="flex flex-col md:flex-row pb-10  items-center relative rounded-xl p-5 my-10 bg-(--secondary)">
           <div className="flex flex-col items-center md:items-start md:w-1/3">
