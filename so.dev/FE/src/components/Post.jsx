@@ -397,7 +397,7 @@ const Post = ({
                           onClick={() => setActiveCommentDropdown(null)}
                         />
                         <div
-                          className="absolute right-0 top-6 rounded-lg shadow-lg py-2 z-20"
+                          className="absolute right-0 top-6 rounded-lg shadow-lg py-2 z-35"
                           style={{
                             backgroundColor: "var(--tertiary)",
                             minWidth: "150px",
@@ -405,14 +405,14 @@ const Post = ({
                         >
                           <div className="flex justify-end px-2">
                             <IoClose
-                              className="cursor-pointer hover:opacity-70 text-xl"
+                              className="cursor-pointer text-white hover:opacity-70 text-xl"
                               onClick={() => setActiveCommentDropdown(null)}
                             />
                           </div>
                           {comment.user?._id === loggedInUserId ? (
                             <>
                               <button
-                                className="w-full text-left px-4 py-2 hover:opacity-70"
+                                className="w-full text-left text-white px-4 py-2 hover:opacity-70"
                                 onClick={() => {
                                   onCommentEdit(post._id, comment._id);
                                   setActiveCommentDropdown(null);
@@ -421,7 +421,7 @@ const Post = ({
                                 Edit Comment
                               </button>
                               <button
-                                className="w-full text-left px-4 py-2 hover:opacity-70"
+                                className="w-full text-left text-white px-4 py-2 hover:opacity-70"
                                 onClick={() => onCommentDelete(comment._id)}
                               >
                                 Delete Comment
@@ -429,7 +429,7 @@ const Post = ({
                             </>
                           ) : (
                             <button
-                              className="w-full text-left px-4 py-2 hover:opacity-70"
+                              className="w-full text-left text-white px-4 py-2 hover:opacity-70"
                               onClick={() => onCommentReport(comment._id)}
                             >
                               Report Comment
