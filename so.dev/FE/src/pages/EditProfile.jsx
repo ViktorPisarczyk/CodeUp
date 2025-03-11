@@ -48,7 +48,7 @@ const EditProfile = () => {
   return (
     <div className="flex">
       <AsideMenu />
-      <div className="bg-(--primary) h-screen w-full flex flex-col justify-center items-center">
+      <div className="bg-(--primary)  w-full flex flex-col justify-center items-center">
         <h2 className="text-(--tertiary) text-3xl font-bold mb-5">
           Edit Profile
         </h2>
