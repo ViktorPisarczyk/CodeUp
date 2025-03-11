@@ -5,38 +5,26 @@ import { User } from "../models/userModel.js";
 
 export const createPost = async (req, res, next) => {
   try {
-    const { author, content, code, image } = req.body;
+    const { content, code } = req.body;
     const token = req.headers.authorization?.split(" ")[1];
 
     if (!token) {
-      const error = new Error("sorry, you need to log in first");
-      error.status = "401";
-      throw error;
+      throw new Error("You must be logged in to post.");
     }
 
     const decoded_token = await verifyToken(token);
-
     const user = await User.findById(decoded_token.id);
+    if (!user) throw new Error("Invalid user.");
 
-    if (!user) {
-      const error = new Error(
-        "The user belongs to given token is deleted recently!"
-      );
-      throw error;
-    }
-
-    req.token = decoded_token;
-
-    if (!content) {
-      return res.status(400).json({ message: "Description is required." });
-    }
+    const imageUrl = req.file ? req.file.path : null; // Get the Cloudinary URL
 
     const newPost = await Post.create({
-      author: user,
+      author: user._id,
       content,
       code,
-      image,
+      image: imageUrl,
     });
+
     res.status(201).json(newPost);
   } catch (error) {
     next(error);
