@@ -254,23 +254,109 @@ export default function Feed() {
         </form>
 
         <div className="space-y-6">
-          {posts.length === 0 ? (
-            <p>No posts available</p>
-          ) : (
+          {posts && posts.length > 0 ? (
             posts.map((post) => (
-              <Post
-                key={post._id}
-                post={post}
-                handleLike={handleLike}
-                showCommentForm={showCommentForm}
-                toggleCommentForm={toggleCommentForm}
-                newComment={newComment}
-                setNewComment={setNewComment}
-                handleCommentSubmit={handleCommentSubmit}
-                userId={userId}
-                fetchPosts={fetchPosts}
-              />
+              post && (
+                <Post
+                  key={post._id}
+                  post={post}
+                  handleLike={handleLike}
+                  showCommentForm={showCommentForm === post._id}
+                  toggleCommentForm={() => toggleCommentForm(post._id)}
+                  newComment={newComment[post._id] || ""}
+                  setNewComment={(value) =>
+                    setNewComment((prev) => ({ ...prev, [post._id]: value }))
+                  }
+                  handleCommentSubmit={(e) => handleCommentSubmit(post._id, e)}
+                  fetchPosts={fetchPosts}
+                  onDelete={async (postId) => {
+                    const token = localStorage.getItem("token");
+                    try {
+                      const response = await fetch(`${API_URL}/posts/${postId}`, {
+                        method: "DELETE",
+                        headers: {
+                          Authorization: `Bearer ${token}`,
+                        },
+                      });
+                      if (!response.ok) throw new Error("Failed to delete post");
+                      fetchPosts();
+                    } catch (error) {
+                      console.error("Error deleting post:", error);
+                    }
+                  }}
+                  onEdit={async (postId, newContent) => {
+                    const token = localStorage.getItem("token");
+                    try {
+                      const response = await fetch(`${API_URL}/posts/${postId}`, {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({ content: newContent }),
+                      });
+                      if (!response.ok) throw new Error("Failed to edit post");
+                      fetchPosts();
+                    } catch (error) {
+                      console.error("Error editing post:", error);
+                    }
+                  }}
+                  onReport={async (postId) => {
+                    const token = localStorage.getItem("token");
+                    try {
+                      const response = await fetch(`${API_URL}/posts/${postId}/report`, {
+                        method: "POST",
+                        headers: {
+                          Authorization: `Bearer ${token}`,
+                        },
+                      });
+                      if (!response.ok) throw new Error("Failed to report post");
+                    } catch (error) {
+                      console.error("Error reporting post:", error);
+                    }
+                  }}
+                  onCommentDelete={async (commentId) => {
+                    const token = localStorage.getItem("token");
+                    try {
+                      const response = await fetch(`${API_URL}/comments/${commentId}`, {
+                        method: "DELETE",
+                        headers: {
+                          Authorization: `Bearer ${token}`,
+                        },
+                      });
+                      if (!response.ok) throw new Error("Failed to delete comment");
+                      fetchPosts();
+                    } catch (error) {
+                      console.error("Error deleting comment:", error);
+                    }
+                  }}
+                  onCommentEdit={async (commentId, newContent) => {
+                    const token = localStorage.getItem("token");
+                    try {
+                      const response = await fetch(`${API_URL}/comments/${commentId}`, {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({ content: newContent }),
+                      });
+                      if (!response.ok) throw new Error("Failed to edit comment");
+                      fetchPosts();
+                    } catch (error) {
+                      console.error("Error editing comment:", error);
+                    }
+                  }}
+                />
+              )
             ))
+          ) : (
+            <div 
+              className="text-center p-4 rounded-lg"
+              style={{ backgroundColor: "var(--secondary)" }}
+            >
+              No posts available
+            </div>
           )}
         </div>
       </div>
