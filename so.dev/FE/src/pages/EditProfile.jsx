@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import AsideMenu from "../components/AsideMenu";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import Alert from '../components/Alert'; // Import the Alert component
+import Alert from "../components/Alert"; // Import the Alert component
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -103,7 +103,7 @@ const EditProfile = () => {
     if (user.bio && user.bio !== existingUser.bio) {
       formData.append("bio", user.bio);
     }
-    if (user.profilePicture && typeof user.profilePicture !== 'string') {
+    if (user.profilePicture && typeof user.profilePicture !== "string") {
       formData.append("profilePicture", user.profilePicture);
     }
 
@@ -120,7 +120,6 @@ const EditProfile = () => {
 
       const data = await response.json();
       if (response.ok) {
-        console.log("Profile updated successfully:", data);
         setShowSuccessAlert(true);
       } else {
         console.error("Error updating profile:", data.message);
@@ -156,13 +155,16 @@ const EditProfile = () => {
             {/* Profile Picture Preview - Always visible */}
             <div className="mb-4">
               <img
-                src={imagePreviewUrl || "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"}
+                src={
+                  imagePreviewUrl ||
+                  "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"
+                }
                 alt="Profile Preview"
                 className="w-32 h-32 rounded-full object-cover mx-auto border-2"
                 style={{ borderColor: "var(--tertiary)" }}
               />
             </div>
-            
+
             <label
               className="block text-sm font-medium text-center"
               htmlFor="profilePicture"
@@ -174,7 +176,7 @@ const EditProfile = () => {
                   document.getElementById("profilePicture").click()
                 }
               >
-                {imagePreviewUrl ? 'Change Picture' : 'Upload Picture'}
+                {imagePreviewUrl ? "Change Picture" : "Upload Picture"}
               </button>
             </label>
             <input

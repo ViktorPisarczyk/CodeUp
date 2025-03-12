@@ -44,7 +44,9 @@ function Profile() {
 
       const data = await response.json();
 
-      const userPosts = data.filter((post) => post.author._id === userId);
+      const userPosts = data.filter(
+        (post) => post.author && post.author._id === userId
+      );
 
       setPosts(userPosts);
     } catch (error) {
@@ -163,7 +165,6 @@ function Profile() {
       <AsideMenu />
 
       <div className="flex flex-col mx-auto w-full max-w-2xl px-4">
-
         {/* Profile Section */}
         <div className="flex flex-col md:flex-row pb-10  items-center relative rounded-xl p-5 my-10 bg-(--secondary)">
           <div className="flex flex-col items-center md:items-start md:w-1/3">
@@ -173,7 +174,7 @@ function Profile() {
               src={
                 user.profilePicture ||
                 "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png"
-              } // Fallback if profile picture is not set
+              }
               alt="avatar"
             />
           </div>
@@ -182,7 +183,7 @@ function Profile() {
               {user.username || "User"}
             </h2>
             <h4 className="text-lg ">
-              {user.location || "Please add your location"}
+              {user.location || "This user has not updated their location yet."}
             </h4>
             <p className="mt-4 ">
               {user.bio || "This user has not updated their bio yet."}
@@ -201,7 +202,9 @@ function Profile() {
         {/* Posts Section */}
         <div className="w-full divide-y divide-gray-300">
           <div className="mt-10 mb-6">
-            <h1 className="text-3xl mb-2 font-bold">Posts</h1>
+            <h1 className="text-3xl mb-2 font-bold">
+              Posts by {user.username || "User"}
+            </h1>
           </div>
 
           {/* Posts List */}
@@ -220,6 +223,7 @@ function Profile() {
                   setNewComment={setNewComment}
                   handleCommentSubmit={handleCommentSubmit}
                   userId={userId}
+                  fetchUserPosts={fetchUserPosts}
                 />
               ))
             )}
