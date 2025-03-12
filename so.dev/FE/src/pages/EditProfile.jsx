@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import AsideMenu from "../components/AsideMenu";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { IoClose } from "react-icons/io5";
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const EditProfile = () => {
     bio: "",
     profilePicture: "",
   });
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
 
   // Get user ID from token
   const getUserIdFromToken = () => {
@@ -44,6 +46,10 @@ const EditProfile = () => {
           const data = await response.json();
           setExistingUser(data);
           setUser(data);
+          // Set initial profile picture preview if it exists
+          if (data.profilePicture) {
+            setImagePreviewUrl(data.profilePicture);
+          }
         } else {
           console.error("Error fetching user data");
         }
@@ -68,7 +74,18 @@ const EditProfile = () => {
     const file = e.target.files[0];
     if (file) {
       setUser((prevUser) => ({ ...prevUser, profilePicture: file }));
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviewUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
+  };
+
+  const removeImage = () => {
+    setUser((prevUser) => ({ ...prevUser, profilePicture: "" }));
+    setImagePreviewUrl(null);
   };
 
   // Handle form submission
@@ -90,7 +107,7 @@ const EditProfile = () => {
     if (user.bio && user.bio !== existingUser.bio) {
       formData.append("bio", user.bio);
     }
-    if (user.profilePicture) {
+    if (user.profilePicture && typeof user.profilePicture !== 'string') {
       formData.append("profilePicture", user.profilePicture);
     }
 
@@ -130,6 +147,25 @@ const EditProfile = () => {
           className="bg-(--secondary) p-8 rounded-lg shadow-xl w-xs md:w-xl max-w-xl mx-4"
         >
           <div>
+            {/* Profile Picture Preview */}
+            {imagePreviewUrl && (
+              <div className="relative mb-4">
+                <img
+                  src={imagePreviewUrl}
+                  alt="Profile Preview"
+                  className="w-32 h-32 rounded-full object-cover mx-auto"
+                />
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                  style={{ backgroundColor: "var(--quaternary)" }}
+                >
+                  <IoClose size={20} />
+                </button>
+              </div>
+            )}
+            
             <label
               className="block text-sm font-medium"
               htmlFor="profilePicture"
@@ -141,7 +177,7 @@ const EditProfile = () => {
                   document.getElementById("profilePicture").click()
                 }
               >
-                Upload Picture
+                {imagePreviewUrl ? 'Change Picture' : 'Upload Picture'}
               </button>
             </label>
             <input

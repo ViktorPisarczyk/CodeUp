@@ -7,6 +7,7 @@ import logoLM from "../assets/newLogoLM.png";
 import logoDM from "../assets/newLogoDM.png";
 import { MyContext } from "../context/ThemeContext";
 import { IoClose } from "react-icons/io5";
+import Alert from "../components/Alert"; // Import the Alert component
 
 const API_URL = "http://localhost:5001";
 
@@ -19,6 +20,8 @@ export default function Feed() {
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [codeSnippet, setCodeSnippet] = useState(""); // For the code snippet
   const [isCodeSnippetVisible, setIsCodeSnippetVisible] = useState(false); // To control the visibility of the code snippet textarea
+  const [showAddTextAlert, setShowAddTextAlert] = useState(false); // New state for the alert
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false); // New state for the success alert
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -105,6 +108,15 @@ export default function Feed() {
       return;
     }
 
+    if (!newPost.trim() && imageFile) {
+      setShowAddTextAlert(true);
+      return;
+    }
+
+    await submitPost(token);
+  };
+
+  const submitPost = async (token) => {
     const formData = new FormData();
     formData.append("content", newPost);
     if (imageFile) {
@@ -129,6 +141,7 @@ export default function Feed() {
       setImageFile(null);
       setImagePreviewUrl(null);
       setCodeSnippet("");
+      setShowSuccessAlert(true);
       fetchPosts();
     } catch (error) {
       console.error("Error creating post:", error);
@@ -214,6 +227,24 @@ export default function Feed() {
           className="rounded-lg p-4 mb-6 shadow-md"
           style={{ backgroundColor: "var(--secondary)" }}
         >
+          {showAddTextAlert && (
+            <Alert
+              message="Would you like to add some text to describe your image?"
+              onConfirm={() => setShowAddTextAlert(false)}
+              onCancel={async () => {
+                setShowAddTextAlert(false);
+                const token = localStorage.getItem("token");
+                await submitPost(token);
+              }}
+            />
+          )}
+          {showSuccessAlert && (
+            <Alert
+              message="Post created successfully!"
+              onConfirm={() => setShowSuccessAlert(false)}
+              isSuccess={true}
+            />
+          )}
           <textarea
             value={newPost}
             onChange={(e) => setNewPost(e.target.value)}
