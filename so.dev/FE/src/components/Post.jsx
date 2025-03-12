@@ -255,6 +255,9 @@ const Post = ({
         ) : (
           <span className="ml-2 font-bold text-gray-500">Unknown User</span>
         )}
+        <span className="ml-2 text-sm text-gray-500">
+          {new Date(post.createdAt).toLocaleString()}
+        </span>
       </div>
       <BsThreeDots
         className="absolute right-4 top-4 cursor-pointer hover:opacity-70"
