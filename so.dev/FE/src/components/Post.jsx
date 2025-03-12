@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { BsThreeDots } from "react-icons/bs";
@@ -8,6 +8,8 @@ import { SlBubbles } from "react-icons/sl";
 import { CiHeart } from "react-icons/ci";
 import { FaHeart } from "react-icons/fa";
 import Alert from "./Alert";
+import Prism from "prismjs";
+import "prismjs/themes/prism-tomorrow.css";
 
 const Post = ({
   post,
@@ -178,6 +180,10 @@ const Post = ({
     return null;
   }
 
+  useEffect(() => {
+    Prism.highlightAll();
+  }, []);
+
   return (
     <div
       className="rounded-lg relative shadow-md p-4"
@@ -250,7 +256,6 @@ const Post = ({
           <span className="ml-2 font-bold text-gray-500">Unknown User</span>
         )}
       </div>
-
       <BsThreeDots
         className="absolute right-4 top-4 cursor-pointer hover:opacity-70"
         onClick={toggleDropdown}
@@ -310,6 +315,11 @@ const Post = ({
           className="rounded-md w-full mb-4"
         />
       )}
+      {post.code && (
+        <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto">
+          <code className="language-javascript">{post.code}</code>
+        </pre>
+      )}
 
       <div className="flex items-center space-x-4">
         <button
@@ -323,14 +333,10 @@ const Post = ({
           )}{" "}
           {post.likes.length}
         </button>
-        <button
-          className="flex items-center gap-1"
-          onClick={toggleCommentForm}
-        >
+        <button className="flex items-center gap-1" onClick={toggleCommentForm}>
           <SlBubbles /> {post.comments?.length || 0}
         </button>
       </div>
-
       {showCommentForm && (
         <div className="border-t border-gray-200 p-4">
           <form onSubmit={(e) => handleCommentSubmit(post._id, e)}>
@@ -472,6 +478,7 @@ Post.propTypes = {
       username: PropTypes.string.isRequired,
     }).isRequired,
     image: PropTypes.string,
+    code: PropTypes.string,
     comments: PropTypes.arrayOf(
       PropTypes.shape({
         _id: PropTypes.string.isRequired,

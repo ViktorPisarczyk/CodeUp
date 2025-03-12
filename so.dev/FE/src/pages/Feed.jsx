@@ -7,6 +7,9 @@ import logoDM from "../assets/newLogoDM.png";
 import { MyContext } from "../context/ThemeContext";
 import { IoClose } from "react-icons/io5";
 import Alert from "../components/Alert"; // Import the Alert component
+import Prism from "prismjs";
+import "prismjs/themes/prism-tomorrow.css"; // Choose a theme of your choice
+import "prismjs/components/prism-javascript";
 
 const API_URL = "http://localhost:5001";
 
@@ -33,6 +36,10 @@ export default function Feed() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    Prism.highlightAll();
+  }, [posts]);
 
   const fetchPosts = async () => {
     const token = localStorage.getItem("token");
@@ -122,7 +129,7 @@ export default function Feed() {
       formData.append("image", imageFile);
     }
     if (codeSnippet.trim()) {
-      formData.append("codeSnippet", codeSnippet);
+      formData.append("code", codeSnippet);
     }
 
     try {
@@ -302,10 +309,10 @@ export default function Feed() {
             <textarea
               value={codeSnippet}
               onChange={(e) => setCodeSnippet(e.target.value)}
-              placeholder="Add your code snippet"
+              placeholder="Paste your code here..."
               className="w-full p-2 mt-2 text-black rounded-md border-gray-300 focus:border-blue-400 focus:ring-blue-400"
               style={{ backgroundColor: "var(--textarea)" }}
-              rows="4"
+              rows="3"
             />
           )}
         </form>
