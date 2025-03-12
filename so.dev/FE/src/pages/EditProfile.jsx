@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import AsideMenu from "../components/AsideMenu";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { IoClose } from "react-icons/io5";
+import Alert from '../components/Alert'; // Import the Alert component
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ const EditProfile = () => {
     profilePicture: "",
   });
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false); // Add state for success alert
 
   // Get user ID from token
   const getUserIdFromToken = () => {
@@ -83,11 +84,6 @@ const EditProfile = () => {
     }
   };
 
-  const removeImage = () => {
-    setUser((prevUser) => ({ ...prevUser, profilePicture: "" }));
-    setImagePreviewUrl(null);
-  };
-
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -125,7 +121,7 @@ const EditProfile = () => {
       const data = await response.json();
       if (response.ok) {
         console.log("Profile updated successfully:", data);
-        navigate(`/profile/${loggedInUserId}`);
+        setShowSuccessAlert(true);
       } else {
         console.error("Error updating profile:", data.message);
       }
@@ -146,28 +142,29 @@ const EditProfile = () => {
           onSubmit={handleSubmit}
           className="bg-(--secondary) p-8 rounded-lg shadow-xl w-xs md:w-xl max-w-xl mx-4"
         >
+          {showSuccessAlert && (
+            <Alert
+              message="Profile updated successfully!"
+              onConfirm={() => {
+                setShowSuccessAlert(false);
+                navigate(`/profile/${loggedInUserId}`);
+              }}
+              isSuccess={true}
+            />
+          )}
           <div>
-            {/* Profile Picture Preview */}
-            {imagePreviewUrl && (
-              <div className="relative mb-4">
-                <img
-                  src={imagePreviewUrl}
-                  alt="Profile Preview"
-                  className="w-32 h-32 rounded-full object-cover mx-auto"
-                />
-                <button
-                  type="button"
-                  onClick={removeImage}
-                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                  style={{ backgroundColor: "var(--quaternary)" }}
-                >
-                  <IoClose size={20} />
-                </button>
-              </div>
-            )}
+            {/* Profile Picture Preview - Always visible */}
+            <div className="mb-4">
+              <img
+                src={imagePreviewUrl || "https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png"}
+                alt="Profile Preview"
+                className="w-32 h-32 rounded-full object-cover mx-auto border-2"
+                style={{ borderColor: "var(--tertiary)" }}
+              />
+            </div>
             
             <label
-              className="block text-sm font-medium"
+              className="block text-sm font-medium text-center"
               htmlFor="profilePicture"
             >
               <button
