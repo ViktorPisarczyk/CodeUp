@@ -328,13 +328,9 @@ export default function Feed() {
                     handleLike={handleLike}
                     showCommentForm={showCommentForm === post._id}
                     toggleCommentForm={() => toggleCommentForm(post._id)}
-                    newComment={newComment[post._id] || ""}
-                    setNewComment={(value) =>
-                      setNewComment((prev) => ({ ...prev, [post._id]: value }))
-                    }
-                    handleCommentSubmit={(e) =>
-                      handleCommentSubmit(post._id, e)
-                    }
+                    newComment={newComment}
+                    setNewComment={setNewComment}
+                    handleCommentSubmit={handleCommentSubmit}
                     fetchPosts={fetchPosts}
                     onDelete={async (postId) => {
                       const token = localStorage.getItem("token");

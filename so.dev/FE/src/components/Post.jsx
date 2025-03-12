@@ -341,12 +341,12 @@ const Post = ({
         <div className="border-t border-gray-200 p-4">
           <form onSubmit={(e) => handleCommentSubmit(post._id, e)}>
             <textarea
-              value={newComment?.[post._id] || ""}
+              value={newComment[post._id] || ""}
               onChange={(e) =>
-                setNewComment({
-                  ...newComment,
+                setNewComment((prevNewComment) => ({
+                  ...prevNewComment,
                   [post._id]: e.target.value,
-                })
+                }))
               }
               placeholder="Add a comment"
               className="w-full p-2 rounded-md text-black border-gray-300 focus:border-blue-400 focus:ring-blue-400"
@@ -495,7 +495,7 @@ Post.propTypes = {
   handleLike: PropTypes.func.isRequired,
   showCommentForm: PropTypes.bool.isRequired,
   toggleCommentForm: PropTypes.func.isRequired,
-  newComment: PropTypes.string.isRequired,
+  newComment: PropTypes.object.isRequired,
   setNewComment: PropTypes.func.isRequired,
   handleCommentSubmit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
