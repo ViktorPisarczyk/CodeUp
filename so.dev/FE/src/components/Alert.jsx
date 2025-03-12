@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 
-const Alert = ({ message, onConfirm, onCancel, isSuccess }) => {
+const Alert = ({ message, onConfirm, isSuccess }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
       <div className="fixed inset-0 bg-black opacity-50"></div>
@@ -9,25 +9,14 @@ const Alert = ({ message, onConfirm, onCancel, isSuccess }) => {
         style={{ backgroundColor: "var(--secondary)" }}
       >
         <p className="text-center mb-6">{message}</p>
-        <div className="flex justify-center gap-4">
+        <div className="flex justify-center">
           <button
             onClick={onConfirm}
             className="px-4 hover:opacity-70 py-2 rounded-lg text-white"
             style={{ backgroundColor: "var(--tertiary)" }}
           >
-            {isSuccess ? "OK" : "Confirm"}
+            OK
           </button>
-          {!isSuccess && (
-            <button
-              onClick={onCancel}
-              className="px-4 hover:opacity-70 py-2 text-white rounded-lg"
-              style={{
-                backgroundColor: "var(--tertiary)",
-              }}
-            >
-              Cancel
-            </button>
-          )}
         </div>
       </div>
     </div>
@@ -37,7 +26,6 @@ const Alert = ({ message, onConfirm, onCancel, isSuccess }) => {
 Alert.propTypes = {
   message: PropTypes.string.isRequired,
   onConfirm: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
   isSuccess: PropTypes.bool,
 };
 
