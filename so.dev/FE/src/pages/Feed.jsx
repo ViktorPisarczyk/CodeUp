@@ -6,6 +6,7 @@ import { jwtDecode } from "jwt-decode";
 import logoLM from "../assets/newLogoLM.png";
 import logoDM from "../assets/newLogoDM.png";
 import { MyContext } from "../context/ThemeContext";
+import { IoClose } from "react-icons/io5";
 
 const API_URL = "http://localhost:5001";
 
@@ -15,6 +16,7 @@ export default function Feed() {
   const [newComment, setNewComment] = useState({});
   const [showCommentForm, setShowCommentForm] = useState(null);
   const [imageFile, setImageFile] = useState(null); // For the picture
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [codeSnippet, setCodeSnippet] = useState(""); // For the code snippet
   const [isCodeSnippetVisible, setIsCodeSnippetVisible] = useState(false); // To control the visibility of the code snippet textarea
   const navigate = useNavigate();
@@ -77,12 +79,29 @@ export default function Feed() {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviewUrl(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreviewUrl(null);
+  };
+
   const handlePostSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
 
-    if (!newPost.trim()) {
-      alert("Please enter a text.");
+    if (!newPost.trim() && !imageFile) {
+      alert("Please enter a text or upload an image.");
       return;
     }
 
@@ -108,6 +127,7 @@ export default function Feed() {
 
       setNewPost("");
       setImageFile(null);
+      setImagePreviewUrl(null);
       setCodeSnippet("");
       fetchPosts();
     } catch (error) {
@@ -202,6 +222,26 @@ export default function Feed() {
             style={{ backgroundColor: "var(--textarea)" }}
             rows="3"
           />
+          
+          {/* Image Preview */}
+          {imagePreviewUrl && (
+            <div className="relative mt-2 mb-2">
+              <img
+                src={imagePreviewUrl}
+                alt="Preview"
+                className="max-h-48 rounded-lg object-cover"
+              />
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                style={{ backgroundColor: "var(--quaternary)" }}
+              >
+                <IoClose size={20} />
+              </button>
+            </div>
+          )}
+
           <div className="mt-2 flex items-center justify-between">
             {/* Buttons to Attach Picture, Code Snippet, and Post */}
             <div className="flex space-x-2">
@@ -216,13 +256,14 @@ export default function Feed() {
               <input
                 id="image-upload"
                 type="file"
-                onChange={(e) => setImageFile(e.target.files[0])}
+                accept="image/*"
+                onChange={handleImageChange}
                 className="hidden"
               />
 
               <button
                 type="button"
-                onClick={() => setIsCodeSnippetVisible(!isCodeSnippetVisible)} // Toggle the visibility of code snippet
+                onClick={() => setIsCodeSnippetVisible(!isCodeSnippetVisible)}
                 className="px-4 py-2 text-white rounded-md hover:opacity-80"
                 style={{ backgroundColor: "var(--tertiary)" }}
               >
@@ -240,7 +281,7 @@ export default function Feed() {
             </button>
           </div>
 
-          {/* Conditionally render code snippet textarea based on state, moved below the button */}
+          {/* Conditionally render code snippet textarea based on state */}
           {isCodeSnippetVisible && (
             <textarea
               value={codeSnippet}
