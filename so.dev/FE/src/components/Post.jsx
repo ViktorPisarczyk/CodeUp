@@ -411,6 +411,11 @@ const Post = ({
 
                       <span>{comment.text}</span>
                     </div>
+                    
+                    {/* Add comment creation date and time */}
+                    <div className="text-xs text-gray-500 ml-10 mb-2">
+                      {new Date(comment.createdAt).toLocaleString()}
+                    </div>
 
                     {activeCommentDropdown === comment._id && (
                       <>
