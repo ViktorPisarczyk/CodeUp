@@ -325,13 +325,13 @@ const Post = ({
         </button>
         <button
           className="flex items-center gap-1"
-          onClick={() => toggleCommentForm(post._id)}
+          onClick={toggleCommentForm}
         >
           <SlBubbles /> {post.comments?.length || 0}
         </button>
       </div>
 
-      {showCommentForm === post._id && (
+      {showCommentForm && (
         <div className="border-t border-gray-200 p-4">
           <form onSubmit={(e) => handleCommentSubmit(post._id, e)}>
             <textarea
