@@ -44,7 +44,9 @@ function Profile() {
 
       const data = await response.json();
 
-      const userPosts = data.filter((post) => post.author._id === userId);
+      const userPosts = data.filter(
+        (post) => post.author && post.author._id === userId
+      );
 
       setPosts(userPosts);
     } catch (error) {
@@ -221,6 +223,7 @@ function Profile() {
                   setNewComment={setNewComment}
                   handleCommentSubmit={handleCommentSubmit}
                   userId={userId}
+                  fetchUserPosts={fetchUserPosts}
                 />
               ))
             )}

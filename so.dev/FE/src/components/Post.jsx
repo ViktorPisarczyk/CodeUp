@@ -18,6 +18,7 @@ const Post = ({
   setNewComment,
   handleCommentSubmit,
   fetchPosts,
+  fetchUserPosts,
   onEdit,
   onCommentEdit,
 }) => {
@@ -91,6 +92,7 @@ const Post = ({
       setShowDeleteAlert(false);
       setSuccessMessage("Post deleted successfully!");
       setShowSuccessAlert(true);
+      fetchUserPosts();
     } catch (error) {
       console.error("Error deleting post:", error);
     }
@@ -144,6 +146,7 @@ const Post = ({
       setShowCommentDeleteAlert(false);
       setSuccessMessage("Comment deleted successfully!");
       setShowSuccessAlert(true);
+      fetchUserPosts();
     } catch (error) {
       console.error("Error deleting comment:", error);
     }
@@ -217,29 +220,35 @@ const Post = ({
         />
       )}
       <div className="flex items-center mb-2">
-        <Link
-          to={`/profile/${post.author._id}`}
-          className="w-10 h-10 rounded-full overflow-hidden"
-        >
-          <div className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white">
-            {post.author?.profilePicture ? (
-              <img
-                src={post.author.profilePicture}
-                alt="Profile"
-                className="w-full h-full object-cover rounded-full"
-              />
-            ) : (
-              <span>
-                {post.author?.username
-                  ? post.author.username[0].toUpperCase()
-                  : "?"}
-              </span>
-            )}
+        {post.author ? (
+          <Link
+            to={`/profile/${post.author._id}`}
+            className="w-10 h-10 rounded-full overflow-hidden"
+          >
+            <div className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white">
+              {post.author.profilePicture ? (
+                <img
+                  src={post.author.profilePicture}
+                  alt="Profile"
+                  className="w-full h-full object-cover rounded-full"
+                />
+              ) : (
+                <span>{post.author.username[0].toUpperCase()}</span>
+              )}
+            </div>
+          </Link>
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center text-white">
+            <span>?</span>
           </div>
-        </Link>
-        <Link to={`/profile/${post.author._id}`} className="ml-2 font-bold">
-          {post.author ? post.author.username : "Unknown User"}
-        </Link>
+        )}
+        {post.author ? (
+          <Link to={`/profile/${post.author._id}`} className="ml-2 font-bold">
+            {post.author.username}
+          </Link>
+        ) : (
+          <span className="ml-2 font-bold text-gray-500">Unknown User</span>
+        )}
       </div>
 
       <BsThreeDots
@@ -488,6 +497,7 @@ Post.propTypes = {
   onCommentDelete: PropTypes.func.isRequired,
   onCommentEdit: PropTypes.func.isRequired,
   fetchPosts: PropTypes.func.isRequired,
+  fetchUserPosts: PropTypes.func.isRequired,
 };
 
 export default Post;
