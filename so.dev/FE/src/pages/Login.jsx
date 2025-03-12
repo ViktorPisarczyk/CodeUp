@@ -12,7 +12,11 @@ export default function Login() {
     password: "",
     username: "",
   });
-  const [alert, setAlert] = useState({ show: false, message: "", isSuccess: true });
+  const [alert, setAlert] = useState({
+    show: false,
+    message: "",
+    isSuccess: true,
+  });
   const navigate = useNavigate();
 
   const closeAlert = () => {
@@ -48,20 +52,22 @@ export default function Login() {
         if (errorData.message === "Email not found") {
           setAlert({
             show: true,
-            message: "The email you entered does not exist. Please check and try again.",
-            isSuccess: false
+            message:
+              "The email you entered does not exist. Please check and try again.",
+            isSuccess: false,
           });
         } else if (errorData.message === "Incorrect password") {
           setAlert({
             show: true,
             message: "The password you entered is incorrect. Please try again.",
-            isSuccess: false
+            isSuccess: false,
           });
         } else {
           setAlert({
             show: true,
-            message: "Login failed: " + (errorData.message || "Invalid credentials."),
-            isSuccess: false
+            message:
+              "Login failed: " + (errorData.message || "Invalid credentials."),
+            isSuccess: false,
           });
         }
 
@@ -71,7 +77,7 @@ export default function Login() {
       setAlert({
         show: true,
         message: "An error occurred during login. Please try again later.",
-        isSuccess: false
+        isSuccess: false,
       });
       console.error("Error during login:", error);
     }
@@ -102,27 +108,37 @@ export default function Login() {
 
         setAlert({
           show: true,
-          message: "Sign up successful! Redirecting to login...",
-          isSuccess: true
+          message: "Sign up successful!",
+          isSuccess: true,
         });
         setTimeout(() => {
           navigate("/login");
-        }, 1000); // Small delay to ensure smooth transition
+        }, 1000);
       } else {
         const errorData = await response.json();
         console.error("Signup failed:", errorData.message);
-        setAlert({
-          show: true,
-          message: errorData.message,
-          isSuccess: false
-        });
+        
+        // Check for duplicate email error
+        if (errorData.message && errorData.message.includes("E11000 duplicate key error")) {
+          setAlert({
+            show: true,
+            message: "This email is already linked to an existing account. Please use another email.",
+            isSuccess: false,
+          });
+        } else {
+          setAlert({
+            show: true,
+            message: errorData.message,
+            isSuccess: false,
+          });
+        }
       }
     } catch (error) {
       console.error("Error during signup:", error);
       setAlert({
         show: true,
         message: "Something went wrong. Please try again.",
-        isSuccess: false
+        isSuccess: false,
       });
     }
   };
@@ -220,7 +236,6 @@ export default function Login() {
         <Alert
           message={alert.message}
           onConfirm={closeAlert}
-          onCancel={closeAlert}
           isSuccess={alert.isSuccess}
         />
       )}

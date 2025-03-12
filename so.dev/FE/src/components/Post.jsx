@@ -58,7 +58,7 @@ const Post = ({
 
   const loggedInUserId = getUserIdFromToken();
 
-  const onDelete = async (postId) => {
+  const onDelete = async () => {
     try {
       setShowDeleteAlert(true);
       setShowDropdown(false);
@@ -171,6 +171,10 @@ const Post = ({
     fetchPosts();
   };
 
+  if (!post || !post.author) {
+    return null;
+  }
+
   return (
     <div
       className="rounded-lg relative shadow-md p-4"
@@ -271,7 +275,7 @@ const Post = ({
                 </button>
                 <button
                   className="w-full text-left text-white px-4 py-2 hover:opacity-70"
-                  onClick={() => onDelete(post._id)}
+                  onClick={() => onDelete()}
                 >
                   Delete Post
                 </button>
@@ -455,20 +459,22 @@ Post.propTypes = {
     content: PropTypes.string.isRequired,
     author: PropTypes.shape({
       _id: PropTypes.string.isRequired,
-      username: PropTypes.string.isRequired,
       profilePicture: PropTypes.string,
-    }),
-    likes: PropTypes.arrayOf(PropTypes.string),
+      username: PropTypes.string.isRequired,
+    }).isRequired,
+    image: PropTypes.string,
     comments: PropTypes.arrayOf(
       PropTypes.shape({
         _id: PropTypes.string.isRequired,
-        content: PropTypes.string.isRequired,
-        author: PropTypes.shape({
+        text: PropTypes.string.isRequired,
+        user: PropTypes.shape({
           _id: PropTypes.string.isRequired,
           username: PropTypes.string.isRequired,
-        }),
+        }).isRequired,
       })
-    ),
+    ).isRequired,
+    likes: PropTypes.arrayOf(PropTypes.string).isRequired,
+    createdAt: PropTypes.string.isRequired,
   }).isRequired,
   handleLike: PropTypes.func.isRequired,
   showCommentForm: PropTypes.bool.isRequired,

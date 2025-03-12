@@ -17,12 +17,12 @@ const Alert = ({ message, onConfirm, onCancel, isSuccess }) => {
           >
             {isSuccess ? "OK" : "Confirm"}
           </button>
-          {!isSuccess && (
+          {!isSuccess && onCancel && (
             <button
               onClick={onCancel}
               className="px-4 hover:opacity-70 py-2 text-white rounded-lg"
               style={{
-                backgroundColor: "var(--tertiary)",
+                backgroundColor: "var(--quaternary)",
               }}
             >
               Cancel
@@ -37,7 +37,7 @@ const Alert = ({ message, onConfirm, onCancel, isSuccess }) => {
 Alert.propTypes = {
   message: PropTypes.string.isRequired,
   onConfirm: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
+  onCancel: PropTypes.func,
   isSuccess: PropTypes.bool,
 };
 
