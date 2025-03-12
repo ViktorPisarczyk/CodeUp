@@ -22,7 +22,7 @@ const Alert = ({ message, onConfirm, onCancel, isSuccess }) => {
               onClick={onCancel}
               className="px-4 hover:opacity-70 py-2 text-white rounded-lg"
               style={{
-                backgroundColor: "var(--quaternary)",
+                backgroundColor: "var(--tertiary)",
               }}
             >
               Cancel
