@@ -15,7 +15,7 @@ const AboutPage = () => {
         <div className="container mx-auto max-w-4xl flex flex-col  text-center">
           <h1 className="text-4xl font-bold mt-10 mb-8">About Us</h1>
           <div className="flex self-center max-w-3xl">
-            <p className="text-lg mb-30">
+            <p className="text-lg mb-30 mx-3">
               We are a team of 4 passionate web developers who created this
               social media platform specifically for developers. It's a place
               where developers can share their code, experiences, and connect
@@ -41,7 +41,7 @@ const AboutPage = () => {
                   </p>
                 </div>
               </div>
-              <p className="text-(--textGrey) mt-2 mb-5">
+              <p className="text-(--textGrey) mt-2 mb-5 mx-3">
                 Viktor is the backbone of our platform, managing the backend
                 systems and ensuring everything runs smoothly.
               </p>
@@ -51,18 +51,18 @@ const AboutPage = () => {
             <div className="flex flex-col">
               <div className="flex flex-row self-end py-6">
                 <div className=" text-right">
-                  <h3 className="text-xl font-semibold ">Nicholas</h3>
+                  <h3 className="text-xl font-semibold ">Nikolas</h3>
                   <p className="text-(--textGrey)">Backend Developer</p>
                 </div>
 
                 <img
                   src="https://via.placeholder.com/150"
-                  alt="Nicholas"
+                  alt="Nikolas"
                   className="w-32 h-32 rounded-full mx-20 mb-4"
                 />
               </div>
-              <p className="text-(--textGrey) mt-2 mb-5">
-                Nicholas is an expert in backend development and works closely
+              <p className="text-(--textGrey) mt-2 mb-5 mx-3">
+                Nikolas is an expert in backend development and works closely
                 with Viktor to ensure the platform's scalability and
                 performance.
               </p>
@@ -84,7 +84,7 @@ const AboutPage = () => {
                   </p>
                 </div>
               </div>
-              <p className="text-(--textGrey) mt-2 mb-5">
+              <p className="text-(--textGrey) mt-2 mb-5 mx-3">
                 Quentin is the creative force behind the frontend, adding smooth
                 animations, motion design, and ensuring a fantastic user
                 experience.
@@ -105,7 +105,7 @@ const AboutPage = () => {
                   className="w-32 h-32 rounded-full mx-20 mb-4"
                 />
               </div>
-              <p className="text-(--textGrey) mt-2 mb-5">
+              <p className="text-(--textGrey) mt-2 mb-5 mx-3">
                 Nausica works alongside Quentin to build a responsive, modern
                 interface, creating an intuitive platform for our users.
               </p>
