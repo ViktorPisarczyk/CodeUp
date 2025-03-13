@@ -240,8 +240,9 @@ const Post = ({
       {/* Image Modal */}
       {enlargedImage && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg"
           onClick={closeImageModal}
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)' }}
         >
           <div className="relative max-w-4xl max-h-screen p-4">
             <button
@@ -256,7 +257,7 @@ const Post = ({
             <img
               src={enlargedImage}
               alt="Enlarged post image"
-              className="max-w-full max-h-[90vh] object-contain"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             />
           </div>
