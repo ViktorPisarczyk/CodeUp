@@ -16,13 +16,21 @@ export const createPost = async (req, res, next) => {
     const user = await User.findById(decoded_token.id);
     if (!user) throw new Error("Invalid user.");
 
-    const imageUrl = req.file ? req.file.path : null; // Get the Cloudinary URL
+    // Handle multiple images
+    let imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      imageUrls = req.files.map(file => file.path);
+    }
+    
+    // For backward compatibility
+    const imageUrl = req.file ? req.file.path : null;
 
     const newPost = await Post.create({
       author: user._id,
       content,
       code,
-      image: imageUrl,
+      image: imageUrl || (imageUrls.length > 0 ? imageUrls[0] : null), // For backward compatibility
+      images: imageUrls,
     });
 
     res.status(201).json(newPost);

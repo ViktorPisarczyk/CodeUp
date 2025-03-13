@@ -18,12 +18,13 @@ export default function Feed() {
   const [newPost, setNewPost] = useState("");
   const [newComment, setNewComment] = useState({});
   const [showCommentForm, setShowCommentForm] = useState(null);
-  const [imageFile, setImageFile] = useState(null); // For the picture
-  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]); // For multiple pictures
+  const [imagePreviewUrls, setImagePreviewUrls] = useState([]); // For multiple previews
   const [codeSnippet, setCodeSnippet] = useState(""); // For the code snippet
   const [isCodeSnippetVisible, setIsCodeSnippetVisible] = useState(false); // To control the visibility of the code snippet textarea
   const [showAddTextAlert, setShowAddTextAlert] = useState(false); // New state for the alert
   const [showSuccessAlert, setShowSuccessAlert] = useState(false); // New state for the success alert
+  const [showMaxImagesAlert, setShowMaxImagesAlert] = useState(false); // Alert for max images limit
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -89,32 +90,42 @@ export default function Feed() {
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviewUrl(reader.result);
-      };
-      reader.readAsDataURL(file);
+    const files = Array.from(e.target.files);
+    
+    // Check if adding these files would exceed the limit
+    if (imageFiles.length + files.length > 3) {
+      setShowMaxImagesAlert(true);
+      return;
     }
+    
+    // Add new files to existing files
+    const newImageFiles = [...imageFiles, ...files];
+    setImageFiles(newImageFiles);
+    
+    // Create object URLs for new files
+    const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
+    setImagePreviewUrls([...imagePreviewUrls, ...newPreviewUrls]);
   };
 
-  const removeImage = () => {
-    setImageFile(null);
-    setImagePreviewUrl(null);
+  const removeImage = (index) => {
+    const newImageFiles = [...imageFiles];
+    const newImagePreviewUrls = [...imagePreviewUrls];
+    newImageFiles.splice(index, 1);
+    newImagePreviewUrls.splice(index, 1);
+    setImageFiles(newImageFiles);
+    setImagePreviewUrls(newImagePreviewUrls);
   };
 
   const handlePostSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
 
-    if (!newPost.trim() && !imageFile) {
+    if (!newPost.trim() && imageFiles.length === 0) {
       alert("Please enter a text or upload an image.");
       return;
     }
 
-    if (!newPost.trim() && imageFile) {
+    if (!newPost.trim() && imageFiles.length > 0) {
       setShowAddTextAlert(true);
       return;
     }
@@ -125,9 +136,7 @@ export default function Feed() {
   const submitPost = async (token) => {
     const formData = new FormData();
     formData.append("content", newPost);
-    if (imageFile) {
-      formData.append("image", imageFile);
-    }
+    imageFiles.forEach((file) => formData.append("images", file));
     if (codeSnippet.trim()) {
       formData.append("code", codeSnippet);
     }
@@ -144,8 +153,8 @@ export default function Feed() {
       if (!response.ok) throw new Error("Failed to create post");
 
       setNewPost("");
-      setImageFile(null);
-      setImagePreviewUrl(null);
+      setImageFiles([]);
+      setImagePreviewUrls([]);
       setCodeSnippet("");
       setShowSuccessAlert(true);
       fetchPosts();
@@ -237,6 +246,12 @@ export default function Feed() {
               isSuccess={true}
             />
           )}
+          {showMaxImagesAlert && (
+            <Alert
+              message="You can only upload up to 3 images."
+              onConfirm={() => setShowMaxImagesAlert(false)}
+            />
+          )}
           <textarea
             value={newPost}
             onChange={(e) => setNewPost(e.target.value)}
@@ -247,62 +262,66 @@ export default function Feed() {
           />
 
           {/* Image Preview */}
-          {imagePreviewUrl && (
+          {imagePreviewUrls.length > 0 && (
             <div className="relative mt-2 mb-2">
-              <img
-                src={imagePreviewUrl}
-                alt="Preview"
-                className="max-h-48 rounded-lg object-cover"
-              />
-              <button
-                type="button"
-                onClick={removeImage}
-                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                style={{ backgroundColor: "var(--quaternary)" }}
-              >
-                <IoClose size={20} />
-              </button>
+              <div className="flex flex-wrap gap-2">
+                {imagePreviewUrls.map((url, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={url}
+                      alt="Preview"
+                      className="h-48 w-auto rounded-lg object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-2 right-2 text-white rounded-full p-1 hover:opacity-80 transition-colors"
+                      style={{ backgroundColor: "var(--quaternary)" }}
+                    >
+                      <IoClose size={20} />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
-          <div className="mt-2 flex items-center justify-between">
-            {/* Buttons to Attach Picture, Code Snippet, and Post */}
-            <div className="flex space-x-2">
-              <button
-                type="button"
-                onClick={() => document.getElementById("image-upload").click()}
-                className="px-4 py-2 text-white rounded-md hover:opacity-80"
-                style={{ backgroundColor: "var(--tertiary)" }}
-              >
-                Attach Picture
-              </button>
+          <div className="flex gap-2 mt-2">
+            <label
+              htmlFor="image-upload"
+              className="cursor-pointer px-4 py-2 rounded-lg text-white flex items-center gap-2"
+              style={{ backgroundColor: "var(--tertiary)" }}
+            >
+              <span>Upload Images {imageFiles.length > 0 && `(${imageFiles.length}/3)`}</span>
               <input
                 id="image-upload"
                 type="file"
+                multiple
                 accept="image/*"
                 onChange={handleImageChange}
                 className="hidden"
+                disabled={imageFiles.length >= 3}
               />
+            </label>
 
-              <button
-                type="button"
-                onClick={() => setIsCodeSnippetVisible(!isCodeSnippetVisible)}
-                className="px-4 py-2 text-white rounded-md hover:opacity-80"
-                style={{ backgroundColor: "var(--tertiary)" }}
-              >
-                Attach Code Snippet
-              </button>
-            </div>
-
-            {/* Post Button */}
             <button
-              type="submit"
-              className="px-4 py-2 ml-3 text-white rounded-md hover:opacity-80"
+              type="button"
+              onClick={() => setIsCodeSnippetVisible(!isCodeSnippetVisible)}
+              className="px-4 py-2 text-white rounded-md hover:opacity-80"
               style={{ backgroundColor: "var(--tertiary)" }}
             >
-              Post
+              Attach Code Snippet
             </button>
           </div>
+
+          {/* Post Button */}
+          <button
+            type="submit"
+            className="px-4 py-2 ml-3 text-white rounded-md hover:opacity-80"
+            style={{ backgroundColor: "var(--tertiary)" }}
+          >
+            Post
+          </button>
 
           {/* Conditionally render code snippet textarea based on state */}
           {isCodeSnippetVisible && (

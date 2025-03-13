@@ -311,13 +311,49 @@ const Post = ({
 
       {/* Post Content */}
       <p>{post.content}</p>
-      {post.image && (
+      
+      {/* Display multiple images if available */}
+      {post.images && post.images.length > 0 ? (
+        <div className="image-gallery mb-4">
+          {post.images.length === 1 ? (
+            <img
+              src={post.images[0]}
+              alt="Post content"
+              className="rounded-md w-full"
+            />
+          ) : post.images.length === 2 ? (
+            <div className="grid grid-cols-2 gap-2">
+              {post.images.map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`Post content ${index + 1}`}
+                  className="rounded-md w-full h-48 object-cover"
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {post.images.map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`Post content ${index + 1}`}
+                  className="rounded-md w-full h-40 object-cover"
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : post.image ? (
+        // Fallback for backward compatibility
         <img
           src={post.image}
           alt="Post content"
           className="rounded-md w-full mb-4"
         />
-      )}
+      ) : null}
+      
       {post.code && (
         <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto">
           <code className="language-javascript">{post.code}</code>
@@ -485,6 +521,7 @@ Post.propTypes = {
       profilePicture: PropTypes.string,
       username: PropTypes.string.isRequired,
     }).isRequired,
+    images: PropTypes.arrayOf(PropTypes.string),
     image: PropTypes.string,
     code: PropTypes.string,
     comments: PropTypes.arrayOf(
