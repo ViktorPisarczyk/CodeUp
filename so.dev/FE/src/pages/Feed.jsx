@@ -91,17 +91,17 @@ export default function Feed() {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     // Check if adding these files would exceed the limit
     if (imageFiles.length + files.length > 3) {
       setShowMaxImagesAlert(true);
       return;
     }
-    
+
     // Add new files to existing files
     const newImageFiles = [...imageFiles, ...files];
     setImageFiles(newImageFiles);
-    
+
     // Create object URLs for new files
     const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
     setImagePreviewUrls([...imagePreviewUrls, ...newPreviewUrls]);
@@ -260,7 +260,7 @@ export default function Feed() {
             style={{ backgroundColor: "var(--textarea)" }}
             rows="3"
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
+              if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 handlePostSubmit(e);
               }
@@ -298,7 +298,10 @@ export default function Feed() {
               className="cursor-pointer px-4 py-2 rounded-lg text-white flex items-center gap-2"
               style={{ backgroundColor: "var(--tertiary)" }}
             >
-              <span>Upload Images {imageFiles.length > 0 && `(${imageFiles.length}/3)`}</span>
+              <span>
+                Upload Images{" "}
+                {imageFiles.length > 0 && `(${imageFiles.length}/3)`}
+              </span>
               <input
                 id="image-upload"
                 type="file"
@@ -318,7 +321,7 @@ export default function Feed() {
             >
               Attach Code Snippet
             </button>
-            
+
             {/* Post Button */}
             <button
               type="submit"
