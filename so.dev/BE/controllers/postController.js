@@ -19,9 +19,9 @@ export const createPost = async (req, res, next) => {
     // Handle multiple images
     let imageUrls = [];
     if (req.files && req.files.length > 0) {
-      imageUrls = req.files.map(file => file.path);
+      imageUrls = req.files.map((file) => file.path);
     }
-    
+
     // For backward compatibility
     const imageUrl = req.file ? req.file.path : null;
 
@@ -65,7 +65,7 @@ export const getPosts = async (req, res, next) => {
       posts,
       hasMore,
       currentPage: page,
-      totalPages: Math.ceil(totalPosts / limit)
+      totalPages: Math.ceil(totalPosts / limit),
     });
   } catch (error) {
     next(error);
@@ -209,5 +209,20 @@ export const commentOnPost = async (req, res, next) => {
     res.status(201).json(newComment);
   } catch (error) {
     next(error);
+  }
+};
+
+export const getPostsByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const posts = await Post.find({ author: userId })
+      .populate("author", "username profilePicture")
+      .sort({ createdAt: -1 });
+
+    res.json(posts);
+  } catch (error) {
+    console.error("Error fetching user posts:", error);
+    res.status(500).json({ message: "Error fetching user posts" });
   }
 };

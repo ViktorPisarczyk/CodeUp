@@ -40,6 +40,10 @@ const Post = ({
   const [enlargedImage, setEnlargedImage] = useState(null);
   const [codeCopied, setCodeCopied] = useState(false);
 
+  useEffect(() => {
+    Prism.highlightAll();
+  }, []);
+
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
     setActiveCommentDropdown(null); // Close any open comment dropdowns
@@ -193,15 +197,16 @@ const Post = ({
 
   const copyCodeToClipboard = () => {
     if (post.code) {
-      navigator.clipboard.writeText(post.code)
+      navigator.clipboard
+        .writeText(post.code)
         .then(() => {
           setCodeCopied(true);
           setTimeout(() => {
             setCodeCopied(false);
           }, 2000);
         })
-        .catch(err => {
-          console.error('Failed to copy code: ', err);
+        .catch((err) => {
+          console.error("Failed to copy code: ", err);
         });
     }
   };
@@ -209,10 +214,6 @@ const Post = ({
   if (!post || !post.author) {
     return null;
   }
-
-  useEffect(() => {
-    Prism.highlightAll();
-  }, []);
 
   return (
     <div
@@ -256,10 +257,10 @@ const Post = ({
       )}
       {/* Image Modal */}
       {enlargedImage && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg"
           onClick={closeImageModal}
-          style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)' }}
+          style={{ backgroundColor: "rgba(255, 255, 255, 0.3)" }}
         >
           <div className="relative max-w-4xl max-h-screen p-4">
             <img
@@ -465,34 +466,38 @@ const Post = ({
                     />
                     <div className="text-sm flex items-center space-x-2 mb-2">
                       {/* Commenter Profile Picture */}
-                      <Link
-                        to={`/profile/${comment.user._id}`}
-                        className="w-8 h-8 rounded-full overflow-hidden"
-                      >
-                        <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white">
-                          {comment.user?.profilePicture ? (
-                            <img
-                              src={comment.user.profilePicture}
-                              alt="Profile"
-                              className="w-full h-full object-cover rounded-full"
-                            />
-                          ) : (
-                            <span>
-                              {comment.user?.username
-                                ? comment.user.username[0].toUpperCase()
-                                : "?"}
-                            </span>
-                          )}
-                        </div>
-                      </Link>
+                      {comment.user && (
+                        <Link
+                          to={`/profile/${comment.user._id}`}
+                          className="w-8 h-8 rounded-full overflow-hidden"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white">
+                            {comment.user?.profilePicture ? (
+                              <img
+                                src={comment.user.profilePicture}
+                                alt="Profile"
+                                className="w-full h-full object-cover rounded-full"
+                              />
+                            ) : (
+                              <span>
+                                {comment.user?.username
+                                  ? comment.user.username[0].toUpperCase()
+                                  : "?"}
+                              </span>
+                            )}
+                          </div>
+                        </Link>
+                      )}
 
                       {/* Commenter Username */}
-                      <Link
-                        to={`/profile/${comment.user._id}`}
-                        className="font-bold"
-                      >
-                        {comment.user?.username}
-                      </Link>
+                      {comment.user && (
+                        <Link
+                          to={`/profile/${comment.user._id}`}
+                          className="font-bold"
+                        >
+                          {comment.user?.username}
+                        </Link>
+                      )}
 
                       <span>{comment.text}</span>
                     </div>
@@ -534,7 +539,9 @@ const Post = ({
                               </button>
                               <button
                                 className="w-full text-left text-white px-4 py-2 hover:opacity-70"
-                                onClick={() => handleCommentDeleteClick(comment._id)}
+                                onClick={() =>
+                                  handleCommentDeleteClick(comment._id)
+                                }
                               >
                                 Delete Comment
                               </button>
@@ -542,7 +549,9 @@ const Post = ({
                           ) : (
                             <button
                               className="w-full text-left text-white px-4 py-2 hover:opacity-70"
-                              onClick={() => handleCommentReportClick(comment._id)}
+                              onClick={() =>
+                                handleCommentReportClick(comment._id)
+                              }
                             >
                               Report Comment
                             </button>

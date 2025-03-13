@@ -28,7 +28,10 @@ const profileStorage = new CloudinaryStorage({
 });
 
 export const uploadPostImage = multer({ storage: postStorage });
-export const uploadMultiplePostImages = multer({ storage: postStorage }).array("images", 3); // Allow up to 3 images
+export const uploadMultiplePostImages = multer({ storage: postStorage }).array(
+  "images",
+  3
+);
 export const uploadProfileImage = multer({ storage: profileStorage });
 
 export { cloudinary };

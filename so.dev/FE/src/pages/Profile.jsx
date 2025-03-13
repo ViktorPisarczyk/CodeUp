@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
 import { jwtDecode } from "jwt-decode";
@@ -37,30 +37,33 @@ function Profile() {
   const loggedInUserId = getUserIdFromToken();
   const userId = id || loggedInUserId;
 
-  const fetchUserPosts = async () => {
+  const fetchUserPosts = useCallback(async () => {
     if (!userId) return;
 
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
 
-      const response = await fetch("http://localhost:5001/posts", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) throw new Error("Failed to fetch posts");
-
-      const data = await response.json();
-
-      const userPosts = data.filter(
-        (post) => post.author && post.author._id === userId
+      const response = await fetch(
+        `http://localhost:5001/posts/user/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+
+      if (!response.ok) throw new Error("Failed to fetch user posts");
+
+      const userPosts = await response.json();
 
       setPosts(userPosts);
     } catch (error) {
-      console.error("Error fetching posts", error);
+      console.error("Error fetching user posts", error);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     if (!loggedInUserId) {
@@ -190,13 +193,16 @@ function Profile() {
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/users/${loggedInUserId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:5001/users/${loggedInUserId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         const data = await response.json();
@@ -206,7 +212,7 @@ function Profile() {
       setShowDeleteAlert(false);
       setSuccessMessage("Account deleted successfully!");
       setShowSuccessAlert(true);
-      
+
       // Clear local storage and redirect to login after a short delay
       setTimeout(() => {
         localStorage.removeItem("token");
@@ -260,7 +266,7 @@ function Profile() {
             onCancel={() => setShowReportAlert(false)}
           />
         )}
-        
+
         {/* Profile Section */}
         <div className="flex flex-col md:flex-row pb-10  items-center relative rounded-xl p-5 my-10 bg-(--secondary)">
           <div className="flex flex-col items-center md:items-start md:w-1/3">
@@ -284,14 +290,14 @@ function Profile() {
             <p className="mt-4 ">
               {user.bio || "This user has not updated their bio yet."}
             </p>
-            
+
             {/* Three Dots Menu */}
             <div className="absolute top-4 right-4">
               <BsThreeDots
                 className="cursor-pointer hover:opacity-70 text-xl"
                 onClick={toggleDropdown}
               />
-              
+
               {showDropdown && (
                 <>
                   <div
@@ -300,7 +306,10 @@ function Profile() {
                   />
                   <div
                     className="absolute right-0 top-8 rounded-lg shadow-lg py-2 z-33"
-                    style={{ backgroundColor: "var(--tertiary)", minWidth: "150px" }}
+                    style={{
+                      backgroundColor: "var(--tertiary)",
+                      minWidth: "150px",
+                    }}
                   >
                     <div className="flex justify-end px-2">
                       <IoClose
@@ -308,7 +317,7 @@ function Profile() {
                         onClick={() => setShowDropdown(false)}
                       />
                     </div>
-                    
+
                     {loggedInUserId === userId ? (
                       <>
                         <button
@@ -361,7 +370,7 @@ function Profile() {
                   post={post}
                   handleLike={handleLike}
                   showCommentForm={showCommentForm}
-                  toggleCommentForm={toggleCommentForm}
+                  toggleCommentForm={() => toggleCommentForm(post._id)}
                   newComment={newComment}
                   setNewComment={setNewComment}
                   handleCommentSubmit={handleCommentSubmit}
