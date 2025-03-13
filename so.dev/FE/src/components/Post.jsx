@@ -434,6 +434,12 @@ const Post = ({
               className="w-full p-2 rounded-md text-black border-gray-300 focus:border-blue-400 focus:ring-blue-400"
               style={{ backgroundColor: "var(--textarea)" }}
               rows="3"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleCommentSubmit(post._id, e);
+                }
+              }}
             />
             <button
               type="submit"
