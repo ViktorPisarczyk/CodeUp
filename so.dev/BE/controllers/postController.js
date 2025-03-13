@@ -16,13 +16,21 @@ export const createPost = async (req, res, next) => {
     const user = await User.findById(decoded_token.id);
     if (!user) throw new Error("Invalid user.");
 
-    const imageUrl = req.file ? req.file.path : null; // Get the Cloudinary URL
+    // Handle multiple images
+    let imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      imageUrls = req.files.map(file => file.path);
+    }
+    
+    // For backward compatibility
+    const imageUrl = req.file ? req.file.path : null;
 
     const newPost = await Post.create({
       author: user._id,
       content,
       code,
-      image: imageUrl,
+      image: imageUrl || (imageUrls.length > 0 ? imageUrls[0] : null), // For backward compatibility
+      images: imageUrls,
     });
 
     res.status(201).json(newPost);
@@ -33,6 +41,10 @@ export const createPost = async (req, res, next) => {
 
 export const getPosts = async (req, res, next) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
     const posts = await Post.find()
       .populate("author", "username profilePicture")
       .populate({
@@ -42,9 +54,19 @@ export const getPosts = async (req, res, next) => {
           select: "username profilePicture",
         },
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
-    res.status(200).json(posts);
+    const totalPosts = await Post.countDocuments();
+    const hasMore = totalPosts > skip + posts.length;
+
+    res.status(200).json({
+      posts,
+      hasMore,
+      currentPage: page,
+      totalPages: Math.ceil(totalPosts / limit)
+    });
   } catch (error) {
     next(error);
   }

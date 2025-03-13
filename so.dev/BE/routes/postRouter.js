@@ -9,11 +9,12 @@ import {
   commentOnPost,
 } from "../controllers/postController.js";
 import { protect } from "../middlewares/auth.js";
-import { uploadPostImage } from "../config/cloudinaryConfig.js";
+import { uploadPostImage, uploadMultiplePostImages } from "../config/cloudinaryConfig.js";
 
 export const postRouter = Router();
 
-postRouter.route("/").post(uploadPostImage.single("image"), createPost);
+// Support both single image and multiple images
+postRouter.route("/").post(uploadMultiplePostImages, createPost);
 postRouter.route("/").get(getPosts);
 postRouter
   .route("/:id")

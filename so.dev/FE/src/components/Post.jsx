@@ -7,6 +7,7 @@ import { jwtDecode } from "jwt-decode";
 import { SlBubbles } from "react-icons/sl";
 import { CiHeart } from "react-icons/ci";
 import { FaHeart } from "react-icons/fa";
+import { FaCopy, FaCheck } from "react-icons/fa";
 import Alert from "./Alert";
 import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css";
@@ -22,6 +23,9 @@ const Post = ({
   fetchPosts,
   fetchUserPosts,
   onEdit,
+  onDelete,
+  onReport,
+  onCommentDelete,
   onCommentEdit,
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -33,6 +37,8 @@ const Post = ({
   const [selectedCommentId, setSelectedCommentId] = useState(null);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [enlargedImage, setEnlargedImage] = useState(null);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
@@ -61,7 +67,7 @@ const Post = ({
 
   const loggedInUserId = getUserIdFromToken();
 
-  const onDelete = async () => {
+  const handleDeleteClick = async () => {
     try {
       setShowDeleteAlert(true);
       setShowDropdown(false);
@@ -100,13 +106,14 @@ const Post = ({
     }
   };
 
-  const onReport = async () => {
+  const handleReportClick = async () => {
     setShowReportAlert(true);
     setShowDropdown(false);
   };
 
   const handleReportConfirm = async () => {
     try {
+      await onReport(post._id);
       setShowReportAlert(false);
       setSuccessMessage("Post reported successfully!");
       setShowSuccessAlert(true);
@@ -115,7 +122,7 @@ const Post = ({
     }
   };
 
-  const onCommentDelete = async (commentId) => {
+  const handleCommentDeleteClick = async (commentId) => {
     setSelectedCommentId(commentId);
     setShowCommentDeleteAlert(true);
     setActiveCommentDropdown(null);
@@ -154,7 +161,7 @@ const Post = ({
     }
   };
 
-  const onCommentReport = async (commentId) => {
+  const handleCommentReportClick = async (commentId) => {
     setSelectedCommentId(commentId);
     setShowCommentReportAlert(true);
     setActiveCommentDropdown(null);
@@ -176,6 +183,29 @@ const Post = ({
     fetchPosts();
   };
 
+  const openImageModal = (imageUrl) => {
+    setEnlargedImage(imageUrl);
+  };
+
+  const closeImageModal = () => {
+    setEnlargedImage(null);
+  };
+
+  const copyCodeToClipboard = () => {
+    if (post.code) {
+      navigator.clipboard.writeText(post.code)
+        .then(() => {
+          setCodeCopied(true);
+          setTimeout(() => {
+            setCodeCopied(false);
+          }, 2000);
+        })
+        .catch(err => {
+          console.error('Failed to copy code: ', err);
+        });
+    }
+  };
+
   if (!post || !post.author) {
     return null;
   }
@@ -186,14 +216,13 @@ const Post = ({
 
   return (
     <div
-      className="rounded-lg relative shadow-md p-4"
+      className="rounded-lg relative shadow-md p-4 mb-4"
       style={{ backgroundColor: "var(--secondary)" }}
     >
       {showSuccessAlert && (
         <Alert
           message={successMessage}
           onConfirm={handleSuccessConfirm}
-          onCancel={handleSuccessConfirm}
           isSuccess={true}
         />
       )}
@@ -225,29 +254,29 @@ const Post = ({
           onCancel={() => setShowCommentReportAlert(false)}
         />
       )}
-      <div className="flex items-center mb-2">
-        {post.author ? (
-          <Link
-            to={`/profile/${post.author._id}`}
-            className="w-10 h-10 rounded-full overflow-hidden"
-          >
-            <div className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white">
-              {post.author.profilePicture ? (
-                <img
-                  src={post.author.profilePicture}
-                  alt="Profile"
-                  className="w-full h-full object-cover rounded-full"
-                />
-              ) : (
-                <span>{post.author.username[0].toUpperCase()}</span>
-              )}
-            </div>
-          </Link>
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-gray-400 flex items-center justify-center text-white">
-            <span>?</span>
+      {/* Image Modal */}
+      {enlargedImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg"
+          onClick={closeImageModal}
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)' }}
+        >
+          <div className="relative max-w-4xl max-h-screen p-4">
+            <img
+              src={enlargedImage}
+              alt="Enlarged post image"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
-        )}
+        </div>
+      )}
+      <div className="flex items-center">
+        <img
+          src={post.author.profilePicture || "https://via.placeholder.com/40"}
+          alt="Profile"
+          className="w-10 h-10 rounded-full"
+        />
         {post.author ? (
           <Link to={`/profile/${post.author._id}`} className="ml-2 font-bold">
             {post.author.username}
@@ -255,6 +284,9 @@ const Post = ({
         ) : (
           <span className="ml-2 font-bold text-gray-500">Unknown User</span>
         )}
+        <span className="ml-2 text-sm text-gray-500">
+          {new Date(post.createdAt).toLocaleString()}
+        </span>
       </div>
       <BsThreeDots
         className="absolute right-4 top-4 cursor-pointer hover:opacity-70"
@@ -289,7 +321,7 @@ const Post = ({
                 </button>
                 <button
                   className="w-full text-left text-white px-4 py-2 hover:opacity-70"
-                  onClick={() => onDelete()}
+                  onClick={() => handleDeleteClick()}
                 >
                   Delete Post
                 </button>
@@ -297,7 +329,7 @@ const Post = ({
             ) : (
               <button
                 className="w-full text-left px-4 text-white py-2 hover:opacity-70"
-                onClick={() => onReport()}
+                onClick={() => handleReportClick()}
               >
                 Report Post
               </button>
@@ -307,21 +339,71 @@ const Post = ({
       )}
 
       {/* Post Content */}
-      <p>{post.content}</p>
-      {post.image && (
+      <p className="mt-4 mb-4">{post.content}</p>
+
+      {/* Display multiple images if available */}
+      {post.images && post.images.length > 0 ? (
+        <div className="image-gallery mb-4">
+          {post.images.length === 1 ? (
+            <img
+              src={post.images[0]}
+              alt="Post content"
+              className="rounded-md w-full cursor-pointer"
+              onClick={() => openImageModal(post.images[0])}
+            />
+          ) : post.images.length === 2 ? (
+            <div className="grid grid-cols-2 gap-2">
+              {post.images.map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`Post content ${index + 1}`}
+                  className="rounded-md w-full h-48 object-cover cursor-pointer"
+                  onClick={() => openImageModal(image)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {post.images.map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`Post content ${index + 1}`}
+                  className="rounded-md w-full h-40 object-cover cursor-pointer"
+                  onClick={() => openImageModal(image)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : post.image ? (
+        // Fallback for backward compatibility
         <img
           src={post.image}
           alt="Post content"
-          className="rounded-md w-full mb-4"
+          className="rounded-md w-full mb-4 cursor-pointer"
+          onClick={() => openImageModal(post.image)}
         />
-      )}
+      ) : null}
+
       {post.code && (
-        <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto">
-          <code className="language-javascript">{post.code}</code>
-        </pre>
+        <div className="relative mb-4">
+          <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto">
+            <code className="language-javascript">{post.code}</code>
+          </pre>
+          <button
+            onClick={copyCodeToClipboard}
+            className="absolute top-2 right-2 p-2 rounded-md text-white"
+            style={{ backgroundColor: "var(--tertiary)" }}
+            title="Copy code to clipboard"
+          >
+            {codeCopied ? <FaCheck /> : <FaCopy />}
+          </button>
+        </div>
       )}
 
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-4 mt-4">
         <button
           className="flex items-center gap-1"
           onClick={() => handleLike(post._id)}
@@ -352,6 +434,12 @@ const Post = ({
               className="w-full p-2 rounded-md text-black border-gray-300 focus:border-blue-400 focus:ring-blue-400"
               style={{ backgroundColor: "var(--textarea)" }}
               rows="3"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleCommentSubmit(post._id, e);
+                }
+              }}
             />
             <button
               type="submit"
@@ -409,6 +497,11 @@ const Post = ({
                       <span>{comment.text}</span>
                     </div>
 
+                    {/* Add comment creation date and time */}
+                    <div className="text-xs text-gray-500 ml-10 mb-2">
+                      {new Date(comment.createdAt).toLocaleString()}
+                    </div>
+
                     {activeCommentDropdown === comment._id && (
                       <>
                         <div
@@ -441,7 +534,7 @@ const Post = ({
                               </button>
                               <button
                                 className="w-full text-left text-white px-4 py-2 hover:opacity-70"
-                                onClick={() => onCommentDelete(comment._id)}
+                                onClick={() => handleCommentDeleteClick(comment._id)}
                               >
                                 Delete Comment
                               </button>
@@ -449,7 +542,7 @@ const Post = ({
                           ) : (
                             <button
                               className="w-full text-left text-white px-4 py-2 hover:opacity-70"
-                              onClick={() => onCommentReport(comment._id)}
+                              onClick={() => handleCommentReportClick(comment._id)}
                             >
                               Report Comment
                             </button>
@@ -477,6 +570,7 @@ Post.propTypes = {
       profilePicture: PropTypes.string,
       username: PropTypes.string.isRequired,
     }).isRequired,
+    images: PropTypes.arrayOf(PropTypes.string),
     image: PropTypes.string,
     code: PropTypes.string,
     comments: PropTypes.arrayOf(
