@@ -41,6 +41,10 @@ export const createPost = async (req, res, next) => {
 
 export const getPosts = async (req, res, next) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
+
     const posts = await Post.find()
       .populate("author", "username profilePicture")
       .populate({
@@ -50,9 +54,19 @@ export const getPosts = async (req, res, next) => {
           select: "username profilePicture",
         },
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
-    res.status(200).json(posts);
+    const totalPosts = await Post.countDocuments();
+    const hasMore = totalPosts > skip + posts.length;
+
+    res.status(200).json({
+      posts,
+      hasMore,
+      currentPage: page,
+      totalPages: Math.ceil(totalPosts / limit)
+    });
   } catch (error) {
     next(error);
   }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
 import Post from "../components/Post";
@@ -24,6 +24,10 @@ export default function Feed() {
   const [isCodeSnippetVisible, setIsCodeSnippetVisible] = useState(false); // To control the visibility of the code snippet textarea
   const [showAddTextAlert, setShowAddTextAlert] = useState(false); // New state for the alert
   const [showMaxImagesAlert, setShowMaxImagesAlert] = useState(false); // Alert for max images limit
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const observer = useRef();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,11 +45,14 @@ export default function Feed() {
     Prism.highlightAll();
   }, [posts]);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (pageNum = 1, append = false) => {
+    if (loading) return;
+    
+    setLoading(true);
     const token = localStorage.getItem("token");
 
     try {
-      const response = await fetch(`${API_URL}/posts`, {
+      const response = await fetch(`${API_URL}/posts?page=${pageNum}&limit=5`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -57,11 +64,44 @@ export default function Feed() {
       }
 
       const data = await response.json();
-      setPosts(data || []);
+      
+      if (append) {
+        setPosts(prevPosts => [...prevPosts, ...data.posts]);
+      } else {
+        setPosts(data.posts || []);
+      }
+      
+      setHasMore(data.hasMore);
+      setPage(data.currentPage);
     } catch (error) {
       console.error("Error fetching posts:", error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const loadMorePosts = useCallback(() => {
+    if (!loading && hasMore) {
+      fetchPosts(page + 1, true);
+    }
+  }, [loading, hasMore, page]);
+
+  const lastPostElementRef = useCallback(node => {
+    if (loading) return;
+    
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMorePosts();
+      }
+    }, {
+      rootMargin: '100px', // Load more posts when within 100px of the bottom
+      threshold: 0.1 // Trigger when at least 10% of the element is visible
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore, loadMorePosts]);
 
   const handleLike = async (postId) => {
     const token = localStorage.getItem("token");
@@ -82,7 +122,23 @@ export default function Feed() {
         throw new Error("Failed to like the post");
       }
 
-      fetchPosts();
+      // Update just the liked post without refetching all posts
+      setPosts(prevPosts => 
+        prevPosts.map(post => {
+          if (post._id === postId) {
+            const userId = localStorage.getItem("userId");
+            const isLiked = post.likes.includes(userId);
+            
+            return {
+              ...post,
+              likes: isLiked 
+                ? post.likes.filter(id => id !== userId)
+                : [...post.likes, userId]
+            };
+          }
+          return post;
+        })
+      );
     } catch (error) {
       console.error("Error while liking post:", error);
     }
@@ -155,7 +211,9 @@ export default function Feed() {
       setImageFiles([]);
       setImagePreviewUrls([]);
       setCodeSnippet("");
-      fetchPosts();
+      // Reset to first page and fetch fresh posts
+      setPage(1);
+      fetchPosts(1, false);
     } catch (error) {
       console.error("Error creating post:", error);
     }
@@ -201,7 +259,10 @@ export default function Feed() {
       }));
 
       setShowCommentForm(null);
-      fetchPosts();
+      
+      // Refresh posts to show the new comment
+      const currentPage = page;
+      fetchPosts(currentPage, false);
     } catch (error) {
       console.error("Error adding comment:", error);
     }
@@ -271,9 +332,9 @@ export default function Feed() {
                     />
                     <button
                       type="button"
-                      onClick={() => removeImage(index)}
                       className="absolute top-2 right-2 text-white rounded-full p-1 hover:opacity-80 transition-colors"
                       style={{ backgroundColor: "var(--quaternary)" }}
+                      onClick={() => removeImage(index)}
                     >
                       <IoClose size={20} />
                     </button>
@@ -338,11 +399,11 @@ export default function Feed() {
 
         <div className="space-y-6">
           {posts && posts.length > 0 ? (
-            posts.map(
-              (post) =>
-                post && (
+            posts.map((post, index) => {
+              if (!post) return null;
+              return (
+                <div key={post._id}>
                   <Post
-                    key={post._id}
                     post={post}
                     handleLike={handleLike}
                     showCommentForm={showCommentForm === post._id}
@@ -450,18 +511,55 @@ export default function Feed() {
                       }
                     }}
                   />
-                )
-            )
+                  {posts.length === index + 1 && (
+                    <div ref={lastPostElementRef} className="h-10" />
+                  )}
+                </div>
+              );
+            })
           ) : (
-            <div
-              className="text-center p-4 rounded-lg"
-              style={{ backgroundColor: "var(--secondary)" }}
-            >
-              No posts available
+            <div className="text-center py-8">
+              <p className="text-lg">No posts yet. Be the first to post!</p>
             </div>
           )}
         </div>
+        
+        {loading && (
+          <div className="flex justify-center my-4">
+            <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--tertiary) transparent transparent transparent' }}></div>
+          </div>
+        )}
+        
+        {!hasMore && posts.length > 0 && (
+          <p className="text-center my-4 text-gray-500">No more posts to load</p>
+        )}
       </div>
     </div>
   );
 }
+
+// Add these functions to handle edit, delete, and report
+const handleEditPost = (postId) => {
+  console.log("Edit post:", postId);
+  // Implement edit post functionality
+};
+
+const handleDeletePost = (postId) => {
+  console.log("Delete post:", postId);
+  // Implement delete post functionality
+};
+
+const handleReportPost = (postId) => {
+  console.log("Report post:", postId);
+  // Implement report post functionality
+};
+
+const handleDeleteComment = (postId, commentId) => {
+  console.log("Delete comment:", commentId, "from post:", postId);
+  // Implement delete comment functionality
+};
+
+const handleEditComment = (postId, commentId) => {
+  console.log("Edit comment:", commentId, "from post:", postId);
+  // Implement edit comment functionality
+};
