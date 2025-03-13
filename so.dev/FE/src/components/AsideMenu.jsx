@@ -220,7 +220,10 @@ const AsideMenu = () => {
             >
               Help
             </button>
-            <button className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full">
+            <button
+              onClick={() => handleNavigation("/about")}
+              className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full"
+            >
               About
             </button>
 
