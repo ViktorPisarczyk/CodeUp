@@ -312,16 +312,16 @@ export default function Feed() {
             >
               Attach Code Snippet
             </button>
+            
+            {/* Post Button */}
+            <button
+              type="submit"
+              className="px-4 py-2 text-white rounded-md hover:opacity-80 ml-auto"
+              style={{ backgroundColor: "var(--tertiary)" }}
+            >
+              Post
+            </button>
           </div>
-
-          {/* Post Button */}
-          <button
-            type="submit"
-            className="px-4 py-2 ml-3 text-white rounded-md hover:opacity-80"
-            style={{ backgroundColor: "var(--tertiary)" }}
-          >
-            Post
-          </button>
 
           {/* Conditionally render code snippet textarea based on state */}
           {isCodeSnippetVisible && (
