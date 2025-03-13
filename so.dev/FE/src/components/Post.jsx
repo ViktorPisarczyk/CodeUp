@@ -245,15 +245,6 @@ const Post = ({
           style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)' }}
         >
           <div className="relative max-w-4xl max-h-screen p-4">
-            <button
-              className="absolute top-4 right-4 text-white bg-gray-800 rounded-full p-2 hover:bg-gray-700"
-              onClick={(e) => {
-                e.stopPropagation();
-                closeImageModal();
-              }}
-            >
-              <IoClose size={24} />
-            </button>
             <img
               src={enlargedImage}
               alt="Enlarged post image"
