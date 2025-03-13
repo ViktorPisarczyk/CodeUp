@@ -9,6 +9,7 @@
   --tertiary: #5f416d;
   --quaternary: #ebd3f8;
   --textarea: #e1d8e9;
+  --textGrey: #c9c9c9;
   color: white;
 }
 .light {
@@ -17,6 +18,7 @@
   --tertiary: #5dacf7;
   --quaternary: #3792dd;
   --textarea: #ecf3fd;
+  --textGrey: #414141;
   color: black;
 }
 button {
