@@ -47,7 +47,7 @@ export default function Feed() {
 
   const fetchPosts = async (pageNum = 1, append = false) => {
     if (loading) return;
-    
+
     setLoading(true);
     const token = localStorage.getItem("token");
 
@@ -64,13 +64,13 @@ export default function Feed() {
       }
 
       const data = await response.json();
-      
+
       if (append) {
-        setPosts(prevPosts => [...prevPosts, ...data.posts]);
+        setPosts((prevPosts) => [...prevPosts, ...data.posts]);
       } else {
         setPosts(data.posts || []);
       }
-      
+
       setHasMore(data.hasMore);
       setPage(data.currentPage);
     } catch (error) {
@@ -86,22 +86,28 @@ export default function Feed() {
     }
   }, [loading, hasMore, page]);
 
-  const lastPostElementRef = useCallback(node => {
-    if (loading) return;
-    
-    if (observer.current) observer.current.disconnect();
-    
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        loadMorePosts();
-      }
-    }, {
-      rootMargin: '100px', // Load more posts when within 100px of the bottom
-      threshold: 0.1 // Trigger when at least 10% of the element is visible
-    });
-    
-    if (node) observer.current.observe(node);
-  }, [loading, hasMore, loadMorePosts]);
+  const lastPostElementRef = useCallback(
+    (node) => {
+      if (loading) return;
+
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasMore) {
+            loadMorePosts();
+          }
+        },
+        {
+          rootMargin: "100px", // Load more posts when within 100px of the bottom
+          threshold: 0.1, // Trigger when at least 10% of the element is visible
+        }
+      );
+
+      if (node) observer.current.observe(node);
+    },
+    [loading, hasMore, loadMorePosts]
+  );
 
   const handleLike = async (postId) => {
     const token = localStorage.getItem("token");
@@ -123,17 +129,17 @@ export default function Feed() {
       }
 
       // Update just the liked post without refetching all posts
-      setPosts(prevPosts => 
-        prevPosts.map(post => {
+      setPosts((prevPosts) =>
+        prevPosts.map((post) => {
           if (post._id === postId) {
             const userId = localStorage.getItem("userId");
             const isLiked = post.likes.includes(userId);
-            
+
             return {
               ...post,
-              likes: isLiked 
-                ? post.likes.filter(id => id !== userId)
-                : [...post.likes, userId]
+              likes: isLiked
+                ? post.likes.filter((id) => id !== userId)
+                : [...post.likes, userId],
             };
           }
           return post;
@@ -259,7 +265,7 @@ export default function Feed() {
       }));
 
       setShowCommentForm(null);
-      
+
       // Refresh posts to show the new comment
       const currentPage = page;
       fetchPosts(currentPage, false);
@@ -523,15 +529,23 @@ export default function Feed() {
             </div>
           )}
         </div>
-        
+
         {loading && (
           <div className="flex justify-center my-4">
-            <div className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--tertiary) transparent transparent transparent' }}></div>
+            <div
+              className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin"
+              style={{
+                borderColor:
+                  "var(--tertiary) transparent transparent transparent",
+              }}
+            ></div>
           </div>
         )}
-        
+
         {!hasMore && posts.length > 0 && (
-          <p className="text-center my-4 text-gray-500">No more posts to load</p>
+          <p className="text-center my-4 text-gray-500">
+            No more posts to load
+          </p>
         )}
       </div>
     </div>

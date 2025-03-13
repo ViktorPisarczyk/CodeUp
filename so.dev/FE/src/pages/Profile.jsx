@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
 import { jwtDecode } from "jwt-decode";
@@ -37,7 +37,7 @@ function Profile() {
   const loggedInUserId = getUserIdFromToken();
   const userId = id || loggedInUserId;
 
-  const fetchUserPosts = async () => {
+  const fetchUserPosts = useCallback(async () => {
     if (!userId) return;
 
     try {
@@ -51,8 +51,9 @@ function Profile() {
       if (!response.ok) throw new Error("Failed to fetch posts");
 
       const data = await response.json();
+      console.log(data);
 
-      const userPosts = data.filter(
+      const userPosts = (data.posts || []).filter(
         (post) => post.author && post.author._id === userId
       );
 
@@ -60,7 +61,7 @@ function Profile() {
     } catch (error) {
       console.error("Error fetching posts", error);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     if (!loggedInUserId) {
@@ -190,13 +191,16 @@ function Profile() {
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/users/${loggedInUserId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `http://localhost:5001/users/${loggedInUserId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         const data = await response.json();
@@ -206,7 +210,7 @@ function Profile() {
       setShowDeleteAlert(false);
       setSuccessMessage("Account deleted successfully!");
       setShowSuccessAlert(true);
-      
+
       // Clear local storage and redirect to login after a short delay
       setTimeout(() => {
         localStorage.removeItem("token");
@@ -260,7 +264,7 @@ function Profile() {
             onCancel={() => setShowReportAlert(false)}
           />
         )}
-        
+
         {/* Profile Section */}
         <div className="flex flex-col md:flex-row pb-10  items-center relative rounded-xl p-5 my-10 bg-(--secondary)">
           <div className="flex flex-col items-center md:items-start md:w-1/3">
@@ -284,14 +288,14 @@ function Profile() {
             <p className="mt-4 ">
               {user.bio || "This user has not updated their bio yet."}
             </p>
-            
+
             {/* Three Dots Menu */}
             <div className="absolute top-4 right-4">
               <BsThreeDots
                 className="cursor-pointer hover:opacity-70 text-xl"
                 onClick={toggleDropdown}
               />
-              
+
               {showDropdown && (
                 <>
                   <div
@@ -300,7 +304,10 @@ function Profile() {
                   />
                   <div
                     className="absolute right-0 top-8 rounded-lg shadow-lg py-2 z-33"
-                    style={{ backgroundColor: "var(--tertiary)", minWidth: "150px" }}
+                    style={{
+                      backgroundColor: "var(--tertiary)",
+                      minWidth: "150px",
+                    }}
                   >
                     <div className="flex justify-end px-2">
                       <IoClose
@@ -308,7 +315,7 @@ function Profile() {
                         onClick={() => setShowDropdown(false)}
                       />
                     </div>
-                    
+
                     {loggedInUserId === userId ? (
                       <>
                         <button

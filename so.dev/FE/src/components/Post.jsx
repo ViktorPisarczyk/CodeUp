@@ -193,15 +193,16 @@ const Post = ({
 
   const copyCodeToClipboard = () => {
     if (post.code) {
-      navigator.clipboard.writeText(post.code)
+      navigator.clipboard
+        .writeText(post.code)
         .then(() => {
           setCodeCopied(true);
           setTimeout(() => {
             setCodeCopied(false);
           }, 2000);
         })
-        .catch(err => {
-          console.error('Failed to copy code: ', err);
+        .catch((err) => {
+          console.error("Failed to copy code: ", err);
         });
     }
   };
@@ -256,10 +257,10 @@ const Post = ({
       )}
       {/* Image Modal */}
       {enlargedImage && (
-        <div 
+        <div
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-lg"
           onClick={closeImageModal}
-          style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)' }}
+          style={{ backgroundColor: "rgba(255, 255, 255, 0.3)" }}
         >
           <div className="relative max-w-4xl max-h-screen p-4">
             <img
@@ -534,7 +535,9 @@ const Post = ({
                               </button>
                               <button
                                 className="w-full text-left text-white px-4 py-2 hover:opacity-70"
-                                onClick={() => handleCommentDeleteClick(comment._id)}
+                                onClick={() =>
+                                  handleCommentDeleteClick(comment._id)
+                                }
                               >
                                 Delete Comment
                               </button>
@@ -542,7 +545,9 @@ const Post = ({
                           ) : (
                             <button
                               className="w-full text-left text-white px-4 py-2 hover:opacity-70"
-                              onClick={() => handleCommentReportClick(comment._id)}
+                              onClick={() =>
+                                handleCommentReportClick(comment._id)
+                              }
                             >
                               Report Comment
                             </button>
