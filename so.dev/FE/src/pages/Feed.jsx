@@ -23,7 +23,6 @@ export default function Feed() {
   const [codeSnippet, setCodeSnippet] = useState(""); // For the code snippet
   const [isCodeSnippetVisible, setIsCodeSnippetVisible] = useState(false); // To control the visibility of the code snippet textarea
   const [showAddTextAlert, setShowAddTextAlert] = useState(false); // New state for the alert
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false); // New state for the success alert
   const [showMaxImagesAlert, setShowMaxImagesAlert] = useState(false); // Alert for max images limit
   const navigate = useNavigate();
 
@@ -156,7 +155,6 @@ export default function Feed() {
       setImageFiles([]);
       setImagePreviewUrls([]);
       setCodeSnippet("");
-      setShowSuccessAlert(true);
       fetchPosts();
     } catch (error) {
       console.error("Error creating post:", error);
@@ -237,13 +235,6 @@ export default function Feed() {
                 const token = localStorage.getItem("token");
                 await submitPost(token);
               }}
-            />
-          )}
-          {showSuccessAlert && (
-            <Alert
-              message="Post created successfully!"
-              onConfirm={() => setShowSuccessAlert(false)}
-              isSuccess={true}
             />
           )}
           {showMaxImagesAlert && (
