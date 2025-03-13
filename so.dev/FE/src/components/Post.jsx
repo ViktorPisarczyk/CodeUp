@@ -40,6 +40,10 @@ const Post = ({
   const [enlargedImage, setEnlargedImage] = useState(null);
   const [codeCopied, setCodeCopied] = useState(false);
 
+  useEffect(() => {
+    Prism.highlightAll();
+  }, []);
+
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
     setActiveCommentDropdown(null); // Close any open comment dropdowns
@@ -210,10 +214,6 @@ const Post = ({
   if (!post || !post.author) {
     return null;
   }
-
-  useEffect(() => {
-    Prism.highlightAll();
-  }, []);
 
   return (
     <div
@@ -466,34 +466,38 @@ const Post = ({
                     />
                     <div className="text-sm flex items-center space-x-2 mb-2">
                       {/* Commenter Profile Picture */}
-                      <Link
-                        to={`/profile/${comment.user._id}`}
-                        className="w-8 h-8 rounded-full overflow-hidden"
-                      >
-                        <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white">
-                          {comment.user?.profilePicture ? (
-                            <img
-                              src={comment.user.profilePicture}
-                              alt="Profile"
-                              className="w-full h-full object-cover rounded-full"
-                            />
-                          ) : (
-                            <span>
-                              {comment.user?.username
-                                ? comment.user.username[0].toUpperCase()
-                                : "?"}
-                            </span>
-                          )}
-                        </div>
-                      </Link>
+                      {comment.user && (
+                        <Link
+                          to={`/profile/${comment.user._id}`}
+                          className="w-8 h-8 rounded-full overflow-hidden"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white">
+                            {comment.user?.profilePicture ? (
+                              <img
+                                src={comment.user.profilePicture}
+                                alt="Profile"
+                                className="w-full h-full object-cover rounded-full"
+                              />
+                            ) : (
+                              <span>
+                                {comment.user?.username
+                                  ? comment.user.username[0].toUpperCase()
+                                  : "?"}
+                              </span>
+                            )}
+                          </div>
+                        </Link>
+                      )}
 
                       {/* Commenter Username */}
-                      <Link
-                        to={`/profile/${comment.user._id}`}
-                        className="font-bold"
-                      >
-                        {comment.user?.username}
-                      </Link>
+                      {comment.user && (
+                        <Link
+                          to={`/profile/${comment.user._id}`}
+                          className="font-bold"
+                        >
+                          {comment.user?.username}
+                        </Link>
+                      )}
 
                       <span>{comment.text}</span>
                     </div>

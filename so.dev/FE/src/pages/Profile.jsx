@@ -44,22 +44,24 @@ function Profile() {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
 
-      const response = await fetch("http://localhost:5001/posts", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) throw new Error("Failed to fetch posts");
-
-      const data = await response.json();
-      console.log(data);
-
-      const userPosts = (data.posts || []).filter(
-        (post) => post.author && post.author._id === userId
+      const response = await fetch(
+        `http://localhost:5001/posts/user/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+
+      if (!response.ok) throw new Error("Failed to fetch user posts");
+
+      const userPosts = await response.json();
 
       setPosts(userPosts);
     } catch (error) {
-      console.error("Error fetching posts", error);
+      console.error("Error fetching user posts", error);
     }
   }, [userId]);
 
@@ -368,7 +370,7 @@ function Profile() {
                   post={post}
                   handleLike={handleLike}
                   showCommentForm={showCommentForm}
-                  toggleCommentForm={toggleCommentForm}
+                  toggleCommentForm={() => toggleCommentForm(post._id)}
                   newComment={newComment}
                   setNewComment={setNewComment}
                   handleCommentSubmit={handleCommentSubmit}
