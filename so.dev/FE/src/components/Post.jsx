@@ -7,6 +7,7 @@ import { jwtDecode } from "jwt-decode";
 import { SlBubbles } from "react-icons/sl";
 import { CiHeart } from "react-icons/ci";
 import { FaHeart } from "react-icons/fa";
+import { FaCopy, FaCheck } from "react-icons/fa";
 import Alert from "./Alert";
 import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css";
@@ -37,6 +38,7 @@ const Post = ({
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [enlargedImage, setEnlargedImage] = useState(null);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
@@ -187,6 +189,21 @@ const Post = ({
 
   const closeImageModal = () => {
     setEnlargedImage(null);
+  };
+
+  const copyCodeToClipboard = () => {
+    if (post.code) {
+      navigator.clipboard.writeText(post.code)
+        .then(() => {
+          setCodeCopied(true);
+          setTimeout(() => {
+            setCodeCopied(false);
+          }, 2000);
+        })
+        .catch(err => {
+          console.error('Failed to copy code: ', err);
+        });
+    }
   };
 
   if (!post || !post.author) {
@@ -371,9 +388,19 @@ const Post = ({
       ) : null}
 
       {post.code && (
-        <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto">
-          <code className="language-javascript">{post.code}</code>
-        </pre>
+        <div className="relative mb-4">
+          <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto">
+            <code className="language-javascript">{post.code}</code>
+          </pre>
+          <button
+            onClick={copyCodeToClipboard}
+            className="absolute top-2 right-2 p-2 rounded-md text-white"
+            style={{ backgroundColor: "var(--tertiary)" }}
+            title="Copy code to clipboard"
+          >
+            {codeCopied ? <FaCheck /> : <FaCopy />}
+          </button>
+        </div>
       )}
 
       <div className="flex items-center space-x-4 mt-4">
