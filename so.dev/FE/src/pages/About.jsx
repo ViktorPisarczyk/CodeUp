@@ -4,6 +4,8 @@ import AsideMenu from "../components/AsideMenu";
 import logoDM from "../assets/newLogoDM.png";
 import logoLM from "../assets/newLogoLM.png";
 import { MyContext } from "../context/ThemeContext";
+import Viktor from "../assets/viktor.png";
+import Nausica from "../assets/20250314_094934.jpg";
 
 const AboutPage = () => {
   const { darkMode } = useContext(MyContext);
@@ -29,7 +31,7 @@ const AboutPage = () => {
             <div className="flex flex-col">
               <div className="flex flex-row py-6">
                 <img
-                  src="https://via.placeholder.com/150"
+                  src={Viktor}
                   alt="Viktor"
                   className="w-32 h-32 rounded-full mx-20 mb-4"
                 />
@@ -100,7 +102,7 @@ const AboutPage = () => {
                 </div>
 
                 <img
-                  src="https://via.placeholder.com/150"
+                  src={Nausica}
                   alt="Nausica"
                   className="w-32 h-32 rounded-full mx-20 mb-4"
                 />
