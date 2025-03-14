@@ -273,11 +273,25 @@ const Post = ({
         </div>
       )}
       <div className="flex items-center">
-        <img
-          src={post.author.profilePicture || "https://via.placeholder.com/40"}
-          alt="Profile"
-          className="w-10 h-10 rounded-full"
-        />
+        <Link
+          to={`/profile/${loggedInUserId}`}
+          className="w-10 h-10 rounded-full  bg-blue-400 flex items-center self-center text-center justify-center text-white"
+        >
+          {post.author?.profilePicture ? (
+            <img
+              src={post.author.profilePicture}
+              alt="Profile"
+              className="w-10 h-10 rounded-full"
+            />
+          ) : (
+            <span>
+              {post.author.username
+                ? post.author.username[0].toUpperCase()
+                : "?"}
+            </span>
+          )}
+        </Link>
+
         {post.author ? (
           <Link to={`/profile/${post.author._id}`} className="ml-2 font-bold">
             {post.author.username}
@@ -466,13 +480,13 @@ const Post = ({
                     />
                     <div className="text-sm flex items-center space-x-2 mb-2">
                       {/* Commenter Profile Picture */}
-                      {comment.user && (
-                        <Link
-                          to={`/profile/${comment.user._id}`}
-                          className="w-8 h-8 rounded-full overflow-hidden"
-                        >
-                          <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white">
-                            {comment.user?.profilePicture ? (
+                      <Link
+                        to={`/profile/${comment.user ? comment.user._id : ""}`}
+                        className="w-8 h-8 rounded-full overflow-hidden"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white">
+                          {comment.user ? (
+                            comment.user.profilePicture ? (
                               <img
                                 src={comment.user.profilePicture}
                                 alt="Profile"
@@ -480,24 +494,24 @@ const Post = ({
                               />
                             ) : (
                               <span>
-                                {comment.user?.username
+                                {comment.user.username
                                   ? comment.user.username[0].toUpperCase()
                                   : "?"}
                               </span>
-                            )}
-                          </div>
-                        </Link>
-                      )}
+                            )
+                          ) : (
+                            <span className="text-xl">?</span> // Blue circle with a question mark
+                          )}
+                        </div>
+                      </Link>
 
                       {/* Commenter Username */}
-                      {comment.user && (
-                        <Link
-                          to={`/profile/${comment.user._id}`}
-                          className="font-bold"
-                        >
-                          {comment.user?.username}
-                        </Link>
-                      )}
+                      <Link
+                        to={`/profile/${comment.user ? comment.user._id : ""}`}
+                        className="font-bold"
+                      >
+                        {comment.user ? comment.user.username : "Deleted User"}
+                      </Link>
 
                       <span>{comment.text}</span>
                     </div>
