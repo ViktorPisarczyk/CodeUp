@@ -11,7 +11,7 @@ function Profile() {
   const { id } = useParams();
   const [user, setUser] = useState({});
   const [posts, setPosts] = useState([]);
-  const [showCommentForm, setShowCommentForm] = useState(null);
+  const [showCommentForm, setShowCommentForm] = useState({});
   const [newComment, setNewComment] = useState({});
   const [showDropdown, setShowDropdown] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
@@ -45,7 +45,7 @@ function Profile() {
       if (!token) throw new Error("No token found");
 
       const response = await fetch(
-        `http://localhost:5001/posts/user/${userId}`,
+        `http://localhost:5001/posts/user/${userId}?populate=comments`,
         {
           method: "GET",
           headers: {
@@ -134,7 +134,8 @@ function Profile() {
       return;
     }
 
-    if (!newComment[postId]?.trim()) {
+    const commentText = newComment[postId]?.trim();
+    if (!commentText) {
       alert("Please enter a comment.");
       return;
     }
@@ -147,7 +148,7 @@ function Profile() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          text: newComment[postId],
+          text: commentText,
           post: postId,
           user: userId,
         }),
@@ -160,7 +161,11 @@ function Profile() {
         [postId]: "",
       }));
 
-      setShowCommentForm(null);
+      setShowCommentForm((prev) => ({
+        ...prev,
+        [postId]: false,
+      }));
+
       fetchUserPosts();
     } catch (error) {
       console.error("Error adding comment:", error);
@@ -168,7 +173,10 @@ function Profile() {
   };
 
   const toggleCommentForm = (postId) => {
-    setShowCommentForm(postId === showCommentForm ? null : postId);
+    setShowCommentForm((prev) => ({
+      ...prev,
+      [postId]: !prev[postId], // Toggle only the clicked post
+    }));
   };
 
   const toggleDropdown = () => {
@@ -369,7 +377,7 @@ function Profile() {
                   key={post._id}
                   post={post}
                   handleLike={handleLike}
-                  showCommentForm={showCommentForm}
+                  showCommentForm={showCommentForm[post._id] || false}
                   toggleCommentForm={() => toggleCommentForm(post._id)}
                   newComment={newComment}
                   setNewComment={setNewComment}

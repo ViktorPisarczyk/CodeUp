@@ -217,12 +217,19 @@ export const getPostsByUser = async (req, res) => {
     const { userId } = req.params;
 
     const posts = await Post.find({ author: userId })
-      .populate("author", "username profilePicture")
+      .populate("author", "username profilePicture") // Populate post author
+      .populate({
+        path: "comments", // Populate comments
+        populate: {
+          path: "user", // Populate comment author (since it's 'user' in the Comment model)
+          select: "username profilePicture",
+        },
+      })
       .sort({ createdAt: -1 });
 
     res.json(posts);
   } catch (error) {
-    console.error("Error fetching user posts:", error);
+    console.error("Error fetching user posts:", error.message, error.stack);
     res.status(500).json({ message: "Error fetching user posts" });
   }
 };
