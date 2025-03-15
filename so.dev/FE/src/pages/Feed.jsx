@@ -115,6 +115,17 @@ export default function Feed() {
       alert("You must be logged in to like posts.");
       return;
     }
+    
+    // Get userId from JWT token for consistency with Post component
+    let userId;
+    try {
+      const decoded = JSON.parse(atob(token.split('.')[1]));
+      userId = decoded.id;
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return;
+    }
+    
     try {
       const response = await fetch(`${API_URL}/posts/${postId}/like`, {
         method: "POST",
@@ -132,7 +143,6 @@ export default function Feed() {
       setPosts((prevPosts) =>
         prevPosts.map((post) => {
           if (post._id === postId) {
-            const userId = localStorage.getItem("userId");
             const isLiked = post.likes.includes(userId);
 
             return {
