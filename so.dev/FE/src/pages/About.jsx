@@ -35,7 +35,7 @@ const AboutPage = () => {
                 <img
                   src={Viktor}
                   alt="Viktor"
-                  className="w-32 h-32 rounded-full mx-20 mb-4"
+                  className="w-32 h-32 object-cover rounded-full mx-20 mb-4"
                 />
 
                 <div className=" text-left">
@@ -62,7 +62,7 @@ const AboutPage = () => {
                 <img
                   src={Nikolas}
                   alt="Nikolas"
-                  className="w-32 h-32 rounded-full mx-20 mb-4"
+                  className="w-32 h-32 object-cover rounded-full mx-20 mb-4"
                 />
               </div>
               <p className="text-(--textGrey) mt-2 mb-5 mx-3">
@@ -78,7 +78,7 @@ const AboutPage = () => {
                 <img
                   src={Quentin}
                   alt="Quentin"
-                  className="w-32 h-32 rounded-full mx-20 mb-4"
+                  className=" h-32 w-32 object-cover rounded-full mx-20 mb-4"
                 />
 
                 <div className="max-w-2xl text-left">
@@ -106,7 +106,7 @@ const AboutPage = () => {
                 <img
                   src={Nausica}
                   alt="Nausica"
-                  className="w-32 h-32 rounded-full mx-20 mb-4"
+                  className="w-32 h-32 object-cover rounded-full mx-20 mb-4"
                 />
               </div>
               <p className="text-(--textGrey) mt-2 mb-5 mx-3">
