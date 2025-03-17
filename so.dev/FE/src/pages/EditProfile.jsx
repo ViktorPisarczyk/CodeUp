@@ -130,7 +130,7 @@ const EditProfile = () => {
   };
 
   return (
-    <div className="flex">
+    <div className="flex h-screen">
       <AsideMenu />
       <div className="bg-(--primary) w-full flex flex-col justify-center items-center">
         <h2 className="text-(--tertiary) text-3xl font-bold mb-5">
