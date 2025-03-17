@@ -375,12 +375,11 @@ export default function Feed() {
           <div className="flex gap-2 mt-2">
             <label
               htmlFor="image-upload"
-              className="cursor-pointer px-4 py-2 rounded-lg text-white flex items-center gap-2"
+              className="cursor-pointer px-4 py-2 rounded-lg text-white text-xs flex items-center gap-2"
               style={{ backgroundColor: "var(--tertiary)" }}
             >
               <span>
-                Upload Images{" "}
-                {imageFiles.length > 0 && `(${imageFiles.length}/3)`}
+                Add Images {imageFiles.length > 0 && `(${imageFiles.length}/3)`}
               </span>
               <input
                 id="image-upload"
@@ -396,10 +395,10 @@ export default function Feed() {
             <button
               type="button"
               onClick={() => setIsCodeSnippetVisible(!isCodeSnippetVisible)}
-              className="px-4 py-2 text-white rounded-md hover:opacity-80"
+              className="px-4 py-2 text-white text-xs rounded-md hover:opacity-80"
               style={{ backgroundColor: "var(--tertiary)" }}
             >
-              Attach Code Snippet
+              Add Code
             </button>
 
             {/* Post Button */}

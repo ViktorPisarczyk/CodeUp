@@ -132,7 +132,7 @@ const AsideMenu = () => {
           className={`flex flex-col fixed sm:sticky w-64 sm:w-50 h-screen top-0 left-0 bg-(--secondary) z-31 
             ${menuToggle ? "block" : "hidden sm:flex"}`}
         >
-          <Link to={`/feed`} className="size-15 mt-2 ml-2">
+          <Link to={`/feed`} className="size-15 mt-2 ml-2 mb-10">
             <img src={darkMode ? onlyLogoDM : onlyLogoLM} alt="logo" />
           </Link>
 
@@ -153,7 +153,7 @@ const AsideMenu = () => {
             )}
           </Link>
 
-          <p className="text-center mt-4 mb-10">
+          <p className="text-center mt-4 mb-5">
             Welcome back, <br />
             <Link to={`/profile/${loggedInUserId}`}>
               <strong> {userData.username}</strong>!
