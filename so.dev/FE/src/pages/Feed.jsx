@@ -27,6 +27,7 @@ export default function Feed() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const MAX_POST_LENGTH = 500; // Define maximum post length
   const observer = useRef();
   const navigate = useNavigate();
 
@@ -322,11 +323,17 @@ export default function Feed() {
           )}
           <textarea
             value={newPost}
-            onChange={(e) => setNewPost(e.target.value)}
+            onChange={(e) => {
+              // Limit input to MAX_POST_LENGTH characters
+              if (e.target.value.length <= MAX_POST_LENGTH) {
+                setNewPost(e.target.value);
+              }
+            }}
             placeholder="What's on your mind?"
             className="w-full p-2 rounded-md text-black border-gray-300 focus:border-blue-400 focus:ring-blue-400"
             style={{ backgroundColor: "var(--textarea)" }}
             rows="3"
+            maxLength={MAX_POST_LENGTH}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -334,6 +341,13 @@ export default function Feed() {
               }
             }}
           />
+          
+          {/* Character counter */}
+          <div className="flex justify-end mt-1 text-sm">
+            <span className={newPost.length >= MAX_POST_LENGTH * 0.9 ? "text-red-500" : "text-gray-500"}>
+              {MAX_POST_LENGTH - newPost.length} characters remaining
+            </span>
+          </div>
 
           {/* Image Preview */}
           {imagePreviewUrls.length > 0 && (
