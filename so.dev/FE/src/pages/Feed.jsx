@@ -339,10 +339,16 @@ export default function Feed() {
               }
             }}
           />
-          
+
           {/* Character counter */}
           <div className="flex justify-end mt-1 text-sm">
-            <span className={newPost.length >= MAX_POST_LENGTH * 0.9 ? "text-red-500" : "text-gray-500"}>
+            <span
+              className={
+                newPost.length >= MAX_POST_LENGTH * 0.9
+                  ? "text-red-500"
+                  : "text-gray-500"
+              }
+            >
               {MAX_POST_LENGTH - newPost.length} characters remaining
             </span>
           </div>

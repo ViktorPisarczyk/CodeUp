@@ -97,7 +97,7 @@ const Post = ({
     if (successAlertTimerRef.current) {
       clearTimeout(successAlertTimerRef.current);
     }
-    
+
     setSuccessMessage(message);
     setShowSuccessAlert(true);
   };
@@ -114,7 +114,7 @@ const Post = ({
       if (onDelete) {
         // Store the original onDelete function
         const originalOnDelete = onDelete;
-        
+
         // Call the API directly to delete the post
         const response = await fetch(`http://localhost:5001/posts/${postId}`, {
           method: "DELETE",
@@ -128,10 +128,10 @@ const Post = ({
           const data = await response.json();
           throw new Error(data.message || "Failed to delete post");
         }
-        
+
         setShowDeleteAlert(false);
         showSuccessAlertWithMessage("Post deleted successfully!");
-        
+
         // We'll call the original onDelete in handleSuccessConfirm
         successCallbackRef.current = () => originalOnDelete(postId);
       } else {
@@ -189,7 +189,7 @@ const Post = ({
       if (onCommentDelete) {
         // Store the original onCommentDelete function
         const originalOnCommentDelete = onCommentDelete;
-        
+
         // Call the API directly to delete the comment
         const response = await fetch(
           `http://localhost:5001/comments/${selectedCommentId}`,
@@ -209,9 +209,10 @@ const Post = ({
 
         setShowCommentDeleteAlert(false);
         showSuccessAlertWithMessage("Comment deleted successfully!");
-        
+
         // We'll call the original onCommentDelete in handleSuccessConfirm
-        successCallbackRef.current = () => originalOnCommentDelete(selectedCommentId);
+        successCallbackRef.current = () =>
+          originalOnCommentDelete(selectedCommentId);
       } else {
         const response = await fetch(
           `http://localhost:5001/comments/${selectedCommentId}`,
@@ -255,20 +256,20 @@ const Post = ({
   const handleSuccessConfirm = () => {
     setShowSuccessAlert(false);
     setSelectedCommentId(null);
-    
+
     // Clear any existing timer
     if (successAlertTimerRef.current) {
       clearTimeout(successAlertTimerRef.current);
       successAlertTimerRef.current = null;
     }
-    
+
     // Refresh posts list
     if (fetchPosts) {
       fetchPosts();
     } else if (fetchUserPosts) {
       fetchUserPosts();
     }
-    
+
     // Call the stored onDelete function if it exists
     if (successCallbackRef.current) {
       successCallbackRef.current();
@@ -569,13 +570,13 @@ const Post = ({
                     />
                     <div className="text-sm flex items-center space-x-2 mb-2">
                       {/* Commenter Profile Picture */}
-                      <Link
-                        to={`/profile/${comment.user ? comment.user._id : ""}`}
-                        className="w-8 h-8 rounded-full overflow-hidden"
-                      >
-                        <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white">
-                          {comment.user ? (
-                            comment.user.profilePicture ? (
+                      {comment.user ? (
+                        <Link
+                          to={`/profile/${comment.user._id}`}
+                          className="w-8 h-8 rounded-full overflow-hidden"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white">
+                            {comment.user.profilePicture ? (
                               <img
                                 src={comment.user.profilePicture}
                                 alt="Profile"
@@ -587,20 +588,26 @@ const Post = ({
                                   ? comment.user.username[0].toUpperCase()
                                   : "?"}
                               </span>
-                            )
-                          ) : (
-                            <span className="text-xl">?</span> // Blue circle with a question mark
-                          )}
+                            )}
+                          </div>
+                        </Link>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-blue-400 flex items-center justify-center text-white">
+                          <span className="text-xl">?</span>
                         </div>
-                      </Link>
+                      )}
 
                       {/* Commenter Username */}
-                      <Link
-                        to={`/profile/${comment.user ? comment.user._id : ""}`}
-                        className="font-bold"
-                      >
-                        {comment.user ? comment.user.username : "Deleted User"}
-                      </Link>
+                      {comment.user ? (
+                        <Link
+                          to={`/profile/${comment.user._id}`}
+                          className="font-bold"
+                        >
+                          {comment.user.username}
+                        </Link>
+                      ) : (
+                        <span className="font-bold">Deleted User</span>
+                      )}
 
                       <span>{comment.text}</span>
                     </div>
