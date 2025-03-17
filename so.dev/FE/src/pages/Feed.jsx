@@ -115,17 +115,17 @@ export default function Feed() {
       alert("You must be logged in to like posts.");
       return;
     }
-    
+
     // Get userId from JWT token for consistency with Post component
     let userId;
     try {
-      const decoded = JSON.parse(atob(token.split('.')[1]));
+      const decoded = JSON.parse(atob(token.split(".")[1]));
       userId = decoded.id;
     } catch (error) {
       console.error("Error decoding token:", error);
       return;
     }
-    
+
     try {
       const response = await fetch(`${API_URL}/posts/${postId}/like`, {
         method: "POST",
@@ -292,11 +292,11 @@ export default function Feed() {
 
   return (
     <div
-      className="flex flex-row min-h-screen"
+      className="flex flex-row  max-w-full"
       style={{ backgroundColor: "var(--primary)" }}
     >
       <AsideMenu />
-      <div className="max-w-2xl mx-auto pt-8 px-4">
+      <div className=" max-w-full sm:max-w-sm md:max-w-lg lg:max-w-2xl mx-auto pt-8 px-4">
         <img src={darkMode ? logoDM : logoLM} alt="logo" />
         <form
           onSubmit={handlePostSubmit}
@@ -413,7 +413,7 @@ export default function Feed() {
           )}
         </form>
 
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-full">
           {posts && posts.length > 0 ? (
             posts.map((post, index) => {
               if (!post) return null;

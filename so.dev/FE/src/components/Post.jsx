@@ -217,7 +217,7 @@ const Post = ({
 
   return (
     <div
-      className="rounded-lg relative shadow-md p-4 mb-4"
+      className="rounded-lg relative max-w-full overflow-auto shadow-md p-4 mb-4"
       style={{ backgroundColor: "var(--secondary)" }}
     >
       {showSuccessAlert && (
@@ -403,8 +403,8 @@ const Post = ({
       ) : null}
 
       {post.code && (
-        <div className="relative mb-4">
-          <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto">
+        <div className="relative max-w-full mb-4 overflow-auto">
+          <pre className="bg-gray-100 p-4  max-w-full overflow-x-auto whitespace-pre-wrap break-words rounded-md ">
             <code className="language-javascript">{post.code}</code>
           </pre>
           <button
