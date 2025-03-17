@@ -28,7 +28,7 @@ const AboutPage = () => {
           </div>
           <h2 className="text-3xl font-semibold mb-4">Meet The Team</h2>
 
-          <div className="divide-y divide-(--quaternary)">
+          <div className="divide-y divide-(--quaternary) pr-3">
             {/* Team Member 1 */}
             <div className="flex flex-col">
               <div className="flex flex-row py-6">
