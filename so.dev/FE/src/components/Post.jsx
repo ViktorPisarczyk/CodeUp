@@ -307,7 +307,7 @@ const Post = ({
 
   return (
     <div
-      className="rounded-lg relative max-w-full overflow-auto shadow-md p-4 mb-4"
+      className="rounded-lg relative max-w-full  shadow-md p-4 mb-4"
       style={{ backgroundColor: "var(--secondary)" }}
     >
       {showSuccessAlert && (
