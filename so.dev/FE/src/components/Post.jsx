@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { BsThreeDots } from "react-icons/bs";
@@ -39,9 +39,21 @@ const Post = ({
   const [successMessage, setSuccessMessage] = useState("");
   const [enlargedImage, setEnlargedImage] = useState(null);
   const [codeCopied, setCodeCopied] = useState(false);
+  // Add a timer ref to prevent auto-closing of success alert
+  const successAlertTimerRef = useRef(null);
+  const successCallbackRef = useRef(null);
 
   useEffect(() => {
     Prism.highlightAll();
+  }, []);
+
+  // Clear any existing timers when component unmounts
+  useEffect(() => {
+    return () => {
+      if (successAlertTimerRef.current) {
+        clearTimeout(successAlertTimerRef.current);
+      }
+    };
   }, []);
 
   const toggleDropdown = () => {
@@ -80,6 +92,16 @@ const Post = ({
     }
   };
 
+  const showSuccessAlertWithMessage = (message) => {
+    // Clear any existing timer to prevent auto-closing
+    if (successAlertTimerRef.current) {
+      clearTimeout(successAlertTimerRef.current);
+    }
+    
+    setSuccessMessage(message);
+    setShowSuccessAlert(true);
+  };
+
   const handleDeleteConfirm = async (postId) => {
     try {
       const token = localStorage.getItem("token");
@@ -88,23 +110,47 @@ const Post = ({
         return;
       }
 
-      const response = await fetch(`http://localhost:5001/posts/${postId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // If onDelete prop is provided, use it, otherwise perform delete directly
+      if (onDelete) {
+        // Store the original onDelete function
+        const originalOnDelete = onDelete;
+        
+        // Call the API directly to delete the post
+        const response = await fetch(`http://localhost:5001/posts/${postId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Failed to delete post");
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message || "Failed to delete post");
+        }
+        
+        setShowDeleteAlert(false);
+        showSuccessAlertWithMessage("Post deleted successfully!");
+        
+        // We'll call the original onDelete in handleSuccessConfirm
+        successCallbackRef.current = () => originalOnDelete(postId);
+      } else {
+        const response = await fetch(`http://localhost:5001/posts/${postId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message || "Failed to delete post");
+        }
+
+        setShowDeleteAlert(false);
+        showSuccessAlertWithMessage("Post deleted successfully!");
       }
-
-      setShowDeleteAlert(false);
-      setSuccessMessage("Post deleted successfully!");
-      setShowSuccessAlert(true);
-      fetchUserPosts();
     } catch (error) {
       console.error("Error deleting post:", error);
     }
@@ -119,8 +165,7 @@ const Post = ({
     try {
       await onReport(post._id);
       setShowReportAlert(false);
-      setSuccessMessage("Post reported successfully!");
-      setShowSuccessAlert(true);
+      showSuccessAlertWithMessage("Post reported successfully!");
     } catch (error) {
       console.error("Error reporting post:", error);
     }
@@ -140,26 +185,53 @@ const Post = ({
         return;
       }
 
-      const response = await fetch(
-        `http://localhost:5001/comments/${selectedCommentId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+      // If onCommentDelete prop is provided, use it, otherwise perform delete directly
+      if (onCommentDelete) {
+        // Store the original onCommentDelete function
+        const originalOnCommentDelete = onCommentDelete;
+        
+        // Call the API directly to delete the comment
+        const response = await fetch(
+          `http://localhost:5001/comments/${selectedCommentId}`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message || "Failed to delete comment");
         }
-      );
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Failed to delete comment");
+        setShowCommentDeleteAlert(false);
+        showSuccessAlertWithMessage("Comment deleted successfully!");
+        
+        // We'll call the original onCommentDelete in handleSuccessConfirm
+        successCallbackRef.current = () => originalOnCommentDelete(selectedCommentId);
+      } else {
+        const response = await fetch(
+          `http://localhost:5001/comments/${selectedCommentId}`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message || "Failed to delete comment");
+        }
+
+        setShowCommentDeleteAlert(false);
+        showSuccessAlertWithMessage("Comment deleted successfully!");
       }
-
-      setShowCommentDeleteAlert(false);
-      setSuccessMessage("Comment deleted successfully!");
-      setShowSuccessAlert(true);
-      fetchUserPosts();
     } catch (error) {
       console.error("Error deleting comment:", error);
     }
@@ -174,8 +246,7 @@ const Post = ({
   const handleCommentReportConfirm = async () => {
     try {
       setShowCommentReportAlert(false);
-      setSuccessMessage("Comment reported successfully!");
-      setShowSuccessAlert(true);
+      showSuccessAlertWithMessage("Comment reported successfully!");
     } catch (error) {
       console.error("Error reporting comment:", error);
     }
@@ -184,7 +255,25 @@ const Post = ({
   const handleSuccessConfirm = () => {
     setShowSuccessAlert(false);
     setSelectedCommentId(null);
-    fetchPosts();
+    
+    // Clear any existing timer
+    if (successAlertTimerRef.current) {
+      clearTimeout(successAlertTimerRef.current);
+      successAlertTimerRef.current = null;
+    }
+    
+    // Refresh posts list
+    if (fetchPosts) {
+      fetchPosts();
+    } else if (fetchUserPosts) {
+      fetchUserPosts();
+    }
+    
+    // Call the stored onDelete function if it exists
+    if (successCallbackRef.current) {
+      successCallbackRef.current();
+      successCallbackRef.current = null;
+    }
   };
 
   const openImageModal = (imageUrl) => {
