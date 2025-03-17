@@ -275,8 +275,6 @@ export default function Feed() {
         [postId]: "",
       }));
 
-      setShowCommentForm(null);
-
       // Refresh posts to show the new comment
       const currentPage = page;
       fetchPosts(currentPage, false);
