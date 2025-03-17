@@ -270,14 +270,35 @@ export default function Feed() {
         throw new Error("Failed to add comment");
       }
 
+      // Clear the comment input
       setNewComment((prev) => ({
         ...prev,
         [postId]: "",
       }));
 
-      // Refresh posts to show the new comment
-      const currentPage = page;
-      fetchPosts(currentPage, false);
+      // Instead of refreshing all posts, just update the specific post with the new comment
+      const updatedPostResponse = await fetch(`${API_URL}/posts/${postId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!updatedPostResponse.ok) {
+        throw new Error("Failed to fetch updated post");
+      }
+
+      const updatedPost = await updatedPostResponse.json();
+
+      // Update only the specific post in the posts array
+      setPosts(prevPosts => 
+        prevPosts.map(post => 
+          post._id === postId ? updatedPost : post
+        )
+      );
+      
+      // Keep the comment form open for this post
+      setShowCommentForm(postId);
     } catch (error) {
       console.error("Error adding comment:", error);
     }
