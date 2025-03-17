@@ -7,6 +7,7 @@ import { MyContext } from "../context/ThemeContext";
 import Viktor from "../assets/viktor.png";
 import Nausica from "../assets/20250314_094934.jpg";
 import Nikolas from "../assets/nikolas.jpeg";
+import Quentin from "../assets/quntin.jpg";
 
 const AboutPage = () => {
   const { darkMode } = useContext(MyContext);
@@ -75,7 +76,7 @@ const AboutPage = () => {
             <div className="flex flex-col">
               <div className="flex flex-row py-6">
                 <img
-                  src="https://via.placeholder.com/150"
+                  src={Quentin}
                   alt="Quentin"
                   className="w-32 h-32 rounded-full mx-20 mb-4"
                 />
