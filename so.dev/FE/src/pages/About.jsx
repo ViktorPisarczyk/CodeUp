@@ -6,6 +6,7 @@ import logoLM from "../assets/newLogoLM.png";
 import { MyContext } from "../context/ThemeContext";
 import Viktor from "../assets/viktor.png";
 import Nausica from "../assets/20250314_094934.jpg";
+import Nikolas from "../assets/nikolas.jpeg";
 
 const AboutPage = () => {
   const { darkMode } = useContext(MyContext);
@@ -58,7 +59,7 @@ const AboutPage = () => {
                 </div>
 
                 <img
-                  src="https://via.placeholder.com/150"
+                  src={Nikolas}
                   alt="Nikolas"
                   className="w-32 h-32 rounded-full mx-20 mb-4"
                 />
