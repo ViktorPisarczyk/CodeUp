@@ -93,7 +93,7 @@ export const getPostById = async (req, res, next) => {
 
 export const updatePost = async (req, res, next) => {
   try {
-    const { content, code, images, existingImages } = req.body;
+    const { content, code, existingImages } = req.body;
     const userId = req.user;
 
     const post = await Post.findById(req.params.id);
@@ -112,29 +112,47 @@ export const updatePost = async (req, res, next) => {
     post.content = content || post.content;
     post.code = code !== undefined ? code : post.code;
 
-    // Handle image uploads
-    let imageUrls = [];
-    if (req.files && req.files.length > 0) {
-      imageUrls = req.files.map((file) => file.path);
-      post.images = imageUrls;
-      post.image = imageUrls[0]; // Set the first image as the main image
-    } else if (images) {
-      // If images are provided in the request body (existing URLs)
-      post.images = Array.isArray(images) ? images : [images];
-      post.image = Array.isArray(images) ? images[0] : images;
-    } else if (existingImages) {
-      // For backward compatibility with existingImages
-      const parsedImages = typeof existingImages === 'string' 
-        ? JSON.parse(existingImages) 
-        : existingImages;
-      post.images = Array.isArray(parsedImages) ? parsedImages : [parsedImages];
-      post.image = Array.isArray(parsedImages) ? parsedImages[0] : parsedImages;
+    // Handle image updates
+    let updatedImages = [];
+    
+    // 1. Handle existing images if provided
+    if (existingImages) {
+      try {
+        const parsedExistingImages = typeof existingImages === 'string' 
+          ? JSON.parse(existingImages) 
+          : existingImages;
+        
+        if (Array.isArray(parsedExistingImages)) {
+          updatedImages = [...parsedExistingImages];
+        } else if (parsedExistingImages) {
+          updatedImages = [parsedExistingImages];
+        }
+      } catch (error) {
+        console.error("Error parsing existing images:", error);
+      }
     }
+    
+    // 2. Add newly uploaded images if any
+    if (req.files && req.files.length > 0) {
+      const newImageUrls = req.files.map(file => file.path);
+      updatedImages = [...updatedImages, ...newImageUrls];
+    }
+    
+    // 3. Update the post with the final image list
+    post.images = updatedImages;
+    
+    // 4. Set the main image (for backward compatibility)
+    post.image = updatedImages.length > 0 ? updatedImages[0] : null;
 
-    await post.save();
+    // Save the updated post
+    const updatedPost = await post.save();
+    
+    // Populate author information for the response
+    await updatedPost.populate("author", "username profilePicture");
 
-    res.status(200).json(post);
+    res.status(200).json(updatedPost);
   } catch (error) {
+    console.error("Error updating post:", error);
     next(error);
   }
 };

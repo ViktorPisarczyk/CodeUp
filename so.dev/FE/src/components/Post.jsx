@@ -242,25 +242,36 @@ const Post = ({
         return;
       }
 
-      // Create update data object - using JSON for simplicity
-      const updateData = {
-        content: editedContent,
-        code: isCodeSnippetVisible ? editedCodeSnippet : "",
-      };
-
-      // If we have existing images, include them
+      // We need to use FormData for image uploads
+      const formData = new FormData();
+      formData.append("content", editedContent);
+      formData.append("code", isCodeSnippetVisible ? editedCodeSnippet : "");
+      
+      // Add new image files if any
+      editedImageFiles.forEach(file => {
+        formData.append("images", file);
+      });
+      
+      // Add existing images that weren't removed
       if (editedImagePreviewUrls.length > 0) {
-        updateData.images = editedImagePreviewUrls;
+        // Only include existing images that weren't newly uploaded
+        const existingImages = editedImagePreviewUrls.slice(
+          0, 
+          editedImagePreviewUrls.length - editedImageFiles.length
+        );
+        
+        if (existingImages.length > 0) {
+          formData.append("existingImages", JSON.stringify(existingImages));
+        }
       }
 
       // Make PATCH request to update the post
       const response = await fetch(`http://localhost:5001/posts/${post._id}`, {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(updateData),
+        body: formData,
       });
 
       if (!response.ok) {
