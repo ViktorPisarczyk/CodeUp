@@ -14,6 +14,7 @@ import ResetPassword from "./pages/ResetPassword.jsx";
 import EditProfile from "./pages/EditProfile";
 import Profile from "./pages/Profile.jsx";
 import About from "./pages/About.jsx";
+import Messages from "./pages/Messages.jsx";
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -73,6 +74,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <About />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/messages"
+            element={
+              <ProtectedRoute>
+                <Messages />
               </ProtectedRoute>
             }
           />

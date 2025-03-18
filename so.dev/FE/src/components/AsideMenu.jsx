@@ -4,6 +4,7 @@ import { FaGear } from "react-icons/fa6";
 import { CgProfile } from "react-icons/cg";
 import { IoLogOutOutline } from "react-icons/io5";
 import { MdHome } from "react-icons/md";
+import { BiMessageSquareDots } from "react-icons/bi";
 import { MyContext } from "../context/ThemeContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { jwtDecode } from "jwt-decode";
@@ -181,6 +182,17 @@ const AsideMenu = () => {
               color={darkMode ? "white" : "black"}
             />
             Profile
+          </button>
+          <button
+            onClick={() => handleNavigation("/messages")}
+            className="flex items-center pl-5 h-10 hover:bg-(--primary) rounded-full"
+          >
+            <BiMessageSquareDots
+              className="mr-2"
+              size={24}
+              color={darkMode ? "white" : "black"}
+            />
+            Messages
           </button>
           <button
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
