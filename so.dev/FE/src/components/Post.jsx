@@ -400,60 +400,13 @@ const Post = ({
 
   const handleCommentDeleteConfirm = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("You need to be logged in to delete a comment.");
-        return;
-      }
-
-      // If onCommentDelete prop is provided, use it, otherwise perform delete directly
+      // Call onCommentDelete directly to update the UI immediately
       if (onCommentDelete) {
-        // Store the original onCommentDelete function
-        const originalOnCommentDelete = onCommentDelete;
-
-        // Call the API directly to delete the comment
-        const response = await fetch(
-          `http://localhost:5001/comments/${selectedCommentId}`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.message || "Failed to delete comment");
-        }
-
-        setShowCommentDeleteAlert(false);
-        showSuccessAlertWithMessage("Comment deleted successfully!");
-
-        // We'll call the original onCommentDelete in handleSuccessConfirm
-        successCallbackRef.current = () =>
-          originalOnCommentDelete(selectedCommentId);
-      } else {
-        const response = await fetch(
-          `http://localhost:5001/comments/${selectedCommentId}`,
-          {
-            method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.message || "Failed to delete comment");
-        }
-
-        setShowCommentDeleteAlert(false);
-        showSuccessAlertWithMessage("Comment deleted successfully!");
+        await onCommentDelete(selectedCommentId);
       }
+      
+      setShowCommentDeleteAlert(false);
+      showSuccessAlertWithMessage("Comment deleted successfully!");
     } catch (error) {
       console.error("Error deleting comment:", error);
     }
@@ -534,7 +487,10 @@ const Post = ({
       {showSuccessAlert && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ backgroundColor: "rgba(0, 0, 0, 0.7)", backdropFilter: "blur(5px)" }}
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            backdropFilter: "blur(5px)",
+          }}
         >
           <div
             className="relative rounded-lg p-6 shadow-xl max-w-md w-full mx-4 text-center"
@@ -700,7 +656,10 @@ const Post = ({
       {showEditCommentModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ backgroundColor: "rgba(0, 0, 0, 0.7)", backdropFilter: "blur(5px)" }}
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            backdropFilter: "blur(5px)",
+          }}
         >
           <div
             className="relative rounded-lg p-6 shadow-xl max-w-md w-full mx-4"
@@ -1070,7 +1029,10 @@ const Post = ({
                               <button
                                 className="w-full text-left text-white px-4 py-2 hover:opacity-70"
                                 onClick={() =>
-                                  handleEditCommentClick(comment._id, comment.text)
+                                  handleEditCommentClick(
+                                    comment._id,
+                                    comment.text
+                                  )
                                 }
                               >
                                 Edit Comment
