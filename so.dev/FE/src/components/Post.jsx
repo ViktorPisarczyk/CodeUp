@@ -22,7 +22,6 @@ const Post = ({
   handleCommentSubmit,
   fetchPosts,
   fetchUserPosts,
-  onEdit,
   onDelete,
   onReport,
   onCommentDelete,
@@ -39,6 +38,10 @@ const Post = ({
   const [successMessage, setSuccessMessage] = useState("");
   const [enlargedImage, setEnlargedImage] = useState(null);
   const [codeCopied, setCodeCopied] = useState(false);
+  // Add state for edit post modal
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editedContent, setEditedContent] = useState("");
+  const [isEditLoading, setIsEditLoading] = useState(false);
   // Add a timer ref to prevent auto-closing of success alert
   const successAlertTimerRef = useRef(null);
   const successCallbackRef = useRef(null);
@@ -153,6 +156,56 @@ const Post = ({
       }
     } catch (error) {
       console.error("Error deleting post:", error);
+    }
+  };
+
+  // Add function to handle edit post click
+  const handleEditClick = () => {
+    setEditedContent(post.content);
+    setShowEditModal(true);
+    setShowDropdown(false);
+  };
+
+  // Add function to handle edit post submit
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setIsEditLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You need to be logged in to edit a post.");
+        return;
+      }
+
+      // Make PATCH request to update the post
+      const response = await fetch(`http://localhost:5001/posts/${post._id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: editedContent }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to update post");
+      }
+
+      setShowEditModal(false);
+      showSuccessAlertWithMessage("Post updated successfully!");
+
+      // Refresh posts
+      if (fetchPosts) {
+        fetchPosts();
+      } else if (fetchUserPosts) {
+        fetchUserPosts();
+      }
+    } catch (error) {
+      console.error("Error updating post:", error);
+    } finally {
+      setIsEditLoading(false);
     }
   };
 
@@ -345,6 +398,63 @@ const Post = ({
           onCancel={() => setShowCommentReportAlert(false)}
         />
       )}
+      {/* Edit Post Modal */}
+      {showEditModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+        >
+          <div
+            className="relative rounded-lg p-6 shadow-xl max-w-md w-full mx-4"
+            style={{ backgroundColor: "var(--secondary)" }}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Edit Post</h3>
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <IoClose size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleEditSubmit}>
+              <textarea
+                value={editedContent}
+                onChange={(e) => setEditedContent(e.target.value)}
+                className="w-full p-2 rounded-md text-black border-gray-300 focus:border-blue-400 focus:ring-blue-400 mb-4"
+                style={{ backgroundColor: "var(--textarea)" }}
+                rows="6"
+                placeholder="Edit your post..."
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 rounded-md text-white"
+                  style={{ backgroundColor: "var(--quaternary)" }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-md text-white flex items-center"
+                  style={{ backgroundColor: "var(--tertiary)" }}
+                  disabled={isEditLoading}
+                >
+                  {isEditLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {/* Image Modal */}
       {enlargedImage && (
         <div
@@ -417,10 +527,7 @@ const Post = ({
               <div>
                 <button
                   className="w-full text-white text-left px-4 py-2 hover:opacity-70"
-                  onClick={() => {
-                    onEdit(post._id);
-                    setShowDropdown(false);
-                  }}
+                  onClick={handleEditClick}
                 >
                   Edit Post
                 </button>
@@ -714,7 +821,6 @@ Post.propTypes = {
   setNewComment: PropTypes.func.isRequired,
   handleCommentSubmit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
-  onEdit: PropTypes.func.isRequired,
   onReport: PropTypes.func.isRequired,
   onCommentDelete: PropTypes.func.isRequired,
   onCommentEdit: PropTypes.func.isRequired,

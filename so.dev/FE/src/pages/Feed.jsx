@@ -85,7 +85,7 @@ export default function Feed() {
     if (!loading && hasMore) {
       fetchPosts(page + 1, true);
     }
-  }, [loading, hasMore, page]);
+  }, [loading, hasMore, page, fetchPosts]);
 
   const lastPostElementRef = useCallback(
     (node) => {
@@ -308,6 +308,24 @@ export default function Feed() {
     setShowCommentForm(postId === showCommentForm ? null : postId);
   };
 
+  const handleEditPost = async (postId, newContent) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(`${API_URL}/posts/${postId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: newContent }),
+      });
+      if (!response.ok) throw new Error("Failed to edit post");
+      fetchPosts();
+    } catch (error) {
+      console.error("Error editing post:", error);
+    }
+  };
+
   const { darkMode } = useContext(MyContext);
 
   return (
@@ -485,27 +503,6 @@ export default function Feed() {
                         console.error("Error deleting post:", error);
                       }
                     }}
-                    onEdit={async (postId, newContent) => {
-                      const token = localStorage.getItem("token");
-                      try {
-                        const response = await fetch(
-                          `${API_URL}/posts/${postId}`,
-                          {
-                            method: "PUT",
-                            headers: {
-                              "Content-Type": "application/json",
-                              Authorization: `Bearer ${token}`,
-                            },
-                            body: JSON.stringify({ content: newContent }),
-                          }
-                        );
-                        if (!response.ok)
-                          throw new Error("Failed to edit post");
-                        fetchPosts();
-                      } catch (error) {
-                        console.error("Error editing post:", error);
-                      }
-                    }}
                     onReport={async (postId) => {
                       const token = localStorage.getItem("token");
                       try {
@@ -599,29 +596,3 @@ export default function Feed() {
     </div>
   );
 }
-
-// Add these functions to handle edit, delete, and report
-const handleEditPost = (postId) => {
-  console.log("Edit post:", postId);
-  // Implement edit post functionality
-};
-
-const handleDeletePost = (postId) => {
-  console.log("Delete post:", postId);
-  // Implement delete post functionality
-};
-
-const handleReportPost = (postId) => {
-  console.log("Report post:", postId);
-  // Implement report post functionality
-};
-
-const handleDeleteComment = (postId, commentId) => {
-  console.log("Delete comment:", commentId, "from post:", postId);
-  // Implement delete comment functionality
-};
-
-const handleEditComment = (postId, commentId) => {
-  console.log("Edit comment:", commentId, "from post:", postId);
-  // Implement edit comment functionality
-};
