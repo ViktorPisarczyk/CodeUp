@@ -7,10 +7,11 @@ import { jwtDecode } from "jwt-decode";
 import { SlBubbles } from "react-icons/sl";
 import { CiHeart } from "react-icons/ci";
 import { FaHeart } from "react-icons/fa";
-import { FaCopy, FaCheck } from "react-icons/fa";
+import { FaCopy, FaCheck, FaCode } from "react-icons/fa";
 import Alert from "./Alert";
 import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css";
+import { IoImage } from "react-icons/io5";
 
 const Post = ({
   post,
@@ -515,16 +516,13 @@ const Post = ({
                 rows="6"
                 placeholder="Edit your post..."
               />
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex mb-4">
                 <button
                   type="button"
                   onClick={toggleCodeSnippetVisibility}
-                  className={`px-3 py-1 rounded-md text-sm ${
-                    isCodeSnippetVisible
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-200 text-gray-700"
-                  }`}
+                  className="flex items-center justify-center px-4 py-2 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer font-semibold text-sm"
                 >
+                  <FaCode className="mr-2" size={16} />
                   {isCodeSnippetVisible ? "Hide Code Snippet" : "Add Code Snippet"}
                 </button>
               </div>
@@ -565,13 +563,19 @@ const Post = ({
               </div>
             </form>
             <div className="mt-4">
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleEditImageChange}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-              />
+              <label className="inline-block w-full">
+                <span className="sr-only">Add Images</span>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleEditImageChange}
+                  className="hidden"
+                />
+                <div className="flex items-center justify-center px-4 py-2 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer font-semibold text-sm">
+                  <IoImage className="mr-2" size={20} /> Add Images
+                </div>
+              </label>
               {editedImagePreviewUrls.length > 0 && (
                 <div className="grid grid-cols-3 gap-2 mt-2">
                   {editedImagePreviewUrls.map((imageUrl, index) => (
