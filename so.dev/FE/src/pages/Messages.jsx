@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
+import { useLocation } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
 import { IoSend } from "react-icons/io5";
+
+const API_URL = "http://localhost:5001";
 
 const Messages = () => {
   const [conversations, setConversations] = useState([]);
@@ -10,7 +13,9 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
+  const location = useLocation();
 
   // Get user ID from token
   const getUserIdFromToken = () => {
@@ -27,148 +32,221 @@ const Messages = () => {
   };
 
   const currentUserId = getUserIdFromToken();
-
+  
   // Scroll to bottom of messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Load conversations
+  // Fetch conversations
   useEffect(() => {
-    // This will be replaced with actual API call
-    const mockConversations = [
-      {
-        id: "1",
-        user: {
-          _id: "user1",
-          username: "Jane Smith",
-          profilePicture: "https://randomuser.me/api/portraits/women/65.jpg"
-        },
-        lastMessage: "Hey, how's your project going?",
-        timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(), // 5 minutes ago
-        unread: 2
-      },
-      {
-        id: "2",
-        user: {
-          _id: "user2",
-          username: "John Doe",
-          profilePicture: "https://randomuser.me/api/portraits/men/32.jpg"
-        },
-        lastMessage: "Thanks for your help yesterday!",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(), // 1 hour ago
-        unread: 0
-      },
-      {
-        id: "3",
-        user: {
-          _id: "user3",
-          username: "Alex Johnson",
-          profilePicture: "https://randomuser.me/api/portraits/men/44.jpg"
-        },
-        lastMessage: "Do you have time to review my code?",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(), // 3 hours ago
-        unread: 1
-      }
-    ];
+    const fetchConversations = async () => {
+      try {
+        setIsLoading(true);
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
 
-    setConversations(mockConversations);
-    setIsLoading(false);
-  }, []);
+        const response = await fetch(`${API_URL}/messages/conversations`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-  // Load messages when a conversation is selected
-  useEffect(() => {
-    if (selectedConversation) {
-      // This will be replaced with actual API call
-      const mockMessages = [
-        {
-          id: "m1",
-          senderId: currentUserId,
-          text: "Hi there!",
-          timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString() // 30 minutes ago
-        },
-        {
-          id: "m2",
-          senderId: selectedConversation.user._id,
-          text: "Hey! How are you?",
-          timestamp: new Date(Date.now() - 1000 * 60 * 25).toISOString() // 25 minutes ago
-        },
-        {
-          id: "m3",
-          senderId: currentUserId,
-          text: "I'm good, working on that React project we discussed.",
-          timestamp: new Date(Date.now() - 1000 * 60 * 20).toISOString() // 20 minutes ago
-        },
-        {
-          id: "m4",
-          senderId: selectedConversation.user._id,
-          text: "That sounds great! How's it going so far?",
-          timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString() // 15 minutes ago
-        },
-        {
-          id: "m5",
-          senderId: currentUserId,
-          text: "Making progress! I've got the basic components set up.",
-          timestamp: new Date(Date.now() - 1000 * 60 * 10).toISOString() // 10 minutes ago
-        },
-        {
-          id: "m6",
-          senderId: selectedConversation.user._id,
-          text: selectedConversation.lastMessage,
-          timestamp: selectedConversation.timestamp
+        if (!response.ok) {
+          throw new Error("Failed to fetch conversations");
         }
-      ];
 
-      setMessages(mockMessages);
-      
-      // Mark as read (will be implemented with API)
-      setConversations(prevConversations => 
-        prevConversations.map(conv => 
-          conv.id === selectedConversation.id 
-            ? { ...conv, unread: 0 } 
-            : conv
-        )
-      );
+        const data = await response.json();
+        setConversations(data);
+        
+        // Check if we need to select a specific conversation from route state
+        if (location.state?.activeConversation) {
+          const conversationId = location.state.activeConversation;
+          const conversation = data.find(conv => conv.id === conversationId);
+          if (conversation) {
+            setSelectedConversation(conversation);
+          }
+        }
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching conversations:", error);
+        setError("Failed to load conversations. Please try again later.");
+        setIsLoading(false);
+      }
+    };
+
+    if (currentUserId) {
+      fetchConversations();
     }
-  }, [selectedConversation, currentUserId]);
+  }, [currentUserId, location.state]);
+
+  // Fetch messages when a conversation is selected
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (!selectedConversation) return;
+      
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
+
+        const response = await fetch(
+          `${API_URL}/messages/conversations/${selectedConversation.id}/messages`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch messages");
+        }
+
+        const data = await response.json();
+        setMessages(data);
+        
+        // Mark messages as read
+        await fetch(
+          `${API_URL}/messages/conversations/${selectedConversation.id}/read`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        
+        // Update unread count in conversations list
+        setConversations(prevConversations => 
+          prevConversations.map(conv => 
+            conv.id === selectedConversation.id 
+              ? { ...conv, unread: 0 } 
+              : conv
+          )
+        );
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+        setError("Failed to load messages. Please try again later.");
+      }
+    };
+
+    fetchMessages();
+  }, [selectedConversation]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedConversation) return;
 
-    // Add message to UI immediately (optimistic update)
-    const newMsg = {
-      id: `temp-${Date.now()}`,
-      senderId: currentUserId,
-      text: newMessage,
-      timestamp: new Date().toISOString()
-    };
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
 
-    setMessages([...messages, newMsg]);
+      // Add message to UI immediately (optimistic update)
+      const tempMessage = {
+        _id: `temp-${Date.now()}`,
+        sender: {
+          _id: currentUserId,
+        },
+        text: newMessage,
+        createdAt: new Date().toISOString(),
+        read: true
+      };
 
-    // Update conversation with new last message
-    setConversations(prevConversations => 
-      prevConversations.map(conv => 
-        conv.id === selectedConversation.id 
-          ? { 
-              ...conv, 
-              lastMessage: newMessage,
-              timestamp: new Date().toISOString()
-            } 
-          : conv
-      )
-    );
+      setMessages(prev => [...prev, tempMessage]);
+      setNewMessage("");
 
-    // Clear input
-    setNewMessage("");
+      // Send message to server
+      const response = await fetch(
+        `${API_URL}/messages/conversations/${selectedConversation.id}/messages`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ text: newMessage }),
+        }
+      );
 
-    // This is where you would send the message to the API
-    // For now, we're just updating the UI
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+
+      const sentMessage = await response.json();
+
+      // Replace temp message with actual message from server
+      setMessages(prev => 
+        prev.map(msg => 
+          msg._id === tempMessage._id ? sentMessage : msg
+        )
+      );
+
+      // Update conversation with new last message
+      setConversations(prevConversations => 
+        prevConversations.map(conv => 
+          conv.id === selectedConversation.id 
+            ? { 
+                ...conv, 
+                lastMessage: newMessage,
+                timestamp: new Date().toISOString()
+              } 
+            : conv
+        )
+      );
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setError("Failed to send message. Please try again.");
+      
+      // Remove the temporary message if sending failed
+      setMessages(prev => prev.filter(msg => msg._id !== `temp-${Date.now()}`));
+    }
+  };
+
+  // Start a new conversation with a user
+  const startConversation = async (userId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
+      const response = await fetch(
+        `${API_URL}/messages/conversations/user/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to create conversation");
+      }
+
+      const newConversation = await response.json();
+      
+      // Add to conversations if not already present
+      setConversations(prev => {
+        const exists = prev.some(conv => conv.id === newConversation.id);
+        if (!exists) {
+          return [newConversation, ...prev];
+        }
+        return prev;
+      });
+
+      // Select the new conversation
+      setSelectedConversation(newConversation);
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      setError("Failed to start conversation. Please try again later.");
+    }
   };
 
   const filteredConversations = conversations.filter(conversation => 
@@ -214,6 +292,10 @@ const Messages = () => {
               {isLoading ? (
                 <div className="flex justify-center items-center h-32">
                   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2" style={{ borderColor: "var(--tertiary)" }}></div>
+                </div>
+              ) : error ? (
+                <div className="text-center p-4 text-red-500">
+                  {error}
                 </div>
               ) : filteredConversations.length > 0 ? (
                 filteredConversations.map(conversation => (
@@ -298,38 +380,44 @@ const Messages = () => {
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4" style={{ backgroundColor: "var(--primary)" }}>
-                  {messages.map(message => (
-                    <div
-                      key={message.id}
-                      className={`mb-4 max-w-[70%] ${
-                        message.senderId === currentUserId
-                          ? 'ml-auto'
-                          : 'mr-auto'
-                      }`}
-                    >
-                      <div
-                        className={`p-3 rounded-lg ${
-                          message.senderId === currentUserId
-                            ? 'rounded-tr-none text-white'
-                            : 'rounded-tl-none'
-                        }`}
-                        style={{ 
-                          backgroundColor: message.senderId === currentUserId 
-                            ? "var(--tertiary)" 
-                            : "var(--secondary)" 
-                        }}
-                      >
-                        {message.text}
-                      </div>
-                      <div
-                        className={`text-xs mt-1 opacity-70 ${
-                          message.senderId === currentUserId ? 'text-right' : ''
-                        }`}
-                      >
-                        {formatTime(message.timestamp)}
-                      </div>
+                  {messages.length === 0 ? (
+                    <div className="flex items-center justify-center h-full opacity-70">
+                      <p>No messages yet. Start the conversation!</p>
                     </div>
-                  ))}
+                  ) : (
+                    messages.map(message => (
+                      <div
+                        key={message._id}
+                        className={`mb-4 max-w-[70%] ${
+                          message.sender._id === currentUserId
+                            ? 'ml-auto'
+                            : 'mr-auto'
+                        }`}
+                      >
+                        <div
+                          className={`p-3 rounded-lg ${
+                            message.sender._id === currentUserId
+                              ? 'rounded-tr-none text-white'
+                              : 'rounded-tl-none'
+                          }`}
+                          style={{ 
+                            backgroundColor: message.sender._id === currentUserId 
+                              ? "var(--tertiary)" 
+                              : "var(--secondary)" 
+                          }}
+                        >
+                          {message.text}
+                        </div>
+                        <div
+                          className={`text-xs mt-1 opacity-70 ${
+                            message.sender._id === currentUserId ? 'text-right' : ''
+                          }`}
+                        >
+                          {formatTime(message.createdAt)}
+                        </div>
+                      </div>
+                    ))
+                  )}
                   <div ref={messagesEndRef} />
                 </div>
 
