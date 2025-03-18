@@ -41,7 +41,12 @@ const Post = ({
   // Add state for edit post modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [editedContent, setEditedContent] = useState("");
+  const [editedCodeSnippet, setEditedCodeSnippet] = useState("");
+  const [editedImageFiles, setEditedImageFiles] = useState([]);
+  const [editedImagePreviewUrls, setEditedImagePreviewUrls] = useState([]);
+  const [isCodeSnippetVisible, setIsCodeSnippetVisible] = useState(false);
   const [isEditLoading, setIsEditLoading] = useState(false);
+  const [showMaxImagesAlert, setShowMaxImagesAlert] = useState(false);
   // Add a timer ref to prevent auto-closing of success alert
   const successAlertTimerRef = useRef(null);
   const successCallbackRef = useRef(null);
@@ -162,8 +167,61 @@ const Post = ({
   // Add function to handle edit post click
   const handleEditClick = () => {
     setEditedContent(post.content);
+    setEditedCodeSnippet(post.code || "");
+    setIsCodeSnippetVisible(!!post.code);
+    
+    // Initialize image previews if the post has images
+    if (post.images && post.images.length > 0) {
+      setEditedImagePreviewUrls(post.images);
+    } else if (post.image) {
+      // For backward compatibility
+      setEditedImagePreviewUrls([post.image]);
+    } else {
+      setEditedImagePreviewUrls([]);
+    }
+    
+    setEditedImageFiles([]);
     setShowEditModal(true);
     setShowDropdown(false);
+  };
+
+  // Add function to handle image change in edit mode
+  const handleEditImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    
+    // Check if adding these files would exceed the limit
+    if (editedImageFiles.length + files.length + editedImagePreviewUrls.length > 3) {
+      setShowMaxImagesAlert(true);
+      return;
+    }
+    
+    // Add new files to existing files
+    const newImageFiles = [...editedImageFiles, ...files];
+    setEditedImageFiles(newImageFiles);
+    
+    // Create object URLs for new files
+    const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
+    setEditedImagePreviewUrls([...editedImagePreviewUrls, ...newPreviewUrls]);
+  };
+  
+  // Add function to remove image in edit mode
+  const removeEditImage = (index) => {
+    // Check if removing an existing image or a new image
+    if (index < editedImagePreviewUrls.length) {
+      const newImagePreviewUrls = [...editedImagePreviewUrls];
+      newImagePreviewUrls.splice(index, 1);
+      setEditedImagePreviewUrls(newImagePreviewUrls);
+    }
+    
+    // If removing a new image file
+    if (index >= editedImagePreviewUrls.length - editedImageFiles.length) {
+      const fileIndex = index - (editedImagePreviewUrls.length - editedImageFiles.length);
+      if (fileIndex >= 0 && fileIndex < editedImageFiles.length) {
+        const newImageFiles = [...editedImageFiles];
+        newImageFiles.splice(fileIndex, 1);
+        setEditedImageFiles(newImageFiles);
+      }
+    }
   };
 
   // Add function to handle edit post submit
@@ -178,14 +236,43 @@ const Post = ({
         return;
       }
 
+      // Create FormData for multipart/form-data request (needed for image uploads)
+      const formData = new FormData();
+      formData.append("content", editedContent);
+      
+      // Add code snippet if it exists
+      if (isCodeSnippetVisible && editedCodeSnippet.trim()) {
+        formData.append("code", editedCodeSnippet);
+      } else if (!isCodeSnippetVisible) {
+        // If code snippet is hidden, remove it
+        formData.append("code", "");
+      }
+      
+      // Add any new image files
+      editedImageFiles.forEach((file) => {
+        formData.append("images", file);
+      });
+      
+      // Add existing image URLs that weren't removed
+      if (editedImagePreviewUrls.length > 0) {
+        // Filter out the URLs that are from newly added files
+        const existingImageUrls = editedImagePreviewUrls.slice(
+          0, 
+          editedImagePreviewUrls.length - editedImageFiles.length
+        );
+        
+        if (existingImageUrls.length > 0) {
+          formData.append("existingImages", JSON.stringify(existingImageUrls));
+        }
+      }
+
       // Make PATCH request to update the post
       const response = await fetch(`http://localhost:5001/posts/${post._id}`, {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ content: editedContent }),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -426,6 +513,29 @@ const Post = ({
                 rows="6"
                 placeholder="Edit your post..."
               />
+              <div className="flex justify-between items-center mb-4">
+                <button
+                  type="button"
+                  onClick={() => setIsCodeSnippetVisible(!isCodeSnippetVisible)}
+                  className={`px-3 py-1 rounded-md text-sm ${
+                    isCodeSnippetVisible
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  {isCodeSnippetVisible ? "Hide Code Snippet" : "Add Code Snippet"}
+                </button>
+              </div>
+              {isCodeSnippetVisible && (
+                <textarea
+                  value={editedCodeSnippet}
+                  onChange={(e) => setEditedCodeSnippet(e.target.value)}
+                  className="w-full p-2 rounded-md text-black border-gray-300 focus:border-blue-400 focus:ring-blue-400 mb-4"
+                  style={{ backgroundColor: "var(--textarea)" }}
+                  rows="6"
+                  placeholder="Edit your code snippet..."
+                />
+              )}
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
@@ -452,6 +562,51 @@ const Post = ({
                 </button>
               </div>
             </form>
+            <div className="mt-4">
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleEditImageChange}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+              {editedImagePreviewUrls.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  {editedImagePreviewUrls.map((imageUrl, index) => (
+                    <div key={index} className="relative">
+                      <img
+                        src={imageUrl}
+                        alt="Edited post image"
+                        className="w-full h-40 object-cover rounded-md"
+                      />
+                      <button
+                        onClick={() => removeEditImage(index)}
+                        className="absolute top-2 right-2 text-red-500 hover:opacity-70"
+                      >
+                        <IoClose size={20} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Max Images Alert */}
+      {showMaxImagesAlert && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-xl font-semibold mb-4">Maximum Images Reached</h3>
+            <p className="mb-4">You can only upload a maximum of 3 images per post.</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowMaxImagesAlert(false)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                OK
+              </button>
+            </div>
           </div>
         </div>
       )}
