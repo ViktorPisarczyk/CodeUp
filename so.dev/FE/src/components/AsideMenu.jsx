@@ -124,19 +124,7 @@ const AsideMenu = () => {
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        // First try to get conversations from localStorage to avoid unnecessary API calls
-        const storedConversations = JSON.parse(localStorage.getItem("conversations") || "[]");
-        
-        // If we have stored conversations, use them
-        if (storedConversations.length > 0) {
-          const hasUnread = storedConversations.some(conv => conv.unread > 0);
-          const unread = storedConversations.reduce((acc, conv) => acc + conv.unread, 0);
-          setHasUnreadMessages(hasUnread);
-          setUnreadCount(unread);
-          return;
-        }
-        
-        // If no stored conversations, fetch from API
+        // Always fetch from API to ensure we have the latest data
         const response = await fetch(
           "http://localhost:5001/messages/conversations",
           {
@@ -160,7 +148,10 @@ const AsideMenu = () => {
         
         // Check if any conversation has unread messages
         const hasUnread = conversations.some(conv => conv.unread > 0);
-        const unread = conversations.reduce((acc, conv) => acc + conv.unread, 0);
+        const unread = conversations.reduce((acc, conv) => acc + (conv.unread || 0), 0);
+        
+        console.log("Unread messages count:", unread);
+        
         setHasUnreadMessages(hasUnread);
         setUnreadCount(unread);
       } catch (error) {
@@ -171,45 +162,37 @@ const AsideMenu = () => {
     // Check initially
     checkUnreadMessages();
 
-    // Set up interval to check periodically (every 30 seconds)
-    const intervalId = setInterval(checkUnreadMessages, 30000);
+    // Set up interval to check periodically (every 10 seconds)
+    const intervalId = setInterval(checkUnreadMessages, 10000);
 
     // Listen for conversation opened events
     const handleConversationOpened = (event) => {
-      const { conversationId } = event.detail;
-      
       // Update the unread count immediately when a conversation is opened
-      setUnreadCount(prevCount => {
-        // Get the current conversations from localStorage if available
-        const storedConversations = JSON.parse(localStorage.getItem("conversations") || "[]");
-        const openedConversation = storedConversations.find(conv => conv.id === conversationId);
-        
-        // If we found the conversation, subtract its unread count from the total
-        if (openedConversation && openedConversation.unread > 0) {
-          const newCount = Math.max(0, prevCount - openedConversation.unread);
-          // If the new count is 0, also update hasUnreadMessages
-          if (newCount === 0) {
-            setHasUnreadMessages(false);
-          }
-          return newCount;
-        }
-        return prevCount;
-      });
+      checkUnreadMessages();
     };
 
-    // Also listen for storage events to update the unread count when localStorage changes
-    const handleStorageChange = () => {
+    // Create a custom event for new messages
+    const handleNewMessage = () => {
       checkUnreadMessages();
     };
 
     // Register the event listeners
     window.addEventListener("conversationOpened", handleConversationOpened);
+    window.addEventListener("newMessage", handleNewMessage);
+
+    // Also listen for localStorage changes
+    const handleStorageChange = (e) => {
+      if (e.key === "conversations") {
+        checkUnreadMessages();
+      }
+    };
     window.addEventListener("storage", handleStorageChange);
 
     // Clean up interval and event listeners on unmount
     return () => {
       clearInterval(intervalId);
       window.removeEventListener("conversationOpened", handleConversationOpened);
+      window.removeEventListener("newMessage", handleNewMessage);
       window.removeEventListener("storage", handleStorageChange);
     };
   }, [loggedInUserId]);

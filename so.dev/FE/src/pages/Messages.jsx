@@ -49,7 +49,7 @@ const Messages = () => {
         if (conversations.length === 0) {
           setIsLoading(true);
         }
-        
+
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token found");
 
@@ -65,32 +65,36 @@ const Messages = () => {
         }
 
         const data = await response.json();
-        
+
         // Update conversations without causing visual flickering
-        setConversations(prevConversations => {
+        setConversations((prevConversations) => {
           // If this is a refresh (not initial load), preserve the current selected conversation
           if (prevConversations.length > 0) {
             // Create a map of existing conversations for quick lookup
             const existingConvsMap = new Map(
-              prevConversations.map(conv => [conv.id, conv])
+              prevConversations.map((conv) => [conv.id, conv])
             );
-            
+
             // Update conversations with new data while preserving UI state
-            const updatedConversations = data.map(newConv => {
+            const updatedConversations = data.map((newConv) => {
               const existingConv = existingConvsMap.get(newConv.id);
               // If this conversation exists and is currently selected, preserve its selection state
-              if (existingConv && selectedConversation && existingConv.id === selectedConversation.id) {
+              if (
+                existingConv &&
+                selectedConversation &&
+                existingConv.id === selectedConversation.id
+              ) {
                 return { ...newConv, isSelected: true };
               }
               return newConv;
             });
-            
+
             return updatedConversations;
           }
-          
+
           return data;
         });
-        
+
         // Store conversations in localStorage for the AsideMenu to access
         localStorage.setItem("conversations", JSON.stringify(data));
 
@@ -116,14 +120,92 @@ const Messages = () => {
 
     if (currentUserId) {
       fetchConversations();
-      
+
       // Set up polling for conversations every 15 seconds to update unread counts
       const intervalId = setInterval(fetchConversations, 15000);
-      
+
       // Clean up interval on unmount
       return () => clearInterval(intervalId);
     }
-  }, [currentUserId, location.state, conversations.length, selectedConversation]);
+  }, [
+    currentUserId,
+    location.state,
+    conversations.length,
+    selectedConversation,
+  ]);
+
+  // Poll for new messages in the background
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const checkForNewMessages = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        // Fetch conversations to check for new messages
+        const response = await fetch(`${API_URL}/messages/conversations`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+        
+        // Check if there are any unread messages
+        const hasUnread = data.some(conv => conv.unread > 0);
+        
+        if (hasUnread) {
+          // Update localStorage with the latest conversations
+          localStorage.setItem("conversations", JSON.stringify(data));
+          
+          // Dispatch event to notify AsideMenu about new messages
+          const event = new CustomEvent("newMessage");
+          window.dispatchEvent(event);
+          
+          // If we're in a conversation, update that conversation's messages
+          if (selectedConversation) {
+            // Only refresh messages if they're for the current conversation
+            const currentConv = data.find(conv => conv.id === selectedConversation.id);
+            if (currentConv && currentConv.unread > 0) {
+              fetchMessages(selectedConversation.id);
+            }
+          }
+          
+          // Update conversations state if needed
+          setConversations(prevConversations => {
+            // Don't update if we're already showing the latest data
+            if (prevConversations.length === data.length && 
+                prevConversations.every(conv => {
+                  const newConv = data.find(c => c.id === conv.id);
+                  return newConv && conv.timestamp === newConv.timestamp;
+                })) {
+              return prevConversations;
+            }
+            
+            // Preserve selected conversation state
+            return data.map(newConv => {
+              if (selectedConversation && newConv.id === selectedConversation.id) {
+                return { ...newConv, isSelected: true };
+              }
+              return newConv;
+            });
+          });
+        }
+      } catch (error) {
+        console.error("Error checking for new messages:", error);
+      }
+    };
+
+    // Check for new messages every 5 seconds
+    const intervalId = setInterval(checkForNewMessages, 5000);
+
+    // Clean up interval on unmount
+    return () => clearInterval(intervalId);
+  }, [currentUserId, selectedConversation]);
 
   // Fetch messages when a conversation is selected
   useEffect(() => {
@@ -167,18 +249,37 @@ const Messages = () => {
           const updatedConversations = prevConversations.map((conv) =>
             conv.id === selectedConversation.id ? { ...conv, unread: 0 } : conv
           );
-          
+
           // Update localStorage with the updated conversations
           localStorage.setItem("conversations", JSON.stringify(updatedConversations));
-          
+
           return updatedConversations;
         });
-        
+
         // Dispatch custom event to notify AsideMenu that a conversation has been opened
         const event = new CustomEvent("conversationOpened", {
-          detail: { conversationId: selectedConversation.id }
+          detail: { conversationId: selectedConversation.id },
         });
         window.dispatchEvent(event);
+
+        // Force a refresh of conversations from the server to update unread counts
+        setTimeout(async () => {
+          try {
+            const refreshResponse = await fetch(`${API_URL}/messages/conversations`, {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+
+            if (refreshResponse.ok) {
+              const refreshData = await refreshResponse.json();
+              localStorage.setItem("conversations", JSON.stringify(refreshData));
+            }
+          } catch (error) {
+            console.error("Error refreshing conversations:", error);
+          }
+        }, 500);
       } catch (error) {
         console.error("Error fetching messages:", error);
         setError("Failed to load messages. Please try again later.");
@@ -340,7 +441,10 @@ const Messages = () => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Only close if clicking outside of any dropdown
-      if (activeDropdown && !event.target.closest('.message-dropdown-container')) {
+      if (
+        activeDropdown &&
+        !event.target.closest(".message-dropdown-container")
+      ) {
         setActiveDropdown(null);
       }
     };
@@ -597,7 +701,7 @@ const Messages = () => {
                         >
                           <div className="flex justify-between items-start">
                             <div className="pr-6">{message.text}</div>
-                            <div 
+                            <div
                               className="relative ml-2 message-dropdown-container"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -609,9 +713,11 @@ const Messages = () => {
                                 className="cursor-pointer opacity-70 hover:opacity-100"
                               />
                               {activeDropdown === message._id && (
-                                <div 
+                                <div
                                   className={`absolute ${
-                                    message.sender._id === currentUserId ? "right-0" : "left-0"
+                                    message.sender._id === currentUserId
+                                      ? "right-0"
+                                      : "left-0"
                                   } bg-white shadow-md rounded p-1 z-10 mt-1 w-40 text-black message-dropdown-container`}
                                   onClick={(e) => e.stopPropagation()}
                                 >
@@ -619,14 +725,18 @@ const Messages = () => {
                                     <>
                                       <button
                                         className="flex items-center w-full text-left p-2 hover:bg-gray-100 rounded"
-                                        onClick={() => deleteMessageForMe(message._id)}
+                                        onClick={() =>
+                                          deleteMessageForMe(message._id)
+                                        }
                                       >
                                         <MdDeleteOutline className="mr-2" />
                                         Delete for me
                                       </button>
                                       <button
                                         className="flex items-center w-full text-left p-2 hover:bg-gray-100 rounded"
-                                        onClick={() => deleteMessageForEveryone(message._id)}
+                                        onClick={() =>
+                                          deleteMessageForEveryone(message._id)
+                                        }
                                       >
                                         <MdDeleteOutline className="mr-2" />
                                         Delete for everyone
@@ -635,7 +745,9 @@ const Messages = () => {
                                   ) : (
                                     <button
                                       className="flex items-center w-full text-left p-2 hover:bg-gray-100 rounded"
-                                      onClick={() => deleteMessageForMe(message._id)}
+                                      onClick={() =>
+                                        deleteMessageForMe(message._id)
+                                      }
                                     >
                                       <MdDeleteOutline className="mr-2" />
                                       Delete for me
