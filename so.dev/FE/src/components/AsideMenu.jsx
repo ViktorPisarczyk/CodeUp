@@ -22,6 +22,7 @@ const AsideMenu = () => {
   const [menuToggle, setMenuToggle] = useState(window.innerWidth >= 640);
   const cachedUserData = JSON.parse(localStorage.getItem("userData")) || {};
   const [userData, setUserData] = useState(cachedUserData);
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
 
   // Update menuToggle based on screen size
   useEffect(() => {
@@ -78,13 +79,14 @@ const AsideMenu = () => {
 
   const loggedInUserId = getUserIdFromToken();
 
+  // Fetch user data
   useEffect(() => {
     if (!loggedInUserId) return;
 
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) throw new Error("No token found");
+        if (!token) return;
 
         const response = await fetch(
           `http://localhost:5001/users/${loggedInUserId}`,
@@ -96,7 +98,10 @@ const AsideMenu = () => {
             },
           }
         );
-        if (!response.ok) throw new Error("Failed to fetch user data");
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
 
         const data = await response.json();
         setUserData(data);
@@ -107,6 +112,51 @@ const AsideMenu = () => {
     };
 
     fetchUserData();
+  }, [loggedInUserId]);
+
+  // Check for unread messages
+  useEffect(() => {
+    if (!loggedInUserId) return;
+
+    const checkUnreadMessages = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await fetch(
+          "http://localhost:5001/messages/conversations",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          console.error("Failed to fetch conversations");
+          return;
+        }
+
+        const conversations = await response.json();
+        
+        // Check if any conversation has unread messages
+        const hasUnread = conversations.some(conv => conv.unread > 0);
+        setHasUnreadMessages(hasUnread);
+      } catch (error) {
+        console.error("Error checking unread messages:", error);
+      }
+    };
+
+    // Check initially
+    checkUnreadMessages();
+
+    // Set up interval to check periodically (every 30 seconds)
+    const intervalId = setInterval(checkUnreadMessages, 30000);
+
+    // Clean up interval on unmount
+    return () => clearInterval(intervalId);
   }, [loggedInUserId]);
 
   const handleMenuToggle = () => {
@@ -185,14 +235,19 @@ const AsideMenu = () => {
           </button>
           <button
             onClick={() => handleNavigation("/messages")}
-            className="flex items-center pl-5 h-10 hover:bg-(--primary) rounded-full"
+            className="flex items-center pl-5 h-10 hover:bg-(--primary) rounded-full relative"
           >
             <BiMessageSquareDots
               className="mr-2"
-              size={24}
+              size={20}
               color={darkMode ? "white" : "black"}
             />
             Messages
+            {hasUnreadMessages && (
+              <span
+                className="absolute top-2 right-2 w-3 h-3 bg-red-500 rounded-full"
+              />
+            )}
           </button>
           <button
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
