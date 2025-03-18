@@ -170,7 +170,7 @@ const Post = ({
     setEditedContent(post.content);
     setEditedCodeSnippet(post.code || "");
     setIsCodeSnippetVisible(!!post.code);
-    
+
     // Initialize image previews if the post has images
     if (post.images && post.images.length > 0) {
       setEditedImagePreviewUrls(post.images);
@@ -180,7 +180,7 @@ const Post = ({
     } else {
       setEditedImagePreviewUrls([]);
     }
-    
+
     setEditedImageFiles([]);
     setShowEditModal(true);
     setShowDropdown(false);
@@ -194,22 +194,25 @@ const Post = ({
   // Add function to handle image change in edit mode
   const handleEditImageChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     // Check if adding these files would exceed the limit
-    if (editedImageFiles.length + files.length + editedImagePreviewUrls.length > 3) {
+    if (
+      editedImageFiles.length + files.length + editedImagePreviewUrls.length >
+      3
+    ) {
       setShowMaxImagesAlert(true);
       return;
     }
-    
+
     // Add new files to existing files
     const newImageFiles = [...editedImageFiles, ...files];
     setEditedImageFiles(newImageFiles);
-    
+
     // Create object URLs for new files
     const newPreviewUrls = files.map((file) => URL.createObjectURL(file));
     setEditedImagePreviewUrls([...editedImagePreviewUrls, ...newPreviewUrls]);
   };
-  
+
   // Add function to remove image in edit mode
   const removeEditImage = (index) => {
     // Check if removing an existing image or a new image
@@ -218,10 +221,11 @@ const Post = ({
       newImagePreviewUrls.splice(index, 1);
       setEditedImagePreviewUrls(newImagePreviewUrls);
     }
-    
+
     // If removing a new image file
     if (index >= editedImagePreviewUrls.length - editedImageFiles.length) {
-      const fileIndex = index - (editedImagePreviewUrls.length - editedImageFiles.length);
+      const fileIndex =
+        index - (editedImagePreviewUrls.length - editedImageFiles.length);
       if (fileIndex >= 0 && fileIndex < editedImageFiles.length) {
         const newImageFiles = [...editedImageFiles];
         newImageFiles.splice(fileIndex, 1);
@@ -247,20 +251,20 @@ const Post = ({
       const formData = new FormData();
       formData.append("content", editedContent);
       formData.append("code", isCodeSnippetVisible ? editedCodeSnippet : "");
-      
+
       // Add new image files if any
-      editedImageFiles.forEach(file => {
+      editedImageFiles.forEach((file) => {
         formData.append("images", file);
       });
-      
+
       // Add existing images that weren't removed
       if (editedImagePreviewUrls.length > 0) {
         // Only include existing images that weren't newly uploaded
         const existingImages = editedImagePreviewUrls.slice(
-          0, 
+          0,
           editedImagePreviewUrls.length - editedImageFiles.length
         );
-        
+
         if (existingImages.length > 0) {
           formData.append("existingImages", JSON.stringify(existingImages));
         }
@@ -523,7 +527,9 @@ const Post = ({
                   className="flex items-center justify-center px-4 py-2 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer font-semibold text-sm"
                 >
                   <FaCode className="mr-2" size={16} />
-                  {isCodeSnippetVisible ? "Hide Code Snippet" : "Add Code Snippet"}
+                  {isCodeSnippetVisible
+                    ? "Hide Code Snippet"
+                    : "Add Code Snippet"}
                 </button>
               </div>
               {isCodeSnippetVisible && (
@@ -536,31 +542,6 @@ const Post = ({
                   placeholder="Edit your code snippet..."
                 />
               )}
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 rounded-md text-white"
-                  style={{ backgroundColor: "var(--quaternary)" }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-md text-white flex items-center"
-                  style={{ backgroundColor: "var(--tertiary)" }}
-                  disabled={isEditLoading}
-                >
-                  {isEditLoading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Saving...
-                    </>
-                  ) : (
-                    "Save Changes"
-                  )}
-                </button>
-              </div>
             </form>
             <div className="mt-4">
               <label className="inline-block w-full">
@@ -596,6 +577,33 @@ const Post = ({
                 </div>
               )}
             </div>
+            
+            {/* Buttons moved to bottom */}
+            <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 rounded-md text-white"
+                style={{ backgroundColor: "var(--quaternary)" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEditSubmit}
+                className="px-4 py-2 rounded-md text-white flex items-center"
+                style={{ backgroundColor: "var(--tertiary)" }}
+                disabled={isEditLoading}
+              >
+                {isEditLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -603,8 +611,12 @@ const Post = ({
       {showMaxImagesAlert && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h3 className="text-xl font-semibold mb-4">Maximum Images Reached</h3>
-            <p className="mb-4">You can only upload a maximum of 3 images per post.</p>
+            <h3 className="text-xl font-semibold mb-4">
+              Maximum Images Reached
+            </h3>
+            <p className="mb-4">
+              You can only upload a maximum of 3 images per post.
+            </p>
             <div className="flex justify-end">
               <button
                 onClick={() => setShowMaxImagesAlert(false)}
