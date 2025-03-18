@@ -48,6 +48,11 @@ const Post = ({
   const [isCodeSnippetVisible, setIsCodeSnippetVisible] = useState(false);
   const [isEditLoading, setIsEditLoading] = useState(false);
   const [showMaxImagesAlert, setShowMaxImagesAlert] = useState(false);
+  // Add state for edit comment modal
+  const [showEditCommentModal, setShowEditCommentModal] = useState(false);
+  const [editedCommentId, setEditedCommentId] = useState(null);
+  const [editedCommentText, setEditedCommentText] = useState("");
+  const [isEditCommentLoading, setIsEditCommentLoading] = useState(false);
   // Add a timer ref to prevent auto-closing of success alert
   const successAlertTimerRef = useRef(null);
   const successCallbackRef = useRef(null);
@@ -109,6 +114,19 @@ const Post = ({
 
     setSuccessMessage(message);
     setShowSuccessAlert(true);
+
+    // Auto-close success alert after 3 seconds
+    if (successAlertTimerRef.current) {
+      clearTimeout(successAlertTimerRef.current);
+    }
+
+    successAlertTimerRef.current = setTimeout(() => {
+      setShowSuccessAlert(false);
+      if (successCallbackRef.current) {
+        successCallbackRef.current();
+        successCallbackRef.current = null;
+      }
+    }, 3000);
   };
 
   const handleDeleteConfirm = async (postId) => {
@@ -303,6 +321,62 @@ const Post = ({
     }
   };
 
+  // Add function to handle edit comment click
+  const handleEditCommentClick = (commentId, commentText) => {
+    setEditedCommentId(commentId);
+    setEditedCommentText(commentText);
+    setShowEditCommentModal(true);
+    setActiveCommentDropdown(null);
+  };
+
+  // Add function to handle edit comment submit
+  const handleEditCommentSubmit = async (e) => {
+    e.preventDefault();
+    setIsEditCommentLoading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You need to be logged in to edit a comment.");
+        setIsEditCommentLoading(false);
+        return;
+      }
+
+      // Make PATCH request to update the comment
+      const API_URL = "http://localhost:5001";
+      const response = await fetch(`${API_URL}/comments/${editedCommentId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: editedCommentText }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to update comment");
+      }
+
+      // Close the modal and show success message
+      setShowEditCommentModal(false);
+      showSuccessAlertWithMessage("Comment updated successfully!");
+
+      // Refresh posts
+      if (fetchPosts) {
+        fetchPosts();
+      } else if (fetchUserPosts) {
+        fetchUserPosts();
+      }
+    } catch (error) {
+      console.error("Error updating comment:", error);
+      // Show error message to user
+      alert(`Error updating comment: ${error.message}`);
+    } finally {
+      setIsEditCommentLoading(false);
+    }
+  };
+
   const handleReportClick = async () => {
     setShowReportAlert(true);
     setShowDropdown(false);
@@ -458,11 +532,24 @@ const Post = ({
       style={{ backgroundColor: "var(--secondary)" }}
     >
       {showSuccessAlert && (
-        <Alert
-          message={successMessage}
-          onConfirm={handleSuccessConfirm}
-          isSuccess={true}
-        />
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.7)", backdropFilter: "blur(5px)" }}
+        >
+          <div
+            className="relative rounded-lg p-6 shadow-xl max-w-md w-full mx-4 text-center"
+            style={{ backgroundColor: "var(--secondary)" }}
+          >
+            <h3 className="text-lg font-semibold mb-4">{successMessage}</h3>
+            <button
+              onClick={() => setShowSuccessAlert(false)}
+              className="px-4 py-2 rounded-md text-white hover:opacity-80"
+              style={{ backgroundColor: "var(--tertiary)" }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
       )}
       {showDeleteAlert && (
         <Alert
@@ -597,6 +684,64 @@ const Post = ({
                 disabled={isEditLoading}
               >
                 {isEditLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Edit Comment Modal */}
+      {showEditCommentModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.7)", backdropFilter: "blur(5px)" }}
+        >
+          <div
+            className="relative rounded-lg p-6 shadow-xl max-w-md w-full mx-4"
+            style={{ backgroundColor: "var(--secondary)" }}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Edit Comment</h3>
+              <button
+                onClick={() => setShowEditCommentModal(false)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <IoClose size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleEditCommentSubmit}>
+              <textarea
+                value={editedCommentText}
+                onChange={(e) => setEditedCommentText(e.target.value)}
+                className="w-full p-2 rounded-md text-black border-gray-300 focus:border-blue-400 focus:ring-blue-400 mb-4"
+                style={{ backgroundColor: "var(--textarea)" }}
+                rows="6"
+                placeholder="Edit your comment..."
+              />
+            </form>
+            {/* Buttons moved to bottom */}
+            <div className="flex justify-end gap-2 mt-2 pt-4 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => setShowEditCommentModal(false)}
+                className="px-4 hover:opacity-80 py-2 rounded-md text-white"
+                style={{ backgroundColor: "var(--quaternary)" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEditCommentSubmit}
+                className="px-4 py-2 hover:opacity-80 rounded-md text-white flex items-center"
+                style={{ backgroundColor: "var(--tertiary)" }}
+                disabled={isEditCommentLoading}
+              >
+                {isEditCommentLoading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin mr-2"></div>
                     Saving...
@@ -924,10 +1069,9 @@ const Post = ({
                             <>
                               <button
                                 className="w-full text-left text-white px-4 py-2 hover:opacity-70"
-                                onClick={() => {
-                                  onCommentEdit(post._id, comment._id);
-                                  setActiveCommentDropdown(null);
-                                }}
+                                onClick={() =>
+                                  handleEditCommentClick(comment._id, comment.text)
+                                }
                               >
                                 Edit Comment
                               </button>
