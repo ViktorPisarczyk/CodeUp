@@ -110,23 +110,14 @@ const Post = ({
     // Clear any existing timer to prevent auto-closing
     if (successAlertTimerRef.current) {
       clearTimeout(successAlertTimerRef.current);
+      successAlertTimerRef.current = null;
     }
 
     setSuccessMessage(message);
     setShowSuccessAlert(true);
-
-    // Auto-close success alert after 3 seconds
-    if (successAlertTimerRef.current) {
-      clearTimeout(successAlertTimerRef.current);
-    }
-
-    successAlertTimerRef.current = setTimeout(() => {
-      setShowSuccessAlert(false);
-      if (successCallbackRef.current) {
-        successCallbackRef.current();
-        successCallbackRef.current = null;
-      }
-    }, 3000);
+    
+    // No auto-close timer - success alerts must stay visible until user acknowledges
+    // This follows the UI standards for success alerts
   };
 
   const handleDeleteConfirm = async (postId) => {
@@ -404,7 +395,7 @@ const Post = ({
       if (onCommentDelete) {
         await onCommentDelete(selectedCommentId);
       }
-      
+
       setShowCommentDeleteAlert(false);
       showSuccessAlertWithMessage("Comment deleted successfully!");
     } catch (error) {
@@ -498,7 +489,7 @@ const Post = ({
           >
             <h3 className="text-lg font-semibold mb-4">{successMessage}</h3>
             <button
-              onClick={() => setShowSuccessAlert(false)}
+              onClick={handleSuccessConfirm}
               className="px-4 py-2 rounded-md text-white hover:opacity-80"
               style={{ backgroundColor: "var(--tertiary)" }}
             >
