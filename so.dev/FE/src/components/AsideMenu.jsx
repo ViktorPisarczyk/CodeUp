@@ -124,6 +124,19 @@ const AsideMenu = () => {
         const token = localStorage.getItem("token");
         if (!token) return;
 
+        // First try to get conversations from localStorage to avoid unnecessary API calls
+        const storedConversations = JSON.parse(localStorage.getItem("conversations") || "[]");
+        
+        // If we have stored conversations, use them
+        if (storedConversations.length > 0) {
+          const hasUnread = storedConversations.some(conv => conv.unread > 0);
+          const unread = storedConversations.reduce((acc, conv) => acc + conv.unread, 0);
+          setHasUnreadMessages(hasUnread);
+          setUnreadCount(unread);
+          return;
+        }
+        
+        // If no stored conversations, fetch from API
         const response = await fetch(
           "http://localhost:5001/messages/conversations",
           {
@@ -141,6 +154,9 @@ const AsideMenu = () => {
         }
 
         const conversations = await response.json();
+        
+        // Store conversations in localStorage for future use
+        localStorage.setItem("conversations", JSON.stringify(conversations));
         
         // Check if any conversation has unread messages
         const hasUnread = conversations.some(conv => conv.unread > 0);
@@ -181,13 +197,20 @@ const AsideMenu = () => {
       });
     };
 
-    // Register the event listener
-    window.addEventListener("conversationOpened", handleConversationOpened);
+    // Also listen for storage events to update the unread count when localStorage changes
+    const handleStorageChange = () => {
+      checkUnreadMessages();
+    };
 
-    // Clean up interval and event listener on unmount
+    // Register the event listeners
+    window.addEventListener("conversationOpened", handleConversationOpened);
+    window.addEventListener("storage", handleStorageChange);
+
+    // Clean up interval and event listeners on unmount
     return () => {
       clearInterval(intervalId);
       window.removeEventListener("conversationOpened", handleConversationOpened);
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, [loggedInUserId]);
 

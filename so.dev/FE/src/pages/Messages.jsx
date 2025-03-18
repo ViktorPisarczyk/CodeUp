@@ -42,7 +42,11 @@ const Messages = () => {
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        setIsLoading(true);
+        // Only show loading state on initial load, not during refreshes
+        if (conversations.length === 0) {
+          setIsLoading(true);
+        }
+        
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token found");
 
@@ -58,13 +62,38 @@ const Messages = () => {
         }
 
         const data = await response.json();
-        setConversations(data);
+        
+        // Update conversations without causing visual flickering
+        setConversations(prevConversations => {
+          // If this is a refresh (not initial load), preserve the current selected conversation
+          if (prevConversations.length > 0) {
+            // Create a map of existing conversations for quick lookup
+            const existingConvsMap = new Map(
+              prevConversations.map(conv => [conv.id, conv])
+            );
+            
+            // Update conversations with new data while preserving UI state
+            const updatedConversations = data.map(newConv => {
+              const existingConv = existingConvsMap.get(newConv.id);
+              // If this conversation exists and is currently selected, preserve its selection state
+              if (existingConv && selectedConversation && existingConv.id === selectedConversation.id) {
+                return { ...newConv, isSelected: true };
+              }
+              return newConv;
+            });
+            
+            return updatedConversations;
+          }
+          
+          return data;
+        });
         
         // Store conversations in localStorage for the AsideMenu to access
         localStorage.setItem("conversations", JSON.stringify(data));
 
         // Check if we need to select a specific conversation from route state
-        if (location.state?.activeConversation) {
+        // Only do this on initial load, not during refreshes
+        if (conversations.length === 0 && location.state?.activeConversation) {
           const conversationId = location.state.activeConversation;
           const conversation = data.find((conv) => conv.id === conversationId);
           if (conversation) {
@@ -72,7 +101,9 @@ const Messages = () => {
           }
         }
 
-        setIsLoading(false);
+        if (conversations.length === 0) {
+          setIsLoading(false);
+        }
       } catch (error) {
         console.error("Error fetching conversations:", error);
         setError("Failed to load conversations. Please try again later.");
@@ -89,7 +120,7 @@ const Messages = () => {
       // Clean up interval on unmount
       return () => clearInterval(intervalId);
     }
-  }, [currentUserId, location.state]);
+  }, [currentUserId, location.state, conversations.length, selectedConversation]);
 
   // Fetch messages when a conversation is selected
   useEffect(() => {
