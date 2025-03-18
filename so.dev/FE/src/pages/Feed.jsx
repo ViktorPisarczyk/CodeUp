@@ -291,12 +291,10 @@ export default function Feed() {
       const updatedPost = await updatedPostResponse.json();
 
       // Update only the specific post in the posts array
-      setPosts(prevPosts => 
-        prevPosts.map(post => 
-          post._id === postId ? updatedPost : post
-        )
+      setPosts((prevPosts) =>
+        prevPosts.map((post) => (post._id === postId ? updatedPost : post))
       );
-      
+
       // Keep the comment form open for this post
       setShowCommentForm(postId);
     } catch (error) {
@@ -420,7 +418,7 @@ export default function Feed() {
           <div className="flex gap-2 mt-2">
             <label
               htmlFor="image-upload"
-              className="cursor-pointer px-4 py-2 rounded-lg text-white text-xs flex items-center gap-2"
+              className="cursor-pointer hover:opacity-80 px-4 py-2 rounded-lg text-white text-xs flex items-center gap-2"
               style={{ backgroundColor: "var(--tertiary)" }}
             >
               <span>

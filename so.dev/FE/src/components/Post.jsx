@@ -565,7 +565,7 @@ const Post = ({
                 </div>
               )}
             </div>
-            
+
             {/* Code snippet toggle button */}
             <div className="mt-6 mb-4">
               <button
@@ -579,20 +579,20 @@ const Post = ({
                   : "Add Code Snippet"}
               </button>
             </div>
-            
+
             {/* Buttons moved to bottom */}
             <div className="flex justify-end gap-2 mt-2 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 rounded-md text-white"
-                style={{ backgroundColor: "var(--quaternary)" }}
+                className="px-4 hover:opacity-80 py-2 rounded-md text-white"
+                style={{ backgroundColor: "var(--tertiary)" }}
               >
                 Cancel
               </button>
               <button
                 onClick={handleEditSubmit}
-                className="px-4 py-2 rounded-md text-white flex items-center"
+                className="px-4 py-2 hover:opacity-80 rounded-md text-white flex items-center"
                 style={{ backgroundColor: "var(--tertiary)" }}
                 disabled={isEditLoading}
               >
