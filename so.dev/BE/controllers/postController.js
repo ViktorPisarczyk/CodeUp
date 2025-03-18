@@ -93,8 +93,8 @@ export const getPostById = async (req, res, next) => {
 
 export const updatePost = async (req, res, next) => {
   try {
-    const { content, image, code } = req.body;
-    const userId = req.token.id;
+    const { content, code, images, existingImages } = req.body;
+    const userId = req.user;
 
     const post = await Post.findById(req.params.id);
 
@@ -108,9 +108,28 @@ export const updatePost = async (req, res, next) => {
         .json({ message: "Unauthorized: You can only update your own post." });
     }
 
+    // Update text content and code
     post.content = content || post.content;
-    post.image = image || post.image;
-    post.code = code || post.code;
+    post.code = code !== undefined ? code : post.code;
+
+    // Handle image uploads
+    let imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      imageUrls = req.files.map((file) => file.path);
+      post.images = imageUrls;
+      post.image = imageUrls[0]; // Set the first image as the main image
+    } else if (images) {
+      // If images are provided in the request body (existing URLs)
+      post.images = Array.isArray(images) ? images : [images];
+      post.image = Array.isArray(images) ? images[0] : images;
+    } else if (existingImages) {
+      // For backward compatibility with existingImages
+      const parsedImages = typeof existingImages === 'string' 
+        ? JSON.parse(existingImages) 
+        : existingImages;
+      post.images = Array.isArray(parsedImages) ? parsedImages : [parsedImages];
+      post.image = Array.isArray(parsedImages) ? parsedImages[0] : parsedImages;
+    }
 
     await post.save();
 
@@ -186,7 +205,7 @@ export const likePost = async (req, res) => {
 export const commentOnPost = async (req, res, next) => {
   try {
     const { text } = req.body;
-    const userId = req.token.id;
+    const userId = req.user;
 
     if (!text) {
       return res.status(400).json({ message: "Comment cannot be empty." });
@@ -205,6 +224,9 @@ export const commentOnPost = async (req, res, next) => {
 
     post.comments.push(newComment._id);
     await post.save();
+
+    // Populate user info for the response
+    await newComment.populate("user", "username profilePicture");
 
     res.status(201).json(newComment);
   } catch (error) {

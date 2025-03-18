@@ -185,6 +185,11 @@ const Post = ({
     setShowDropdown(false);
   };
 
+  // Add function to toggle code snippet visibility
+  const toggleCodeSnippetVisibility = () => {
+    setIsCodeSnippetVisible(!isCodeSnippetVisible);
+  };
+
   // Add function to handle image change in edit mode
   const handleEditImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -233,46 +238,29 @@ const Post = ({
       const token = localStorage.getItem("token");
       if (!token) {
         alert("You need to be logged in to edit a post.");
+        setIsEditLoading(false);
         return;
       }
 
-      // Create FormData for multipart/form-data request (needed for image uploads)
-      const formData = new FormData();
-      formData.append("content", editedContent);
-      
-      // Add code snippet if it exists
-      if (isCodeSnippetVisible && editedCodeSnippet.trim()) {
-        formData.append("code", editedCodeSnippet);
-      } else if (!isCodeSnippetVisible) {
-        // If code snippet is hidden, remove it
-        formData.append("code", "");
-      }
-      
-      // Add any new image files
-      editedImageFiles.forEach((file) => {
-        formData.append("images", file);
-      });
-      
-      // Add existing image URLs that weren't removed
+      // Create update data object - using JSON for simplicity
+      const updateData = {
+        content: editedContent,
+        code: isCodeSnippetVisible ? editedCodeSnippet : "",
+      };
+
+      // If we have existing images, include them
       if (editedImagePreviewUrls.length > 0) {
-        // Filter out the URLs that are from newly added files
-        const existingImageUrls = editedImagePreviewUrls.slice(
-          0, 
-          editedImagePreviewUrls.length - editedImageFiles.length
-        );
-        
-        if (existingImageUrls.length > 0) {
-          formData.append("existingImages", JSON.stringify(existingImageUrls));
-        }
+        updateData.images = editedImagePreviewUrls;
       }
 
       // Make PATCH request to update the post
       const response = await fetch(`http://localhost:5001/posts/${post._id}`, {
         method: "PATCH",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: formData,
+        body: JSON.stringify(updateData),
       });
 
       if (!response.ok) {
@@ -280,6 +268,7 @@ const Post = ({
         throw new Error(data.message || "Failed to update post");
       }
 
+      // Close the modal and show success message
       setShowEditModal(false);
       showSuccessAlertWithMessage("Post updated successfully!");
 
@@ -291,6 +280,8 @@ const Post = ({
       }
     } catch (error) {
       console.error("Error updating post:", error);
+      // Show error message to user
+      alert(`Error updating post: ${error.message}`);
     } finally {
       setIsEditLoading(false);
     }
@@ -516,7 +507,7 @@ const Post = ({
               <div className="flex justify-between items-center mb-4">
                 <button
                   type="button"
-                  onClick={() => setIsCodeSnippetVisible(!isCodeSnippetVisible)}
+                  onClick={toggleCodeSnippetVisibility}
                   className={`px-3 py-1 rounded-md text-sm ${
                     isCodeSnippetVisible
                       ? "bg-blue-500 text-white"
