@@ -32,7 +32,7 @@ const Messages = () => {
   };
 
   const currentUserId = getUserIdFromToken();
-  
+
   // Scroll to bottom of messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -59,16 +59,16 @@ const Messages = () => {
 
         const data = await response.json();
         setConversations(data);
-        
+
         // Check if we need to select a specific conversation from route state
         if (location.state?.activeConversation) {
           const conversationId = location.state.activeConversation;
-          const conversation = data.find(conv => conv.id === conversationId);
+          const conversation = data.find((conv) => conv.id === conversationId);
           if (conversation) {
             setSelectedConversation(conversation);
           }
         }
-        
+
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching conversations:", error);
@@ -86,7 +86,7 @@ const Messages = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       if (!selectedConversation) return;
-      
+
       try {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token found");
@@ -107,7 +107,7 @@ const Messages = () => {
 
         const data = await response.json();
         setMessages(data);
-        
+
         // Mark messages as read
         await fetch(
           `${API_URL}/messages/conversations/${selectedConversation.id}/read`,
@@ -118,13 +118,11 @@ const Messages = () => {
             },
           }
         );
-        
+
         // Update unread count in conversations list
-        setConversations(prevConversations => 
-          prevConversations.map(conv => 
-            conv.id === selectedConversation.id 
-              ? { ...conv, unread: 0 } 
-              : conv
+        setConversations((prevConversations) =>
+          prevConversations.map((conv) =>
+            conv.id === selectedConversation.id ? { ...conv, unread: 0 } : conv
           )
         );
       } catch (error) {
@@ -157,10 +155,10 @@ const Messages = () => {
         },
         text: newMessage,
         createdAt: new Date().toISOString(),
-        read: true
+        read: true,
       };
 
-      setMessages(prev => [...prev, tempMessage]);
+      setMessages((prev) => [...prev, tempMessage]);
       setNewMessage("");
 
       // Send message to server
@@ -183,30 +181,30 @@ const Messages = () => {
       const sentMessage = await response.json();
 
       // Replace temp message with actual message from server
-      setMessages(prev => 
-        prev.map(msg => 
-          msg._id === tempMessage._id ? sentMessage : msg
-        )
+      setMessages((prev) =>
+        prev.map((msg) => (msg._id === tempMessage._id ? sentMessage : msg))
       );
 
       // Update conversation with new last message
-      setConversations(prevConversations => 
-        prevConversations.map(conv => 
-          conv.id === selectedConversation.id 
-            ? { 
-                ...conv, 
+      setConversations((prevConversations) =>
+        prevConversations.map((conv) =>
+          conv.id === selectedConversation.id
+            ? {
+                ...conv,
                 lastMessage: newMessage,
-                timestamp: new Date().toISOString()
-              } 
+                timestamp: new Date().toISOString(),
+              }
             : conv
         )
       );
     } catch (error) {
       console.error("Error sending message:", error);
       setError("Failed to send message. Please try again.");
-      
+
       // Remove the temporary message if sending failed
-      setMessages(prev => prev.filter(msg => msg._id !== `temp-${Date.now()}`));
+      setMessages((prev) =>
+        prev.filter((msg) => msg._id !== `temp-${Date.now()}`)
+      );
     }
   };
 
@@ -231,10 +229,10 @@ const Messages = () => {
       }
 
       const newConversation = await response.json();
-      
+
       // Add to conversations if not already present
-      setConversations(prev => {
-        const exists = prev.some(conv => conv.id === newConversation.id);
+      setConversations((prev) => {
+        const exists = prev.some((conv) => conv.id === newConversation.id);
         if (!exists) {
           return [newConversation, ...prev];
         }
@@ -249,7 +247,7 @@ const Messages = () => {
     }
   };
 
-  const filteredConversations = conversations.filter(conversation => 
+  const filteredConversations = conversations.filter((conversation) =>
     conversation.user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -258,26 +256,38 @@ const Messages = () => {
     const date = new Date(timestamp);
     const now = new Date();
     const diffInDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-    
+
     if (diffInDays === 0) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
     } else if (diffInDays === 1) {
-      return 'Yesterday';
+      return "Yesterday";
     } else if (diffInDays < 7) {
-      return date.toLocaleDateString([], { weekday: 'short' });
+      return date.toLocaleDateString([], { weekday: "short" });
     } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      return date.toLocaleDateString([], { month: "short", day: "numeric" });
     }
   };
 
   return (
-    <div className="flex min-h-screen" style={{ backgroundColor: "var(--primary)" }}>
+    <div
+      className="flex min-h-screen"
+      style={{ backgroundColor: "var(--primary)" }}
+    >
       <AsideMenu />
       <div className="flex-1 flex flex-col">
         <div className="flex h-screen">
           {/* Conversations List */}
-          <div className="w-1/3 border-r" style={{ backgroundColor: "var(--secondary)" }}>
-            <div className="p-4 border-b" style={{ borderColor: "var(--quaternary)" }}>
+          <div
+            className="w-1/3 border-r"
+            style={{ backgroundColor: "var(--secondary)" }}
+          >
+            <div
+              className="p-4 border-b"
+              style={{ borderColor: "var(--quaternary)" }}
+            >
               <h2 className="text-xl font-semibold mb-4">Messages</h2>
               <input
                 type="text"
@@ -291,22 +301,28 @@ const Messages = () => {
             <div className="overflow-y-auto h-[calc(100vh-80px)]">
               {isLoading ? (
                 <div className="flex justify-center items-center h-32">
-                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2" style={{ borderColor: "var(--tertiary)" }}></div>
+                  <div
+                    className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2"
+                    style={{ borderColor: "var(--tertiary)" }}
+                  ></div>
                 </div>
               ) : error ? (
-                <div className="text-center p-4 text-red-500">
-                  {error}
-                </div>
+                <div className="text-center p-4 text-red-500">{error}</div>
               ) : filteredConversations.length > 0 ? (
-                filteredConversations.map(conversation => (
+                filteredConversations.map((conversation) => (
                   <div
                     key={conversation.id}
                     className={`flex items-center p-4 border-b cursor-pointer hover:opacity-80 ${
-                      selectedConversation?.id === conversation.id ? 'bg-opacity-20' : ''
+                      selectedConversation?.id === conversation.id
+                        ? "bg-opacity-20"
+                        : ""
                     }`}
-                    style={{ 
+                    style={{
                       borderColor: "var(--quaternary)",
-                      backgroundColor: selectedConversation?.id === conversation.id ? "var(--quaternary)" : "transparent"
+                      backgroundColor:
+                        selectedConversation?.id === conversation.id
+                          ? "var(--quaternary)"
+                          : "transparent",
                     }}
                     onClick={() => setSelectedConversation(conversation)}
                   >
@@ -318,7 +334,7 @@ const Messages = () => {
                           className="w-12 h-12 rounded-full object-cover"
                         />
                       ) : (
-                        <div 
+                        <div
                           className="w-12 h-12 rounded-full flex items-center justify-center text-white"
                           style={{ backgroundColor: "var(--tertiary)" }}
                         >
@@ -326,7 +342,7 @@ const Messages = () => {
                         </div>
                       )}
                       {conversation.unread > 0 && (
-                        <div 
+                        <div
                           className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs text-white"
                           style={{ backgroundColor: "var(--tertiary)" }}
                         >
@@ -336,10 +352,20 @@ const Messages = () => {
                     </div>
                     <div className="ml-3 flex-1 overflow-hidden">
                       <div className="flex justify-between items-center">
-                        <h3 className="font-semibold truncate">{conversation.user.username}</h3>
-                        <span className="text-xs opacity-70">{formatTime(conversation.timestamp)}</span>
+                        <h3 className="font-semibold truncate">
+                          {conversation.user.username}
+                        </h3>
+                        <span className="text-xs opacity-70">
+                          {formatTime(conversation.timestamp)}
+                        </span>
                       </div>
-                      <p className={`text-sm truncate ${conversation.unread > 0 ? 'font-semibold' : 'opacity-70'}`}>
+                      <p
+                        className={`text-sm truncate ${
+                          conversation.unread > 0
+                            ? "font-semibold"
+                            : "opacity-70"
+                        }`}
+                      >
                         {conversation.lastMessage}
                       </p>
                     </div>
@@ -354,11 +380,20 @@ const Messages = () => {
           </div>
 
           {/* Chat Area */}
-          <div className="w-2/3 flex flex-col" style={{ backgroundColor: "var(--primary)" }}>
+          <div
+            className="w-2/3 flex flex-col"
+            style={{ backgroundColor: "var(--primary)" }}
+          >
             {selectedConversation ? (
               <>
                 {/* Chat Header */}
-                <div className="p-4 border-b flex items-center" style={{ backgroundColor: "var(--secondary)", borderColor: "var(--quaternary)" }}>
+                <div
+                  className="p-4 border-b flex items-center"
+                  style={{
+                    backgroundColor: "var(--secondary)",
+                    borderColor: "var(--quaternary)",
+                  }}
+                >
                   {selectedConversation.user.profilePicture ? (
                     <img
                       src={selectedConversation.user.profilePicture}
@@ -366,7 +401,7 @@ const Messages = () => {
                       className="w-10 h-10 rounded-full object-cover"
                     />
                   ) : (
-                    <div 
+                    <div
                       className="w-10 h-10 rounded-full flex items-center justify-center text-white"
                       style={{ backgroundColor: "var(--tertiary)" }}
                     >
@@ -374,43 +409,51 @@ const Messages = () => {
                     </div>
                   )}
                   <div className="ml-3">
-                    <h3 className="font-semibold">{selectedConversation.user.username}</h3>
+                    <h3 className="font-semibold">
+                      {selectedConversation.user.username}
+                    </h3>
                   </div>
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4" style={{ backgroundColor: "var(--primary)" }}>
+                <div
+                  className="flex-1 overflow-y-auto p-4"
+                  style={{ backgroundColor: "var(--primary)" }}
+                >
                   {messages.length === 0 ? (
                     <div className="flex items-center justify-center h-full opacity-70">
                       <p>No messages yet. Start the conversation!</p>
                     </div>
                   ) : (
-                    messages.map(message => (
+                    messages.map((message) => (
                       <div
                         key={message._id}
                         className={`mb-4 max-w-[70%] ${
                           message.sender._id === currentUserId
-                            ? 'ml-auto'
-                            : 'mr-auto'
+                            ? "ml-auto"
+                            : "mr-auto"
                         }`}
                       >
                         <div
                           className={`p-3 rounded-lg ${
                             message.sender._id === currentUserId
-                              ? 'rounded-tr-none text-white'
-                              : 'rounded-tl-none'
+                              ? "rounded-tr-none text-white"
+                              : "rounded-tl-none"
                           }`}
-                          style={{ 
-                            backgroundColor: message.sender._id === currentUserId 
-                              ? "var(--tertiary)" 
-                              : "var(--secondary)" 
+                          style={{
+                            backgroundColor:
+                              message.sender._id === currentUserId
+                                ? "var(--tertiary)"
+                                : "var(--secondary)",
                           }}
                         >
                           {message.text}
                         </div>
                         <div
                           className={`text-xs mt-1 opacity-70 ${
-                            message.sender._id === currentUserId ? 'text-right' : ''
+                            message.sender._id === currentUserId
+                              ? "text-right"
+                              : ""
                           }`}
                         >
                           {formatTime(message.createdAt)}
@@ -422,10 +465,13 @@ const Messages = () => {
                 </div>
 
                 {/* Message Input */}
-                <form 
+                <form
                   onSubmit={handleSendMessage}
                   className="p-4 border-t flex items-center"
-                  style={{ backgroundColor: "var(--secondary)", borderColor: "var(--quaternary)" }}
+                  style={{
+                    backgroundColor: "var(--secondary)",
+                    borderColor: "var(--quaternary)",
+                  }}
                 >
                   <input
                     type="text"
@@ -448,7 +494,9 @@ const Messages = () => {
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center opacity-70">
                 <div className="text-center p-8">
-                  <h3 className="text-xl font-semibold mb-2">Select a conversation</h3>
+                  <h3 className="text-xl font-semibold mb-2">
+                    Select a conversation
+                  </h3>
                   <p>Choose a conversation from the list to start messaging</p>
                 </div>
               </div>

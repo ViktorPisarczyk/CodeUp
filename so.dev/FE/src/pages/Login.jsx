@@ -117,12 +117,16 @@ export default function Login() {
       } else {
         const errorData = await response.json();
         console.error("Signup failed:", errorData.message);
-        
+
         // Check for duplicate email error
-        if (errorData.message && errorData.message.includes("E11000 duplicate key error")) {
+        if (
+          errorData.message &&
+          errorData.message.includes("E11000 duplicate key error")
+        ) {
           setAlert({
             show: true,
-            message: "This email is already linked to an existing account. Please use another email.",
+            message:
+              "This email is already linked to an existing account. Please use another email.",
             isSuccess: false,
           });
         } else {

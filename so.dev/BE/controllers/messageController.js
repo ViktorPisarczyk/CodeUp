@@ -103,6 +103,8 @@ export const getOrCreateConversation = async (req, res) => {
     // Fix: Access user ID correctly from the JWT token
     const userId = req.user;
 
+    console.log(`Creating/getting conversation between ${userId} and ${participantId}`);
+
     // Ensure we're not creating a conversation with ourselves
     if (participantId === userId) {
       return res.status(400).json({ message: "Cannot create conversation with yourself" });
@@ -114,26 +116,41 @@ export const getOrCreateConversation = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Sort IDs to ensure consistent conversation lookup
-    const participants = [userId, participantId].sort();
-
-    // Look for existing conversation
-    let conversation = await Conversation.findOne({
-      participants: { $all: participants }
-    })
-    .populate({
+    // Find existing conversation with these participants
+    const conversations = await Conversation.find({
+      participants: { 
+        $all: [
+          new mongoose.Types.ObjectId(userId),
+          new mongoose.Types.ObjectId(participantId)
+        ]
+      }
+    }).populate({
       path: "participants",
       select: "username profilePicture _id",
       match: { _id: { $ne: userId } }
     });
 
-    // If no conversation exists, create one
-    if (!conversation) {
-      conversation = await Conversation.create({
-        participants,
+    console.log(`Found ${conversations.length} existing conversations`);
+    
+    let conversation;
+    
+    // If conversations exist, use the first one
+    if (conversations.length > 0) {
+      conversation = conversations[0];
+      console.log(`Using existing conversation: ${conversation._id}`);
+    } else {
+      // Create a new conversation
+      conversation = new Conversation({
+        participants: [
+          new mongoose.Types.ObjectId(userId),
+          new mongoose.Types.ObjectId(participantId)
+        ],
         updatedAt: new Date()
       });
-
+      
+      await conversation.save();
+      console.log(`Created new conversation: ${conversation._id}`);
+      
       // Populate the new conversation
       conversation = await Conversation.findById(conversation._id)
         .populate({
@@ -141,6 +158,23 @@ export const getOrCreateConversation = async (req, res) => {
           select: "username profilePicture _id",
           match: { _id: { $ne: userId } }
         });
+    }
+
+    // Ensure we have a populated participant
+    if (!conversation.participants || conversation.participants.length === 0) {
+      console.log("No participants found, repopulating");
+      
+      // Try to repopulate
+      conversation = await Conversation.findById(conversation._id)
+        .populate({
+          path: "participants",
+          select: "username profilePicture _id",
+          match: { _id: { $ne: userId } }
+        });
+        
+      if (!conversation.participants || conversation.participants.length === 0) {
+        return res.status(500).json({ message: "Failed to populate conversation participants" });
+      }
     }
 
     res.status(200).json({
@@ -152,7 +186,7 @@ export const getOrCreateConversation = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating conversation:", error);
-    res.status(500).json({ message: "Failed to create conversation" });
+    res.status(500).json({ message: "Failed to create conversation: " + error.message });
   }
 };
 

@@ -249,7 +249,7 @@ function Profile() {
 
   const startConversation = async () => {
     if (!userId || userId === loggedInUserId) return;
-    
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -257,7 +257,8 @@ function Profile() {
         return;
       }
 
-      // Create or get conversation with this user
+      console.log("Starting conversation with user ID:", userId);
+      
       const response = await fetch(
         `http://localhost:5001/messages/conversations/user/${userId}`,
         {
@@ -270,16 +271,19 @@ function Profile() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to create conversation");
+        const errorData = await response.json();
+        console.error("Error creating conversation:", errorData);
+        throw new Error(errorData.message || "Failed to create conversation");
       }
 
       const conversation = await response.json();
-      
+      console.log("Conversation created/retrieved:", conversation);
+
       // Navigate to messages page with this conversation open
       navigate("/messages", { state: { activeConversation: conversation.id } });
     } catch (error) {
-      console.error("Error starting conversation:", error);
-      alert("Failed to start conversation. Please try again.");
+      console.error("Error in startConversation:", error);
+      alert(`Failed to start conversation: ${error.message || "Please try again later"}`);
     }
   };
 

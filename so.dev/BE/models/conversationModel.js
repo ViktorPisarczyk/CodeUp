@@ -19,7 +19,16 @@ const conversationSchema = new Schema(
   { timestamps: true }
 );
 
-// Ensure participants are unique in the conversation
-conversationSchema.index({ participants: 1 }, { unique: true });
+// DO NOT add a unique index on participants
+// This was causing issues with conversation creation
+
+// Add a pre-save hook to always sort participants for consistency
+conversationSchema.pre('save', function(next) {
+  // Sort participants by their string representation
+  if (this.participants && this.participants.length > 0) {
+    this.participants.sort();
+  }
+  next();
+});
 
 export const Conversation = model("Conversation", conversationSchema);
