@@ -23,6 +23,7 @@ const AsideMenu = () => {
   const cachedUserData = JSON.parse(localStorage.getItem("userData")) || {};
   const [userData, setUserData] = useState(cachedUserData);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Update menuToggle based on screen size
   useEffect(() => {
@@ -143,7 +144,9 @@ const AsideMenu = () => {
         
         // Check if any conversation has unread messages
         const hasUnread = conversations.some(conv => conv.unread > 0);
+        const unread = conversations.reduce((acc, conv) => acc + conv.unread, 0);
         setHasUnreadMessages(hasUnread);
+        setUnreadCount(unread);
       } catch (error) {
         console.error("Error checking unread messages:", error);
       }
@@ -245,8 +248,10 @@ const AsideMenu = () => {
             Messages
             {hasUnreadMessages && (
               <span
-                className="absolute top-2 right-2 w-3 h-3 bg-red-500 rounded-full"
-              />
+                className="inline-flex items-center justify-center ml-1 min-w-5 h-5 px-1 bg-red-500 rounded-full text-white text-xs font-bold"
+              >
+                {unreadCount}
+              </span>
             )}
           </button>
           <button
@@ -277,9 +282,6 @@ const AsideMenu = () => {
             </button>
             <button className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full">
               Privacy
-            </button>
-            <button className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full">
-              Notification
             </button>
             <button
               onClick={() => setIsChatOpen(true)}
