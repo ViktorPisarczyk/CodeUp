@@ -520,18 +520,6 @@ const Post = ({
                 rows="6"
                 placeholder="Edit your post..."
               />
-              <div className="flex mb-4">
-                <button
-                  type="button"
-                  onClick={toggleCodeSnippetVisibility}
-                  className="flex items-center justify-center px-4 py-2 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer font-semibold text-sm"
-                >
-                  <FaCode className="mr-2" size={16} />
-                  {isCodeSnippetVisible
-                    ? "Hide Code Snippet"
-                    : "Add Code Snippet"}
-                </button>
-              </div>
               {isCodeSnippetVisible && (
                 <textarea
                   value={editedCodeSnippet}
@@ -578,8 +566,22 @@ const Post = ({
               )}
             </div>
             
+            {/* Code snippet toggle button */}
+            <div className="mt-6 mb-4">
+              <button
+                type="button"
+                onClick={toggleCodeSnippetVisibility}
+                className="w-full flex items-center justify-center px-4 py-2 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer font-semibold text-sm"
+              >
+                <FaCode className="mr-2" size={16} />
+                {isCodeSnippetVisible
+                  ? "Hide Code Snippet"
+                  : "Add Code Snippet"}
+              </button>
+            </div>
+            
             {/* Buttons moved to bottom */}
-            <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-gray-200">
+            <div className="flex justify-end gap-2 mt-2 pt-4 border-t border-gray-200">
               <button
                 type="button"
                 onClick={() => setShowEditModal(false)}
