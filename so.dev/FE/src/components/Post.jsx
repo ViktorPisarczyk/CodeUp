@@ -371,7 +371,7 @@ const Post = ({
             <img
               src={post.author.profilePicture}
               alt="Profile"
-              className="w-10 h-10 rounded-full"
+              className="w-10 h-10 rounded-full object-cover"
             />
           ) : (
             <span>
@@ -444,7 +444,9 @@ const Post = ({
       )}
 
       {/* Post Content */}
-      <p className="mt-4 mb-4">{post.content}</p>
+      <p className="mt-4 mb-4 whitespace-pre-wrap break-words">
+        {post.content}
+      </p>
 
       {/* Display multiple images if available */}
       {post.images && post.images.length > 0 ? (
@@ -499,7 +501,7 @@ const Post = ({
           </pre>
           <button
             onClick={copyCodeToClipboard}
-            className="absolute top-2 right-2 p-2 rounded-md text-white"
+            className="absolute top-4 right-2 p-2 rounded-md text-white"
             style={{ backgroundColor: "var(--tertiary)" }}
             title="Copy code to clipboard"
           >
