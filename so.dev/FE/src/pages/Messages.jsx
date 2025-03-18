@@ -59,6 +59,9 @@ const Messages = () => {
 
         const data = await response.json();
         setConversations(data);
+        
+        // Store conversations in localStorage for the AsideMenu to access
+        localStorage.setItem("conversations", JSON.stringify(data));
 
         // Check if we need to select a specific conversation from route state
         if (location.state?.activeConversation) {
@@ -79,6 +82,12 @@ const Messages = () => {
 
     if (currentUserId) {
       fetchConversations();
+      
+      // Set up polling for conversations every 15 seconds to update unread counts
+      const intervalId = setInterval(fetchConversations, 15000);
+      
+      // Clean up interval on unmount
+      return () => clearInterval(intervalId);
     }
   }, [currentUserId, location.state]);
 
@@ -120,11 +129,22 @@ const Messages = () => {
         );
 
         // Update unread count in conversations list
-        setConversations((prevConversations) =>
-          prevConversations.map((conv) =>
+        setConversations((prevConversations) => {
+          const updatedConversations = prevConversations.map((conv) =>
             conv.id === selectedConversation.id ? { ...conv, unread: 0 } : conv
-          )
-        );
+          );
+          
+          // Update localStorage with the updated conversations
+          localStorage.setItem("conversations", JSON.stringify(updatedConversations));
+          
+          return updatedConversations;
+        });
+        
+        // Dispatch custom event to notify AsideMenu that a conversation has been opened
+        const event = new CustomEvent("conversationOpened", {
+          detail: { conversationId: selectedConversation.id }
+        });
+        window.dispatchEvent(event);
       } catch (error) {
         console.error("Error fetching messages:", error);
         setError("Failed to load messages. Please try again later.");
@@ -209,6 +229,8 @@ const Messages = () => {
   };
 
   // Start a new conversation with a user
+  // This function is currently not used but kept for future implementation of the new message feature
+  // eslint-disable-next-line no-unused-vars
   const startConversation = async (userId) => {
     try {
       const token = localStorage.getItem("token");

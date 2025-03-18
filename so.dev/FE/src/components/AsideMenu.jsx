@@ -158,8 +158,37 @@ const AsideMenu = () => {
     // Set up interval to check periodically (every 30 seconds)
     const intervalId = setInterval(checkUnreadMessages, 30000);
 
-    // Clean up interval on unmount
-    return () => clearInterval(intervalId);
+    // Listen for conversation opened events
+    const handleConversationOpened = (event) => {
+      const { conversationId } = event.detail;
+      
+      // Update the unread count immediately when a conversation is opened
+      setUnreadCount(prevCount => {
+        // Get the current conversations from localStorage if available
+        const storedConversations = JSON.parse(localStorage.getItem("conversations") || "[]");
+        const openedConversation = storedConversations.find(conv => conv.id === conversationId);
+        
+        // If we found the conversation, subtract its unread count from the total
+        if (openedConversation && openedConversation.unread > 0) {
+          const newCount = Math.max(0, prevCount - openedConversation.unread);
+          // If the new count is 0, also update hasUnreadMessages
+          if (newCount === 0) {
+            setHasUnreadMessages(false);
+          }
+          return newCount;
+        }
+        return prevCount;
+      });
+    };
+
+    // Register the event listener
+    window.addEventListener("conversationOpened", handleConversationOpened);
+
+    // Clean up interval and event listener on unmount
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener("conversationOpened", handleConversationOpened);
+    };
   }, [loggedInUserId]);
 
   const handleMenuToggle = () => {
