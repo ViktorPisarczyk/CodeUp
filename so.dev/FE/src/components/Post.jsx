@@ -744,8 +744,8 @@ const Post = ({
       )}
       <div className="flex items-center">
         <Link
-          to={`/profile/${loggedInUserId}`}
-          className="w-10 h-10 rounded-full  bg-blue-400 flex items-center self-center text-center justify-center text-white"
+          to={`/profile/${post.author._id}`}
+          className="w-10 h-10 rounded-full bg-blue-400 flex items-center self-center text-center justify-center text-white"
         >
           {post.author?.profilePicture ? (
             <img
