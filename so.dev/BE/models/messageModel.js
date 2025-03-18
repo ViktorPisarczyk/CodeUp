@@ -20,6 +20,15 @@ const messageSchema = new Schema(
     read: {
       type: Boolean,
       default: false
+    },
+    deletedFor: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      default: []
+    },
+    deletedForEveryone: {
+      type: Boolean,
+      default: false
     }
   },
   { timestamps: true }

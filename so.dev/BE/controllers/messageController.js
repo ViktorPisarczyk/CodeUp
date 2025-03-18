@@ -58,7 +58,6 @@ export const getUserConversations = async (req, res) => {
 export const getConversationMessages = async (req, res) => {
   try {
     const { conversationId } = req.params;
-    // Fix: Access user ID correctly from the JWT token
     const userId = req.user;
 
     // Verify the user is part of this conversation
@@ -71,8 +70,11 @@ export const getConversationMessages = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to view this conversation" });
     }
 
-    // Get messages
-    const messages = await Message.find({ conversationId })
+    // Get messages that haven't been deleted for this user
+    const messages = await Message.find({ 
+      conversationId,
+      deletedFor: { $ne: userId } // Exclude messages deleted for this user
+    })
       .sort({ createdAt: 1 })
       .populate({
         path: "sender",
@@ -256,7 +258,6 @@ export const sendMessage = async (req, res) => {
 export const markMessagesAsRead = async (req, res) => {
   try {
     const { conversationId } = req.params;
-    // Fix: Access user ID correctly from the JWT token
     const userId = req.user;
 
     // Verify the user is part of this conversation
@@ -270,7 +271,7 @@ export const markMessagesAsRead = async (req, res) => {
     }
 
     // Mark all messages from other participants as read
-    const result = await Message.updateMany(
+    await Message.updateMany(
       { 
         conversationId,
         sender: { $ne: userId },
@@ -279,12 +280,75 @@ export const markMessagesAsRead = async (req, res) => {
       { read: true }
     );
 
-    res.status(200).json({ 
-      message: "Messages marked as read",
-      count: result.modifiedCount
-    });
+    res.status(200).json({ message: "Messages marked as read" });
   } catch (error) {
     console.error("Error marking messages as read:", error);
     res.status(500).json({ message: "Failed to mark messages as read" });
+  }
+};
+
+// Delete message for me only
+export const deleteMessageForMe = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.user;
+
+    // Find the message
+    const message = await Message.findById(messageId);
+    
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    // Verify the user is part of the conversation
+    const conversation = await Conversation.findOne({
+      _id: message.conversationId,
+      participants: userId
+    });
+
+    if (!conversation) {
+      return res.status(403).json({ message: "Not authorized to delete this message" });
+    }
+
+    // Add user to deletedFor array if not already there
+    if (!message.deletedFor.includes(userId)) {
+      message.deletedFor.push(userId);
+      await message.save();
+    }
+
+    res.status(200).json({ message: "Message deleted for you" });
+  } catch (error) {
+    console.error("Error deleting message:", error);
+    res.status(500).json({ message: "Failed to delete message" });
+  }
+};
+
+// Delete message for everyone
+export const deleteMessageForEveryone = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.user;
+
+    // Find the message
+    const message = await Message.findById(messageId);
+    
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    // Verify the user is the sender of the message
+    if (message.sender.toString() !== userId) {
+      return res.status(403).json({ message: "Only the sender can delete a message for everyone" });
+    }
+
+    // Set message as deleted for everyone
+    message.deletedForEveryone = true;
+    message.text = "This message was deleted";
+    await message.save();
+
+    res.status(200).json({ message: "Message deleted for everyone" });
+  } catch (error) {
+    console.error("Error deleting message for everyone:", error);
+    res.status(500).json({ message: "Failed to delete message for everyone" });
   }
 };

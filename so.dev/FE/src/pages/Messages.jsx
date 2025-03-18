@@ -3,6 +3,8 @@ import { jwtDecode } from "jwt-decode";
 import { useLocation } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
 import { IoSend } from "react-icons/io5";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { MdDeleteOutline } from "react-icons/md";
 
 const API_URL = "http://localhost:5001";
 
@@ -16,6 +18,7 @@ const Messages = () => {
   const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
   const location = useLocation();
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
   // Get user ID from token
   const getUserIdFromToken = () => {
@@ -324,6 +327,98 @@ const Messages = () => {
     }
   };
 
+  // Handle dropdown toggle
+  const toggleDropdown = (messageId) => {
+    if (activeDropdown === messageId) {
+      setActiveDropdown(null);
+    } else {
+      setActiveDropdown(messageId);
+    }
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Only close if clicking outside of any dropdown
+      if (activeDropdown && !event.target.closest('.message-dropdown-container')) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [activeDropdown]);
+
+  // Delete message for me only
+  const deleteMessageForMe = async (messageId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
+      const response = await fetch(
+        `${API_URL}/messages/${messageId}/delete-for-me`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete message");
+      }
+
+      // Remove message from UI
+      setMessages((prevMessages) =>
+        prevMessages.filter((msg) => msg._id !== messageId)
+      );
+
+      setActiveDropdown(null);
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      setError("Failed to delete message. Please try again.");
+    }
+  };
+
+  // Delete message for everyone
+  const deleteMessageForEveryone = async (messageId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
+      const response = await fetch(
+        `${API_URL}/messages/${messageId}/delete-for-everyone`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete message for everyone");
+      }
+
+      // Update message in UI to show "Message deleted"
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg._id === messageId
+            ? { ...msg, text: "This message was deleted", isDeleted: true }
+            : msg
+        )
+      );
+
+      setActiveDropdown(null);
+    } catch (error) {
+      console.error("Error deleting message for everyone:", error);
+      setError("Failed to delete message. Please try again.");
+    }
+  };
+
   return (
     <div
       className="flex min-h-screen"
@@ -492,7 +587,7 @@ const Messages = () => {
                             message.sender._id === currentUserId
                               ? "rounded-tr-none text-white"
                               : "rounded-tl-none"
-                          }`}
+                          } ${message.isDeleted ? "italic opacity-60" : ""}`}
                           style={{
                             backgroundColor:
                               message.sender._id === currentUserId
@@ -500,7 +595,56 @@ const Messages = () => {
                                 : "var(--secondary)",
                           }}
                         >
-                          {message.text}
+                          <div className="flex justify-between items-start">
+                            <div className="pr-6">{message.text}</div>
+                            <div 
+                              className="relative ml-2 message-dropdown-container"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleDropdown(message._id);
+                              }}
+                            >
+                              <BsThreeDotsVertical
+                                size={16}
+                                className="cursor-pointer opacity-70 hover:opacity-100"
+                              />
+                              {activeDropdown === message._id && (
+                                <div 
+                                  className={`absolute ${
+                                    message.sender._id === currentUserId ? "right-0" : "left-0"
+                                  } bg-white shadow-md rounded p-1 z-10 mt-1 w-40 text-black message-dropdown-container`}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {message.sender._id === currentUserId ? (
+                                    <>
+                                      <button
+                                        className="flex items-center w-full text-left p-2 hover:bg-gray-100 rounded"
+                                        onClick={() => deleteMessageForMe(message._id)}
+                                      >
+                                        <MdDeleteOutline className="mr-2" />
+                                        Delete for me
+                                      </button>
+                                      <button
+                                        className="flex items-center w-full text-left p-2 hover:bg-gray-100 rounded"
+                                        onClick={() => deleteMessageForEveryone(message._id)}
+                                      >
+                                        <MdDeleteOutline className="mr-2" />
+                                        Delete for everyone
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <button
+                                      className="flex items-center w-full text-left p-2 hover:bg-gray-100 rounded"
+                                      onClick={() => deleteMessageForMe(message._id)}
+                                    >
+                                      <MdDeleteOutline className="mr-2" />
+                                      Delete for me
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
                         <div
                           className={`text-xs mt-1 opacity-70 ${

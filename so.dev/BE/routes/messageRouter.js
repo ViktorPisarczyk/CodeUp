@@ -5,7 +5,9 @@ import {
   getConversationMessages,
   getOrCreateConversation,
   sendMessage,
-  markMessagesAsRead
+  markMessagesAsRead,
+  deleteMessageForMe,
+  deleteMessageForEveryone
 } from "../controllers/messageController.js";
 
 export const messageRouter = express.Router();
@@ -27,3 +29,9 @@ messageRouter.post("/conversations/:conversationId/messages", sendMessage);
 
 // Mark messages as read
 messageRouter.put("/conversations/:conversationId/read", markMessagesAsRead);
+
+// Delete message for me only
+messageRouter.delete("/:messageId/delete-for-me", deleteMessageForMe);
+
+// Delete message for everyone
+messageRouter.delete("/:messageId/delete-for-everyone", deleteMessageForEveryone);
