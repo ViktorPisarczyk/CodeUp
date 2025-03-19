@@ -10,6 +10,7 @@ import Alert from "../components/Alert"; // Import the Alert component
 import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css"; // Choose a theme of your choice
 import "prismjs/components/prism-javascript";
+import { MdSend } from "react-icons/md";
 
 const API_URL = "http://localhost:5001";
 
@@ -447,10 +448,10 @@ export default function Feed() {
             {/* Post Button */}
             <button
               type="submit"
-              className="px-4 py-2 text-white rounded-md hover:opacity-80 ml-auto"
+              className="px-4 py-2 text-white rounded-md hover:opacity-80 ml-auto flex items-center justify-center"
               style={{ backgroundColor: "var(--tertiary)" }}
             >
-              Post
+              <MdSend size={26} color={darkMode ? "white" : "black"} />
             </button>
           </div>
 

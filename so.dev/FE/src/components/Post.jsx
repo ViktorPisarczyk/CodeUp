@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import { BsThreeDots } from "react-icons/bs";
@@ -8,6 +8,8 @@ import { SlBubbles } from "react-icons/sl";
 import { CiHeart } from "react-icons/ci";
 import { FaHeart } from "react-icons/fa";
 import { FaCopy, FaCheck, FaCode } from "react-icons/fa";
+import { MdSend } from "react-icons/md";
+import { MyContext } from "../context/ThemeContext";
 import Alert from "./Alert";
 import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css";
@@ -56,6 +58,7 @@ const Post = ({
   // Add a timer ref to prevent auto-closing of success alert
   const successAlertTimerRef = useRef(null);
   const successCallbackRef = useRef(null);
+  const { darkMode } = useContext(MyContext);
 
   useEffect(() => {
     Prism.highlightAll();
@@ -938,7 +941,10 @@ const Post = ({
       </div>
       {showCommentForm && (
         <div className="border-t border-gray-200 p-4">
-          <form onSubmit={(e) => handleCommentSubmit(post._id, e)}>
+          <form
+            onSubmit={(e) => handleCommentSubmit(post._id, e)}
+            className="flex items-center space-x-2"
+          >
             <textarea
               value={newComment[post._id] || ""}
               onChange={(e) =>
@@ -948,9 +954,9 @@ const Post = ({
                 }))
               }
               placeholder="Add a comment"
-              className="w-full p-2 rounded-md text-black border-gray-300 focus:border-blue-400 focus:ring-blue-400"
+              className="flex-1 p-2 rounded-md text-black border border-gray-300 focus:border-blue-400 focus:ring-blue-400"
               style={{ backgroundColor: "var(--textarea)" }}
-              rows="3"
+              rows="1" // Keeps the input in a single row
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -960,10 +966,10 @@ const Post = ({
             />
             <button
               type="submit"
-              className="mt-2 px-4 py-2 text-white mb-3 rounded-md hover:opacity-80"
+              className="px-4 py-2 text-white rounded-md hover:opacity-80"
               style={{ backgroundColor: "var(--tertiary)" }}
             >
-              Comment
+              <MdSend size={26} color={darkMode ? "white" : "black"} />
             </button>
           </form>
 
@@ -1030,7 +1036,9 @@ const Post = ({
                     </div>
 
                     {/* Comment Text */}
-                    <p className="ml-10">{comment.text}</p>
+                    <p className="ml-10 whitespace-pre-wrap break-words">
+                      {comment.text}
+                    </p>
 
                     {activeCommentDropdown === comment._id && (
                       <>
