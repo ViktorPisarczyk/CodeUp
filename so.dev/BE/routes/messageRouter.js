@@ -7,7 +7,8 @@ import {
   sendMessage,
   markMessagesAsRead,
   deleteMessageForMe,
-  deleteMessageForEveryone
+  deleteMessageForEveryone,
+  deleteConversationForMe
 } from "../controllers/messageController.js";
 
 export const messageRouter = express.Router();
@@ -35,3 +36,6 @@ messageRouter.delete("/:messageId/delete-for-me", deleteMessageForMe);
 
 // Delete message for everyone
 messageRouter.delete("/:messageId/delete-for-everyone", deleteMessageForEveryone);
+
+// Delete conversation for current user only
+messageRouter.delete("/conversations/:conversationId/delete", deleteConversationForMe);

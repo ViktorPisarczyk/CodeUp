@@ -14,7 +14,11 @@ const conversationSchema = new Schema(
     updatedAt: {
       type: Date,
       default: Date.now
-    }
+    },
+    deletedFor: [{
+      type: Schema.Types.ObjectId,
+      ref: "User"
+    }]
   },
   { timestamps: true }
 );

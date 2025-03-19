@@ -10,8 +10,10 @@ export const getUserConversations = async (req, res) => {
     const userId = req.user;
 
     // Find all conversations where the user is a participant
+    // and the conversation is not deleted for this user
     const conversations = await Conversation.find({
-      participants: userId
+      participants: userId,
+      deletedFor: { $ne: userId } // Exclude conversations deleted by this user
     })
     .populate({
       path: "participants",
@@ -350,5 +352,41 @@ export const deleteMessageForEveryone = async (req, res) => {
   } catch (error) {
     console.error("Error deleting message for everyone:", error);
     res.status(500).json({ message: "Failed to delete message for everyone" });
+  }
+};
+
+// Delete conversation for current user only
+export const deleteConversationForMe = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user;
+
+    // Verify the user is part of this conversation
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      participants: userId
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ message: "Conversation not found or you are not a participant" });
+    }
+
+    // We don't actually delete the conversation, just hide it for this user
+    // by adding them to a 'deletedFor' array
+    await Conversation.findByIdAndUpdate(
+      conversationId,
+      { $addToSet: { deletedFor: userId } }
+    );
+
+    // Mark all messages in this conversation as deleted for this user
+    await Message.updateMany(
+      { conversationId },
+      { $addToSet: { deletedFor: userId } }
+    );
+
+    res.status(200).json({ message: "Conversation deleted for you" });
+  } catch (error) {
+    console.error("Error deleting conversation:", error);
+    res.status(500).json({ message: "Failed to delete conversation" });
   }
 };

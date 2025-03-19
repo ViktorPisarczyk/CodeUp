@@ -2,9 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
 import { useLocation } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
+import Alert from "../components/Alert";
 import { IoSend } from "react-icons/io5";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { MdDeleteOutline } from "react-icons/md";
+import { FaTrash } from "react-icons/fa";
 
 const API_URL = "http://localhost:5001";
 
@@ -19,6 +20,12 @@ const Messages = () => {
   const messagesEndRef = useRef(null);
   const location = useLocation();
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [slidingConversationId, setSlidingConversationId] = useState(null);
+  const [showConfirmAlert, setShowConfirmAlert] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [conversationToDelete, setConversationToDelete] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   // Get user ID from token
   const getUserIdFromToken = () => {
@@ -34,7 +41,9 @@ const Messages = () => {
     }
   };
 
-  const currentUserId = getUserIdFromToken();
+  useEffect(() => {
+    setCurrentUserId(getUserIdFromToken());
+  }, []);
 
   // Scroll to bottom of messages
   const scrollToBottom = () => {
@@ -154,41 +163,48 @@ const Messages = () => {
         if (!response.ok) return;
 
         const data = await response.json();
-        
+
         // Check if there are any unread messages
-        const hasUnread = data.some(conv => conv.unread > 0);
-        
+        const hasUnread = data.some((conv) => conv.unread > 0);
+
         if (hasUnread) {
           // Update localStorage with the latest conversations
           localStorage.setItem("conversations", JSON.stringify(data));
-          
+
           // Dispatch event to notify AsideMenu about new messages
           const event = new CustomEvent("newMessage");
           window.dispatchEvent(event);
-          
+
           // If we're in a conversation, update that conversation's messages
           if (selectedConversation) {
             // Only refresh messages if they're for the current conversation
-            const currentConv = data.find(conv => conv.id === selectedConversation.id);
+            const currentConv = data.find(
+              (conv) => conv.id === selectedConversation.id
+            );
             if (currentConv && currentConv.unread > 0) {
               fetchMessages(selectedConversation.id);
             }
           }
-          
+
           // Update conversations state if needed
-          setConversations(prevConversations => {
+          setConversations((prevConversations) => {
             // Don't update if we're already showing the latest data
-            if (prevConversations.length === data.length && 
-                prevConversations.every(conv => {
-                  const newConv = data.find(c => c.id === conv.id);
-                  return newConv && conv.timestamp === newConv.timestamp;
-                })) {
+            if (
+              prevConversations.length === data.length &&
+              prevConversations.every((conv) => {
+                const newConv = data.find((c) => c.id === conv.id);
+                return newConv && conv.timestamp === newConv.timestamp;
+              })
+            ) {
               return prevConversations;
             }
-            
+
             // Preserve selected conversation state
-            return data.map(newConv => {
-              if (selectedConversation && newConv.id === selectedConversation.id) {
+            return data.map((newConv) => {
+              if (
+                selectedConversation &&
+                newConv.id === selectedConversation.id
+              ) {
                 return { ...newConv, isSelected: true };
               }
               return newConv;
@@ -208,85 +224,70 @@ const Messages = () => {
   }, [currentUserId, selectedConversation]);
 
   // Fetch messages when a conversation is selected
-  useEffect(() => {
-    const fetchMessages = async () => {
-      if (!selectedConversation) return;
+  const fetchMessages = async (conversationId) => {
+    if (!conversationId) return;
 
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("No token found");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
 
-        const response = await fetch(
-          `${API_URL}/messages/conversations/${selectedConversation.id}/messages`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch messages");
+      const response = await fetch(
+        `${API_URL}/messages/conversations/${conversationId}/messages`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
+      );
 
-        const data = await response.json();
-        setMessages(data);
+      if (!response.ok) {
+        throw new Error("Failed to fetch messages");
+      }
 
-        // Mark messages as read
-        await fetch(
-          `${API_URL}/messages/conversations/${selectedConversation.id}/read`,
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+      const data = await response.json();
+      setMessages(data);
+
+      // Mark messages as read
+      await fetch(
+        `${API_URL}/messages/conversations/${conversationId}/read`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Update unread count in conversations list
+      setConversations((prevConversations) => {
+        const updatedConversations = prevConversations.map((conv) =>
+          conv.id === conversationId ? { ...conv, unread: 0 } : conv
         );
 
-        // Update unread count in conversations list
-        setConversations((prevConversations) => {
-          const updatedConversations = prevConversations.map((conv) =>
-            conv.id === selectedConversation.id ? { ...conv, unread: 0 } : conv
-          );
+        // Update localStorage with the updated conversations
+        localStorage.setItem(
+          "conversations",
+          JSON.stringify(updatedConversations)
+        );
 
-          // Update localStorage with the updated conversations
-          localStorage.setItem("conversations", JSON.stringify(updatedConversations));
+        return updatedConversations;
+      });
 
-          return updatedConversations;
-        });
+      // Dispatch custom event to notify AsideMenu that a conversation has been opened
+      const event = new CustomEvent("conversationOpened", {
+        detail: { conversationId },
+      });
+      window.dispatchEvent(event);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
+  };
 
-        // Dispatch custom event to notify AsideMenu that a conversation has been opened
-        const event = new CustomEvent("conversationOpened", {
-          detail: { conversationId: selectedConversation.id },
-        });
-        window.dispatchEvent(event);
-
-        // Force a refresh of conversations from the server to update unread counts
-        setTimeout(async () => {
-          try {
-            const refreshResponse = await fetch(`${API_URL}/messages/conversations`, {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-
-            if (refreshResponse.ok) {
-              const refreshData = await refreshResponse.json();
-              localStorage.setItem("conversations", JSON.stringify(refreshData));
-            }
-          } catch (error) {
-            console.error("Error refreshing conversations:", error);
-          }
-        }, 500);
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-        setError("Failed to load messages. Please try again later.");
-      }
-    };
-
-    fetchMessages();
+  useEffect(() => {
+    if (selectedConversation) {
+      fetchMessages(selectedConversation.id);
+    }
   }, [selectedConversation]);
 
   // Scroll to bottom when messages change
@@ -437,23 +438,22 @@ const Messages = () => {
     }
   };
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Only close if clicking outside of any dropdown
-      if (
-        activeDropdown &&
-        !event.target.closest(".message-dropdown-container")
-      ) {
-        setActiveDropdown(null);
-      }
-    };
+  // Toggle conversation action slider
+  const toggleConversationSlider = (conversationId, e) => {
+    e.stopPropagation();
+    if (slidingConversationId === conversationId) {
+      setSlidingConversationId(null);
+    } else {
+      setSlidingConversationId(conversationId);
+    }
+  };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [activeDropdown]);
+  // Show confirmation alert for conversation deletion
+  const confirmDeleteConversation = (conversationId, e) => {
+    e.stopPropagation();
+    setConversationToDelete(conversationId);
+    setShowConfirmAlert(true);
+  };
 
   // Delete message for me only
   const deleteMessageForMe = async (messageId) => {
@@ -523,6 +523,70 @@ const Messages = () => {
     }
   };
 
+  // Delete conversation for current user only
+  const deleteConversationForMe = async (conversationId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const response = await fetch(`${API_URL}/messages/conversations/${conversationId}/delete`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete conversation");
+      }
+
+      // Remove the conversation from the UI
+      setConversations((prevConversations) => 
+        prevConversations.filter((conv) => conv.id !== conversationId)
+      );
+
+      // If the deleted conversation was selected, clear the selection
+      if (selectedConversation && selectedConversation.id === conversationId) {
+        setSelectedConversation(null);
+        setMessages([]);
+      }
+
+      // Update localStorage
+      const updatedConversations = conversations.filter(
+        (conv) => conv.id !== conversationId
+      );
+      localStorage.setItem("conversations", JSON.stringify(updatedConversations));
+
+      // Reset states
+      setSlidingConversationId(null);
+      setShowConfirmAlert(false);
+      
+      // Show success alert
+      setSuccessMessage("Conversation deleted successfully");
+      setShowSuccessAlert(true);
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+    }
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Only close if clicking outside of any dropdown
+      if (
+        activeDropdown &&
+        !event.target.closest(".message-dropdown-container")
+      ) {
+        setActiveDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [activeDropdown]);
+
   return (
     <div
       className="flex min-h-screen"
@@ -564,7 +628,7 @@ const Messages = () => {
                 filteredConversations.map((conversation) => (
                   <div
                     key={conversation.id}
-                    className={`flex items-center p-4 border-b cursor-pointer hover:opacity-80 ${
+                    className={`relative flex items-center p-4 border-b cursor-pointer hover:opacity-80 ${
                       selectedConversation?.id === conversation.id
                         ? "bg-opacity-20"
                         : ""
@@ -620,6 +684,31 @@ const Messages = () => {
                       >
                         {conversation.lastMessage}
                       </p>
+                    </div>
+                    <div 
+                      className="ml-2 relative"
+                      onClick={(e) => toggleConversationSlider(conversation.id, e)}
+                    >
+                      <BsThreeDotsVertical
+                        size={16}
+                        className="cursor-pointer opacity-70 hover:opacity-100"
+                      />
+                      <div 
+                        className={`absolute right-0 top-0 flex items-center transition-all duration-300 ease-in-out ${
+                          slidingConversationId === conversation.id ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
+                        }`}
+                        style={{ 
+                          pointerEvents: slidingConversationId === conversation.id ? 'auto' : 'none',
+                          zIndex: 10
+                        }}
+                      >
+                        <div 
+                          className="p-2 rounded-full bg-red-600 text-white cursor-pointer"
+                          onClick={(e) => confirmDeleteConversation(conversation.id, e)}
+                        >
+                          <FaTrash size={14} />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -729,7 +818,7 @@ const Messages = () => {
                                           deleteMessageForMe(message._id)
                                         }
                                       >
-                                        <MdDeleteOutline className="mr-2" />
+                                        <FaTrash className="mr-2" />
                                         Delete for me
                                       </button>
                                       <button
@@ -738,7 +827,7 @@ const Messages = () => {
                                           deleteMessageForEveryone(message._id)
                                         }
                                       >
-                                        <MdDeleteOutline className="mr-2" />
+                                        <FaTrash className="mr-2" />
                                         Delete for everyone
                                       </button>
                                     </>
@@ -749,7 +838,7 @@ const Messages = () => {
                                         deleteMessageForMe(message._id)
                                       }
                                     >
-                                      <MdDeleteOutline className="mr-2" />
+                                      <FaTrash className="mr-2" />
                                       Delete for me
                                     </button>
                                   )}
@@ -813,6 +902,27 @@ const Messages = () => {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Alert */}
+      {showConfirmAlert && (
+        <Alert
+          message="Are you sure you want to delete this conversation? This action cannot be undone."
+          onConfirm={() => deleteConversationForMe(conversationToDelete)}
+          onCancel={() => {
+            setShowConfirmAlert(false);
+            setConversationToDelete(null);
+          }}
+        />
+      )}
+
+      {/* Success Alert */}
+      {showSuccessAlert && (
+        <Alert
+          message={successMessage}
+          onConfirm={() => setShowSuccessAlert(false)}
+          isSuccess={true}
+        />
+      )}
     </div>
   );
 };
