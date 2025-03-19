@@ -115,7 +115,7 @@ const Post = ({
 
     setSuccessMessage(message);
     setShowSuccessAlert(true);
-    
+
     // No auto-close timer - success alerts must stay visible until user acknowledges
     // This follows the UI standards for success alerts
   };
@@ -470,8 +470,31 @@ const Post = ({
     return null;
   }
 
-  const timeAgo = (timestamp) => {
-    return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+  const getFormattedTime = (timestamp) => {
+    const now = new Date();
+    const postDate = new Date(timestamp);
+    const diffInSeconds = Math.floor((now - postDate) / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInDays >= 1) {
+      return `${postDate.toLocaleDateString(
+        "en-GB"
+      )} at ${postDate.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })}`;
+    } else if (diffInHours >= 1) {
+      return `${diffInHours} ${diffInHours === 1 ? "hour" : "hours"} ago`;
+    } else if (diffInMinutes >= 1) {
+      return `${diffInMinutes} ${
+        diffInMinutes === 1 ? "minute" : "minutes"
+      } ago`;
+    } else {
+      return "Just now";
+    }
   };
 
   return (
@@ -749,7 +772,7 @@ const Post = ({
       <div className="flex items-center">
         <Link
           to={`/profile/${post.author._id}`}
-          className="w-10 h-10 rounded-full bg-blue-400 flex items-center self-center text-center justify-center text-white"
+          className="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center text-white"
         >
           {post.author?.profilePicture ? (
             <img
@@ -766,59 +789,65 @@ const Post = ({
           )}
         </Link>
 
-        {post.author ? (
-          <Link to={`/profile/${post.author._id}`} className="ml-2 font-bold">
-            {post.author.username}
-          </Link>
-        ) : (
-          <span className="ml-2 font-bold text-gray-500">Unknown User</span>
-        )}
-        <span className="ml-2 text-sm text-gray-500">
-          {new Date(post.createdAt).toLocaleString()}
-        </span>
+        <div className="ml-2 flex flex-col">
+          {post.author ? (
+            <Link to={`/profile/${post.author._id}`} className="font-bold">
+              {post.author.username}
+            </Link>
+          ) : (
+            <span className="font-bold text-gray-500">Unknown User</span>
+          )}
+          <span className="text-sm text-gray-500">
+            {getFormattedTime(post.createdAt)}
+          </span>
+        </div>
       </div>
+
       <BsThreeDots
         className="absolute right-4 top-4 cursor-pointer hover:opacity-70"
         onClick={toggleDropdown}
       />
+
       {showDropdown && (
         <>
           <div
-            className="fixed inset-0 z-32"
+            className="fixed inset-0 z-30"
             onClick={() => setShowDropdown(false)}
           />
+
+          {/* Dropdown menu */}
           <div
-            className="absolute right-4 top-8 rounded-lg shadow-lg py-2 z-33"
+            className="absolute right-4 top-8 rounded-lg shadow-lg py-1 z-40"
             style={{ backgroundColor: "var(--tertiary)", minWidth: "150px" }}
           >
-            <div className="flex justify-end px-2">
-              <IoClose
-                className="cursor-pointer text-white hover:opacity-70 text-xl"
-                onClick={() => setShowDropdown(false)}
-              />
-            </div>
             {post.author?._id === loggedInUserId ? (
-              <div>
+              <>
+                <div className="relative flex items-center px-4 py-1">
+                  <button
+                    className="text-white text-left flex-1 hover:opacity-70"
+                    onClick={handleEditClick}
+                  >
+                    Edit Post
+                  </button>
+                </div>
+
                 <button
-                  className="w-full text-white text-left px-4 py-2 hover:opacity-70"
-                  onClick={handleEditClick}
-                >
-                  Edit Post
-                </button>
-                <button
-                  className="w-full text-left text-white px-4 py-2 hover:opacity-70"
-                  onClick={() => handleDeleteClick()}
+                  className="w-full text-left text-white px-4 py-1 hover:opacity-70"
+                  onClick={handleDeleteClick}
                 >
                   Delete Post
                 </button>
-              </div>
+              </>
             ) : (
-              <button
-                className="w-full text-left px-4 text-white py-2 hover:opacity-70"
-                onClick={() => handleReportClick()}
-              >
-                Report Post
-              </button>
+              /* First row with Close button for non-authors */
+              <div className="relative flex items-center px-4 py-1">
+                <button
+                  className="text-white text-left flex-1 hover:opacity-70"
+                  onClick={handleReportClick}
+                >
+                  Report Post
+                </button>
+              </div>
             )}
           </div>
         </>
@@ -951,7 +980,7 @@ const Post = ({
                       className="absolute right-0 top-2 cursor-pointer hover:opacity-70"
                       onClick={() => toggleCommentDropdown(comment._id)}
                     />
-                    <div className="text-sm flex items-center space-x-2 mb-2">
+                    <div className="text-sm flex items-start space-x-2 mb-2">
                       {/* Commenter Profile Picture */}
                       {comment.user ? (
                         <Link
@@ -980,25 +1009,28 @@ const Post = ({
                         </div>
                       )}
 
-                      {/* Commenter Username */}
-                      {comment.user ? (
-                        <Link
-                          to={`/profile/${comment.user._id}`}
-                          className="font-bold"
-                        >
-                          {comment.user.username}
-                        </Link>
-                      ) : (
-                        <span className="font-bold">Deleted User</span>
-                      )}
+                      <div className="flex flex-col">
+                        {/* Commenter Username */}
+                        {comment.user ? (
+                          <Link
+                            to={`/profile/${comment.user._id}`}
+                            className="font-bold"
+                          >
+                            {comment.user.username}
+                          </Link>
+                        ) : (
+                          <span className="font-bold">Deleted User</span>
+                        )}
 
-                      <span>{comment.text}</span>
+                        {/* Comment creation date & time */}
+                        <span className="text-xs text-gray-500">
+                          {getFormattedTime(comment.createdAt)}
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Add comment creation date and time */}
-                    <div className="text-xs text-gray-500 ml-10 mb-2">
-                      {new Date(comment.createdAt).toLocaleString()}
-                    </div>
+                    {/* Comment Text */}
+                    <p className="ml-10">{comment.text}</p>
 
                     {activeCommentDropdown === comment._id && (
                       <>
@@ -1013,16 +1045,10 @@ const Post = ({
                             minWidth: "150px",
                           }}
                         >
-                          <div className="flex justify-end px-2">
-                            <IoClose
-                              className="cursor-pointer text-white hover:opacity-70 text-xl"
-                              onClick={() => setActiveCommentDropdown(null)}
-                            />
-                          </div>
                           {comment.user?._id === loggedInUserId ? (
                             <>
                               <button
-                                className="w-full text-left text-white px-4 py-2 hover:opacity-70"
+                                className="block text-left text-white px-4 py-1 hover:opacity-70"
                                 onClick={() =>
                                   handleEditCommentClick(
                                     comment._id,
@@ -1033,7 +1059,7 @@ const Post = ({
                                 Edit Comment
                               </button>
                               <button
-                                className="w-full text-left text-white px-4 py-2 hover:opacity-70"
+                                className="block text-left text-white px-4 py-1 hover:opacity-70"
                                 onClick={() =>
                                   handleCommentDeleteClick(comment._id)
                                 }
@@ -1043,7 +1069,7 @@ const Post = ({
                             </>
                           ) : (
                             <button
-                              className="w-full text-left text-white px-4 py-2 hover:opacity-70"
+                              className="block text-left text-white px-4 py-1 hover:opacity-70"
                               onClick={() =>
                                 handleCommentReportClick(comment._id)
                               }
