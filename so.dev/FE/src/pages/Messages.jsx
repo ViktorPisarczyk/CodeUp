@@ -664,10 +664,11 @@ const Messages = () => {
         <div className="flex h-screen overflow-hidden">
           {/* Conversations List */}
           <div
-            className="w-1/3 border-r flex flex-col"
+            className="border-r flex flex-col flex-shrink-0"
             style={{
               backgroundColor: "var(--secondary)",
-              maxWidth: "350px",
+              width: "350px",
+              borderColor: "var(--quaternary)",
             }}
           >
             <div
@@ -806,10 +807,9 @@ const Messages = () => {
 
           {/* Chat Area */}
           <div
-            className="w-2/3 flex flex-col"
+            className="flex flex-col flex-grow"
             style={{
               backgroundColor: "var(--primary)",
-              maxWidth: "calc(100% - 350px)",
             }}
           >
             {selectedConversation ? (
