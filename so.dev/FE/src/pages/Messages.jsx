@@ -138,11 +138,7 @@ const Messages = () => {
       // Clean up interval on unmount
       return () => clearInterval(intervalId);
     }
-  }, [
-    currentUserId,
-    location.state?.activeConversation,
-    conversations.length,
-  ]);
+  }, [currentUserId, location.state?.activeConversation, conversations.length]);
 
   // Poll for new messages in the background
   useEffect(() => {
@@ -247,18 +243,25 @@ const Messages = () => {
       }
 
       const data = await response.json();
-      setMessages(data);
+
+      // Process messages to mark deleted messages
+      const processedMessages = data.map((message) => {
+        // Check if this is a deleted message
+        if (message.text === "This message was deleted") {
+          return { ...message, isDeleted: true };
+        }
+        return message;
+      });
+
+      setMessages(processedMessages);
 
       // Mark messages as read
-      await fetch(
-        `${API_URL}/messages/conversations/${conversationId}/read`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await fetch(`${API_URL}/messages/conversations/${conversationId}/read`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       // Update unread count in conversations list
       setConversations((prevConversations) => {
@@ -530,19 +533,22 @@ const Messages = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const response = await fetch(`${API_URL}/messages/conversations/${conversationId}/delete`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${API_URL}/messages/conversations/${conversationId}/delete`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to delete conversation");
       }
 
       // Remove the conversation from the UI for the current user only
-      setConversations((prevConversations) => 
+      setConversations((prevConversations) =>
         prevConversations.filter((conv) => conv.id !== conversationId)
       );
 
@@ -556,12 +562,15 @@ const Messages = () => {
       const updatedConversations = conversations.filter(
         (conv) => conv.id !== conversationId
       );
-      localStorage.setItem("conversations", JSON.stringify(updatedConversations));
+      localStorage.setItem(
+        "conversations",
+        JSON.stringify(updatedConversations)
+      );
 
       // Reset states
       setSlidingConversationId(null);
       setShowConfirmAlert(false);
-      
+
       // Show success alert
       setSuccessMessage("Conversation deleted from your inbox");
       setShowSuccessAlert(true);
@@ -575,8 +584,8 @@ const Messages = () => {
     const handleClickOutside = (event) => {
       // If the sliding menu is open and the click is outside of it
       if (
-        slidingConversationId && 
-        slidingMenuRef.current && 
+        slidingConversationId &&
+        slidingMenuRef.current &&
         !slidingMenuRef.current.contains(event.target)
       ) {
         setSlidingConversationId(null);
@@ -585,7 +594,7 @@ const Messages = () => {
 
     // Add event listener
     document.addEventListener("mousedown", handleClickOutside);
-    
+
     // Clean up
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -617,10 +626,10 @@ const Messages = () => {
     >
       <AsideMenu />
       <div className="flex-1 flex flex-col">
-        <div className="flex h-screen">
+        <div className="flex h-screen overflow-hidden">
           {/* Conversations List */}
           <div
-            className="w-1/3 border-r"
+            className="w-1/3 border-r flex flex-col"
             style={{ backgroundColor: "var(--secondary)" }}
           >
             <div
@@ -633,11 +642,11 @@ const Messages = () => {
                 placeholder="Search conversations..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-2 rounded-md text-black"
+                className="w-full p-2 rounded-md text-black focus:outline-none"
                 style={{ backgroundColor: "var(--textarea)" }}
               />
             </div>
-            <div className="overflow-y-auto h-[calc(100vh-80px)]">
+            <div className="overflow-y-auto overflow-x-hidden flex-1">
               {isLoading ? (
                 <div className="flex justify-center items-center h-32">
                   <div
@@ -660,7 +669,7 @@ const Messages = () => {
                       borderColor: "var(--quaternary)",
                       backgroundColor:
                         selectedConversation?.id === conversation.id
-                          ? "var(--quaternary)"
+                          ? "var(--tertiary)"
                           : "transparent",
                     }}
                     onClick={() => setSelectedConversation(conversation)}
@@ -708,27 +717,40 @@ const Messages = () => {
                         {conversation.lastMessage}
                       </p>
                     </div>
-                    <div 
+                    <div
                       className="ml-2 relative"
-                      onClick={(e) => toggleConversationSlider(conversation.id, e)}
+                      onClick={(e) =>
+                        toggleConversationSlider(conversation.id, e)
+                      }
                     >
                       <BsThreeDotsVertical
                         size={16}
                         className="cursor-pointer opacity-70 hover:opacity-100"
                       />
-                      <div 
-                        ref={slidingConversationId === conversation.id ? slidingMenuRef : null}
+                      <div
+                        ref={
+                          slidingConversationId === conversation.id
+                            ? slidingMenuRef
+                            : null
+                        }
                         className={`absolute right-0 top-0 flex items-center transition-all duration-300 ease-in-out ${
-                          slidingConversationId === conversation.id ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
+                          slidingConversationId === conversation.id
+                            ? "opacity-100 translate-x-0"
+                            : "opacity-0 translate-x-12"
                         }`}
-                        style={{ 
-                          pointerEvents: slidingConversationId === conversation.id ? 'auto' : 'none',
-                          zIndex: 10
+                        style={{
+                          pointerEvents:
+                            slidingConversationId === conversation.id
+                              ? "auto"
+                              : "none",
+                          zIndex: 10,
                         }}
                       >
-                        <div 
+                        <div
                           className="p-2 rounded-full bg-red-600 text-white cursor-pointer"
-                          onClick={(e) => confirmDeleteConversation(conversation.id, e)}
+                          onClick={(e) =>
+                            confirmDeleteConversation(conversation.id, e)
+                          }
                         >
                           <FaTrash size={14} />
                         </div>
@@ -783,7 +805,10 @@ const Messages = () => {
                 {/* Messages */}
                 <div
                   className="flex-1 overflow-y-auto p-4"
-                  style={{ backgroundColor: "var(--primary)" }}
+                  style={{
+                    backgroundColor: "var(--primary)",
+                    height: "calc(100vh - 140px)",
+                  }}
                 >
                   {messages.length === 0 ? (
                     <div className="flex items-center justify-center h-full opacity-70">
@@ -900,7 +925,7 @@ const Messages = () => {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type a message..."
-                    className="flex-1 p-2 rounded-l-md text-black"
+                    className="flex-1 p-2 rounded-l-md text-black focus:outline-none"
                     style={{ backgroundColor: "var(--textarea)" }}
                   />
                   <button
