@@ -470,6 +470,10 @@ const Post = ({
     return null;
   }
 
+  const timeAgo = (timestamp) => {
+    return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+  };
+
   return (
     <div
       className="rounded-lg relative max-w-full  shadow-md p-4 mb-4"
