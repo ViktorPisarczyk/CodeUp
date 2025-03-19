@@ -6,6 +6,7 @@ import Alert from "../components/Alert";
 import { IoSend } from "react-icons/io5";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaTrash } from "react-icons/fa";
+import { IoArrowBack } from "react-icons/io5";
 
 const API_URL = "http://localhost:5001";
 
@@ -27,6 +28,8 @@ const Messages = () => {
   const [successMessage, setSuccessMessage] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
   const slidingMenuRef = useRef(null);
+  const [isMobileView, setIsMobileView] = useState(false);
+  const [showConversations, setShowConversations] = useState(true);
 
   // Get user ID from token
   const getUserIdFromToken = () => {
@@ -654,6 +657,30 @@ const Messages = () => {
     };
   }, [activeDropdown]);
 
+  // Check if mobile view
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobileView(window.innerWidth <= 768);
+    };
+
+    // Initial check
+    checkIfMobile();
+
+    // Add event listener for window resize
+    window.addEventListener("resize", checkIfMobile);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkIfMobile);
+  }, []);
+
+  // Handle conversation selection for mobile view
+  const handleConversationSelect = (conversation) => {
+    setSelectedConversation(conversation);
+    if (isMobileView) {
+      setShowConversations(false);
+    }
+  };
+
   return (
     <div
       className="flex min-h-screen"
@@ -664,10 +691,14 @@ const Messages = () => {
         <div className="flex h-screen overflow-hidden">
           {/* Conversations List */}
           <div
-            className="border-r flex flex-col flex-shrink-0"
+            className={`${
+              showConversations || !isMobileView ? "block" : "hidden"
+            } ${
+              isMobileView ? "w-full" : ""
+            } border-r flex flex-col flex-shrink-0`}
             style={{
               backgroundColor: "var(--secondary)",
-              width: "350px",
+              width: isMobileView ? "100%" : "350px",
               borderColor: "var(--quaternary)",
             }}
           >
@@ -711,7 +742,7 @@ const Messages = () => {
                           ? "var(--tertiary)"
                           : "transparent",
                     }}
-                    onClick={() => setSelectedConversation(conversation)}
+                    onClick={() => handleConversationSelect(conversation)}
                   >
                     <div className="relative">
                       {conversation.user.profilePicture ? (
@@ -807,7 +838,11 @@ const Messages = () => {
 
           {/* Chat Area */}
           <div
-            className="flex flex-col flex-grow"
+            className={`${
+              !showConversations || !isMobileView ? "block" : "hidden"
+            } ${
+              isMobileView ? "w-full" : ""
+            } flex flex-col flex-grow`}
             style={{
               backgroundColor: "var(--primary)",
             }}
@@ -822,6 +857,14 @@ const Messages = () => {
                     borderColor: "var(--quaternary)",
                   }}
                 >
+                  {isMobileView && (
+                    <button
+                      className="mr-3 text-white"
+                      onClick={() => setShowConversations(true)}
+                    >
+                      <IoArrowBack size={20} />
+                    </button>
+                  )}
                   {selectedConversation.user.profilePicture ? (
                     <img
                       src={selectedConversation.user.profilePicture}
