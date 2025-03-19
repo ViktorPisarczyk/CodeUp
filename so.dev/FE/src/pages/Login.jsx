@@ -161,9 +161,9 @@ export default function Login() {
       <div>
         <img src={darkMode ? logoDM : logoLM} alt="logo" className="w-200" />
       </div>
-      <div className=" bg-(--tertiary) p-8 rounded-lg shadow-xl w-full my-auto max-w-md">
+      <div className=" bg-(--tertiary) p-8 rounded-lg shadow-xl w-full mt-5 max-w-md">
         <h1 className="text-3xl font-bold text-center mb-8 text-(--text)">
-          {isLogin ? "Welcome Back!" : "Join So.Dev"}
+          {isLogin ? "Welcome Back!" : "Join Code Up"}
         </h1>
 
         <form
