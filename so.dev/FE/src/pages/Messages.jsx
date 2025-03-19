@@ -26,6 +26,7 @@ const Messages = () => {
   const [conversationToDelete, setConversationToDelete] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const slidingMenuRef = useRef(null);
 
   // Get user ID from token
   const getUserIdFromToken = () => {
@@ -569,6 +570,28 @@ const Messages = () => {
     }
   };
 
+  // Add click outside listener to close sliding menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // If the sliding menu is open and the click is outside of it
+      if (
+        slidingConversationId && 
+        slidingMenuRef.current && 
+        !slidingMenuRef.current.contains(event.target)
+      ) {
+        setSlidingConversationId(null);
+      }
+    };
+
+    // Add event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    
+    // Clean up
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [slidingConversationId]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -694,6 +717,7 @@ const Messages = () => {
                         className="cursor-pointer opacity-70 hover:opacity-100"
                       />
                       <div 
+                        ref={slidingConversationId === conversation.id ? slidingMenuRef : null}
                         className={`absolute right-0 top-0 flex items-center transition-all duration-300 ease-in-out ${
                           slidingConversationId === conversation.id ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
                         }`}
