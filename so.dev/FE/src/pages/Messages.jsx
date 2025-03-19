@@ -75,28 +75,28 @@ const Messages = () => {
 
         const data = await response.json();
 
-        // Update conversations without causing visual flickering
         setConversations((prevConversations) => {
-          // If this is a refresh (not initial load), preserve the current selected conversation
+          // If we already have conversations, merge with new data
           if (prevConversations.length > 0) {
-            // Create a map of existing conversations for quick lookup
-            const existingConvsMap = new Map(
-              prevConversations.map((conv) => [conv.id, conv])
-            );
+            const updatedConversations = [...prevConversations];
 
-            // Update conversations with new data while preserving UI state
-            const updatedConversations = data.map((newConv) => {
-              const existingConv = existingConvsMap.get(newConv.id);
-              // If this conversation exists and is currently selected, preserve its selection state
-              if (
-                existingConv &&
-                selectedConversation &&
-                existingConv.id === selectedConversation.id
-              ) {
-                return { ...newConv, isSelected: true };
+            // Update existing conversations with new data
+            data.forEach((newConv) => {
+              const existingIndex = updatedConversations.findIndex(
+                (conv) => conv.id === newConv.id
+              );
+              if (existingIndex !== -1) {
+                updatedConversations[existingIndex] = newConv;
+              } else {
+                // Add new conversation
+                updatedConversations.push(newConv);
               }
-              return newConv;
             });
+
+            // Sort by most recent
+            updatedConversations.sort(
+              (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+            );
 
             return updatedConversations;
           }
@@ -108,12 +108,13 @@ const Messages = () => {
         localStorage.setItem("conversations", JSON.stringify(data));
 
         // Check if we need to select a specific conversation from route state
-        // Only do this on initial load, not during refreshes
-        if (conversations.length === 0 && location.state?.activeConversation) {
+        if (location.state?.activeConversation) {
           const conversationId = location.state.activeConversation;
           const conversation = data.find((conv) => conv.id === conversationId);
           if (conversation) {
             setSelectedConversation(conversation);
+            // Clear the location state to prevent reselecting on future renders
+            window.history.replaceState({}, document.title);
           }
         }
 
@@ -138,9 +139,8 @@ const Messages = () => {
     }
   }, [
     currentUserId,
-    location.state,
+    location.state?.activeConversation,
     conversations.length,
-    selectedConversation,
   ]);
 
   // Poll for new messages in the background

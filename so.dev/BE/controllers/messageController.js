@@ -120,14 +120,15 @@ export const getOrCreateConversation = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Find existing conversation with these participants
+    // Find existing conversation with these participants that is not deleted for the current user
     const conversations = await Conversation.find({
       participants: { 
         $all: [
           new mongoose.Types.ObjectId(userId),
           new mongoose.Types.ObjectId(participantId)
         ]
-      }
+      },
+      deletedFor: { $ne: userId } // Exclude conversations deleted by this user
     }).populate({
       path: "participants",
       select: "username profilePicture _id",
@@ -143,25 +144,63 @@ export const getOrCreateConversation = async (req, res) => {
       conversation = conversations[0];
       console.log(`Using existing conversation: ${conversation._id}`);
     } else {
-      // Create a new conversation
-      conversation = new Conversation({
-        participants: [
-          new mongoose.Types.ObjectId(userId),
-          new mongoose.Types.ObjectId(participantId)
-        ],
-        updatedAt: new Date()
+      // Check if there's a deleted conversation we can reuse
+      const deletedConversation = await Conversation.findOne({
+        participants: { 
+          $all: [
+            new mongoose.Types.ObjectId(userId),
+            new mongoose.Types.ObjectId(participantId)
+          ]
+        },
+        deletedFor: userId // Find conversation that was deleted by this user
       });
-      
-      await conversation.save();
-      console.log(`Created new conversation: ${conversation._id}`);
-      
-      // Populate the new conversation
-      conversation = await Conversation.findById(conversation._id)
-        .populate({
-          path: "participants",
-          select: "username profilePicture _id",
-          match: { _id: { $ne: userId } }
+
+      if (deletedConversation) {
+        // Reuse the deleted conversation by removing the user from deletedFor
+        await Conversation.findByIdAndUpdate(
+          deletedConversation._id,
+          { $pull: { deletedFor: userId } }
+        );
+
+        // Also restore all messages that were deleted for this user in this conversation
+        await Message.updateMany(
+          { 
+            conversationId: deletedConversation._id,
+            deletedFor: userId 
+          },
+          { $pull: { deletedFor: userId } }
+        );
+
+        // Get the updated conversation with populated participants
+        conversation = await Conversation.findById(deletedConversation._id)
+          .populate({
+            path: "participants",
+            select: "username profilePicture _id",
+            match: { _id: { $ne: userId } }
+          });
+        
+        console.log(`Restored deleted conversation: ${conversation._id}`);
+      } else {
+        // Create a new conversation
+        conversation = new Conversation({
+          participants: [
+            new mongoose.Types.ObjectId(userId),
+            new mongoose.Types.ObjectId(participantId)
+          ],
+          updatedAt: new Date()
         });
+        
+        await conversation.save();
+        console.log(`Created new conversation: ${conversation._id}`);
+        
+        // Populate the new conversation
+        conversation = await Conversation.findById(conversation._id)
+          .populate({
+            path: "participants",
+            select: "username profilePicture _id",
+            match: { _id: { $ne: userId } }
+          });
+      }
     }
 
     // Ensure we have a populated participant
