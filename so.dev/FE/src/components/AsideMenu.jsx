@@ -142,16 +142,19 @@ const AsideMenu = () => {
         }
 
         const conversations = await response.json();
-        
+
         // Store conversations in localStorage for future use
         localStorage.setItem("conversations", JSON.stringify(conversations));
-        
+
         // Check if any conversation has unread messages
-        const hasUnread = conversations.some(conv => conv.unread > 0);
-        const unread = conversations.reduce((acc, conv) => acc + (conv.unread || 0), 0);
-        
+        const hasUnread = conversations.some((conv) => conv.unread > 0);
+        const unread = conversations.reduce(
+          (acc, conv) => acc + (conv.unread || 0),
+          0
+        );
+
         console.log("Unread messages count:", unread);
-        
+
         setHasUnreadMessages(hasUnread);
         setUnreadCount(unread);
       } catch (error) {
@@ -191,7 +194,10 @@ const AsideMenu = () => {
     // Clean up interval and event listeners on unmount
     return () => {
       clearInterval(intervalId);
-      window.removeEventListener("conversationOpened", handleConversationOpened);
+      window.removeEventListener(
+        "conversationOpened",
+        handleConversationOpened
+      );
       window.removeEventListener("newMessage", handleNewMessage);
       window.removeEventListener("storage", handleStorageChange);
     };
@@ -221,13 +227,17 @@ const AsideMenu = () => {
           className={`flex flex-col fixed sm:sticky w-64 sm:w-50 h-screen top-0 left-0 bg-(--secondary) z-31 
             ${menuToggle ? "block" : "hidden sm:flex"}`}
         >
-          <Link to={`/feed`} className="size-15 mt-2 ml-2 mb-10">
-            <img src={darkMode ? onlyLogoDM : onlyLogoLM} alt="logo" />
+          <Link to={`/feed`} className="flex justify-center mt-5 mb-5">
+            <img
+              src={darkMode ? onlyLogoDM : onlyLogoLM}
+              alt="logo"
+              className="size-20"
+            />
           </Link>
 
           <Link
             to={`/profile/${loggedInUserId}`}
-            className="w-20 h-20 rounded-full  bg-blue-400 flex items-center self-center text-center justify-center text-white"
+            className="w-30 h-30 rounded-full  bg-blue-400 flex items-center self-center text-center justify-center text-white"
           >
             {userData?.profilePicture ? (
               <img
@@ -242,7 +252,7 @@ const AsideMenu = () => {
             )}
           </Link>
 
-          <p className="text-center mt-4 mb-5">
+          <p className="text-center mt-4 mb-2">
             Welcome back, <br />
             <Link to={`/profile/${loggedInUserId}`}>
               <strong> {userData.username}</strong>!
@@ -282,9 +292,7 @@ const AsideMenu = () => {
             />
             Messages
             {hasUnreadMessages && (
-              <span
-                className="inline-flex items-center justify-center ml-1 min-w-5 h-5 px-1 bg-red-500 rounded-full text-white text-xs font-bold"
-              >
+              <span className="inline-flex items-center justify-center ml-1 min-w-5 h-5 px-1 bg-red-500 rounded-full text-white text-xs font-bold">
                 {unreadCount}
               </span>
             )}
