@@ -5,6 +5,7 @@ import { jwtDecode } from "jwt-decode";
 import Post from "../components/Post";
 import { BsThreeDots } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
+import { FiMessageSquare } from "react-icons/fi";
 import Alert from "../components/Alert";
 
 function Profile() {
@@ -246,6 +247,46 @@ function Profile() {
     setShowSuccessAlert(false);
   };
 
+  const startConversation = async () => {
+    if (!userId || userId === loggedInUserId) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You must be logged in to send messages.");
+        return;
+      }
+
+      console.log("Starting conversation with user ID:", userId);
+      
+      const response = await fetch(
+        `http://localhost:5001/messages/conversations/user/${userId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error creating conversation:", errorData);
+        throw new Error(errorData.message || "Failed to create conversation");
+      }
+
+      const conversation = await response.json();
+      console.log("Conversation created/retrieved:", conversation);
+
+      // Navigate to messages page with this conversation open
+      navigate("/messages", { state: { activeConversation: conversation.id } });
+    } catch (error) {
+      console.error("Error in startConversation:", error);
+      alert(`Failed to start conversation: ${error.message || "Please try again later"}`);
+    }
+  };
+
   return (
     <div className="flex flex-row min-h-full bg-(--primary)">
       <AsideMenu />
@@ -299,6 +340,17 @@ function Profile() {
               {user.bio || "This user has not updated their bio yet."}
             </p>
 
+            {/* Message Button - Only show when viewing someone else's profile */}
+            {userId !== loggedInUserId && (
+              <button
+                onClick={startConversation}
+                className="mt-4 flex items-center gap-2 px-4 py-2 rounded-md text-white"
+                style={{ backgroundColor: "var(--tertiary)" }}
+              >
+                <FiMessageSquare />
+                <span>Message</span>
+              </button>
+            )}
             {/* Three Dots Menu */}
             <div className="absolute top-4 right-4">
               <BsThreeDots

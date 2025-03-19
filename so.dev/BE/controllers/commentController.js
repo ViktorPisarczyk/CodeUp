@@ -75,24 +75,28 @@ export const getAllComments = async (req, res, next) => {
 
 export const updateComment = async (req, res, next) => {
   try {
+    const { text } = req.body;
+    const userId = req.user;
+    
     const comment = await Comment.findById(req.params.id);
 
     if (!comment) {
       return res.status(404).json({ message: "Comment not found" });
     }
 
-    if (
-      comment.user.toString() !== req.token.id &&
-      req.token.role !== "admin"
-    ) {
-      return res.status(403).json({ message: "Unauthorized" });
+    if (comment.user.toString() !== userId) {
+      return res.status(403).json({ message: "Unauthorized: You can only update your own comments." });
     }
 
-    comment.text = req.body.text || comment.text;
+    comment.text = text || comment.text;
     await comment.save();
+    
+    // Populate user info for the response
+    await comment.populate("user", "username profilePicture");
 
     res.status(200).json(comment);
   } catch (error) {
+    console.error("Error updating comment:", error);
     next(error);
   }
 };

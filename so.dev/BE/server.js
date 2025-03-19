@@ -9,6 +9,7 @@ import multer from "multer";
 import { userRouter } from "./routes/userRouter.js";
 import { postRouter } from "./routes/postRouter.js";
 import { commentRouter } from "./routes/commentRouter.js";
+import { messageRouter } from "./routes/messageRouter.js";
 import { errorHandler, notFound } from "./middlewares/errors.js";
 import { authRouter } from "./routes/authRouter.js";
 
@@ -33,6 +34,7 @@ app.use("/users", userRouter);
 app.use("/posts", postRouter);
 app.use("/comments", commentRouter);
 app.use("/auth", authRouter);
+app.use("/messages", messageRouter);
 
 // Error Handling Middleware
 app.use(notFound);

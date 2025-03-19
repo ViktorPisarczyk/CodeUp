@@ -22,7 +22,7 @@ postRouter.route("/user/:userId").get(getPostsByUser);
 postRouter
   .route("/:id")
   .get(getPostById)
-  .patch(protect, updatePost)
+  .patch(protect, uploadMultiplePostImages, updatePost)
   .delete(protect, deletePost);
 
 postRouter.route("/:id/like").post(protect, likePost);

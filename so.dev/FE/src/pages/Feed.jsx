@@ -85,7 +85,7 @@ export default function Feed() {
     if (!loading && hasMore) {
       fetchPosts(page + 1, true);
     }
-  }, [loading, hasMore, page]);
+  }, [loading, hasMore, page, fetchPosts]);
 
   const lastPostElementRef = useCallback(
     (node) => {
@@ -291,12 +291,10 @@ export default function Feed() {
       const updatedPost = await updatedPostResponse.json();
 
       // Update only the specific post in the posts array
-      setPosts(prevPosts => 
-        prevPosts.map(post => 
-          post._id === postId ? updatedPost : post
-        )
+      setPosts((prevPosts) =>
+        prevPosts.map((post) => (post._id === postId ? updatedPost : post))
       );
-      
+
       // Keep the comment form open for this post
       setShowCommentForm(postId);
     } catch (error) {
@@ -306,6 +304,24 @@ export default function Feed() {
 
   const toggleCommentForm = (postId) => {
     setShowCommentForm(postId === showCommentForm ? null : postId);
+  };
+
+  const handleEditPost = async (postId, newContent) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(`${API_URL}/posts/${postId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: newContent }),
+      });
+      if (!response.ok) throw new Error("Failed to edit post");
+      fetchPosts();
+    } catch (error) {
+      console.error("Error editing post:", error);
+    }
   };
 
   const { darkMode } = useContext(MyContext);
@@ -402,7 +418,7 @@ export default function Feed() {
           <div className="flex gap-2 mt-2">
             <label
               htmlFor="image-upload"
-              className="cursor-pointer px-4 py-2 rounded-lg text-white text-xs flex items-center gap-2"
+              className="cursor-pointer hover:opacity-80 px-4 py-2 rounded-lg text-white text-xs flex items-center gap-2"
               style={{ backgroundColor: "var(--tertiary)" }}
             >
               <span>
@@ -483,27 +499,6 @@ export default function Feed() {
                         fetchPosts();
                       } catch (error) {
                         console.error("Error deleting post:", error);
-                      }
-                    }}
-                    onEdit={async (postId, newContent) => {
-                      const token = localStorage.getItem("token");
-                      try {
-                        const response = await fetch(
-                          `${API_URL}/posts/${postId}`,
-                          {
-                            method: "PUT",
-                            headers: {
-                              "Content-Type": "application/json",
-                              Authorization: `Bearer ${token}`,
-                            },
-                            body: JSON.stringify({ content: newContent }),
-                          }
-                        );
-                        if (!response.ok)
-                          throw new Error("Failed to edit post");
-                        fetchPosts();
-                      } catch (error) {
-                        console.error("Error editing post:", error);
                       }
                     }}
                     onReport={async (postId) => {
@@ -599,29 +594,3 @@ export default function Feed() {
     </div>
   );
 }
-
-// Add these functions to handle edit, delete, and report
-const handleEditPost = (postId) => {
-  console.log("Edit post:", postId);
-  // Implement edit post functionality
-};
-
-const handleDeletePost = (postId) => {
-  console.log("Delete post:", postId);
-  // Implement delete post functionality
-};
-
-const handleReportPost = (postId) => {
-  console.log("Report post:", postId);
-  // Implement report post functionality
-};
-
-const handleDeleteComment = (postId, commentId) => {
-  console.log("Delete comment:", commentId, "from post:", postId);
-  // Implement delete comment functionality
-};
-
-const handleEditComment = (postId, commentId) => {
-  console.log("Edit comment:", commentId, "from post:", postId);
-  // Implement edit comment functionality
-};

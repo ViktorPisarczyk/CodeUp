@@ -4,6 +4,7 @@ import { FaGear } from "react-icons/fa6";
 import { CgProfile } from "react-icons/cg";
 import { IoLogOutOutline } from "react-icons/io5";
 import { MdHome } from "react-icons/md";
+import { BiMessageSquareDots } from "react-icons/bi";
 import { MyContext } from "../context/ThemeContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { jwtDecode } from "jwt-decode";
@@ -21,6 +22,8 @@ const AsideMenu = () => {
   const [menuToggle, setMenuToggle] = useState(window.innerWidth >= 640);
   const cachedUserData = JSON.parse(localStorage.getItem("userData")) || {};
   const [userData, setUserData] = useState(cachedUserData);
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Update menuToggle based on screen size
   useEffect(() => {
@@ -77,13 +80,14 @@ const AsideMenu = () => {
 
   const loggedInUserId = getUserIdFromToken();
 
+  // Fetch user data
   useEffect(() => {
     if (!loggedInUserId) return;
 
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) throw new Error("No token found");
+        if (!token) return;
 
         const response = await fetch(
           `http://localhost:5001/users/${loggedInUserId}`,
@@ -95,7 +99,10 @@ const AsideMenu = () => {
             },
           }
         );
-        if (!response.ok) throw new Error("Failed to fetch user data");
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
 
         const data = await response.json();
         setUserData(data);
@@ -106,6 +113,88 @@ const AsideMenu = () => {
     };
 
     fetchUserData();
+  }, [loggedInUserId]);
+
+  // Check for unread messages
+  useEffect(() => {
+    if (!loggedInUserId) return;
+
+    const checkUnreadMessages = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        // Always fetch from API to ensure we have the latest data
+        const response = await fetch(
+          "http://localhost:5001/messages/conversations",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          console.error("Failed to fetch conversations");
+          return;
+        }
+
+        const conversations = await response.json();
+        
+        // Store conversations in localStorage for future use
+        localStorage.setItem("conversations", JSON.stringify(conversations));
+        
+        // Check if any conversation has unread messages
+        const hasUnread = conversations.some(conv => conv.unread > 0);
+        const unread = conversations.reduce((acc, conv) => acc + (conv.unread || 0), 0);
+        
+        console.log("Unread messages count:", unread);
+        
+        setHasUnreadMessages(hasUnread);
+        setUnreadCount(unread);
+      } catch (error) {
+        console.error("Error checking unread messages:", error);
+      }
+    };
+
+    // Check initially
+    checkUnreadMessages();
+
+    // Set up interval to check periodically (every 10 seconds)
+    const intervalId = setInterval(checkUnreadMessages, 10000);
+
+    // Listen for conversation opened events
+    const handleConversationOpened = (event) => {
+      // Update the unread count immediately when a conversation is opened
+      checkUnreadMessages();
+    };
+
+    // Create a custom event for new messages
+    const handleNewMessage = () => {
+      checkUnreadMessages();
+    };
+
+    // Register the event listeners
+    window.addEventListener("conversationOpened", handleConversationOpened);
+    window.addEventListener("newMessage", handleNewMessage);
+
+    // Also listen for localStorage changes
+    const handleStorageChange = (e) => {
+      if (e.key === "conversations") {
+        checkUnreadMessages();
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    // Clean up interval and event listeners on unmount
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener("conversationOpened", handleConversationOpened);
+      window.removeEventListener("newMessage", handleNewMessage);
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, [loggedInUserId]);
 
   const handleMenuToggle = () => {
@@ -183,6 +272,24 @@ const AsideMenu = () => {
             Profile
           </button>
           <button
+            onClick={() => handleNavigation("/messages")}
+            className="flex items-center pl-5 h-10 hover:bg-(--primary) rounded-full relative"
+          >
+            <BiMessageSquareDots
+              className="mr-2"
+              size={20}
+              color={darkMode ? "white" : "black"}
+            />
+            Messages
+            {hasUnreadMessages && (
+              <span
+                className="inline-flex items-center justify-center ml-1 min-w-5 h-5 px-1 bg-red-500 rounded-full text-white text-xs font-bold"
+              >
+                {unreadCount}
+              </span>
+            )}
+          </button>
+          <button
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
             className="flex items-center pl-5 h-10 hover:bg-(--primary) rounded-full"
           >
@@ -210,9 +317,6 @@ const AsideMenu = () => {
             </button>
             <button className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full">
               Privacy
-            </button>
-            <button className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full">
-              Notification
             </button>
             <button
               onClick={() => setIsChatOpen(true)}
