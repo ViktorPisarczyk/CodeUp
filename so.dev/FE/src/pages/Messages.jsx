@@ -83,6 +83,15 @@ const Messages = () => {
 
             // Update existing conversations with new data
             data.forEach((newConv) => {
+              // Handle case where user might be null (deleted account)
+              if (!newConv.user) {
+                newConv.user = {
+                  _id: "deleted",
+                  username: "Deleted User",
+                  profilePicture: null
+                };
+              }
+              
               const existingIndex = updatedConversations.findIndex(
                 (conv) => conv.id === newConv.id
               );
@@ -102,7 +111,20 @@ const Messages = () => {
             return updatedConversations;
           }
 
-          return data;
+          // Handle case where user might be null (deleted account) in initial data
+          return data.map(conv => {
+            if (!conv.user) {
+              return {
+                ...conv,
+                user: {
+                  _id: "deleted",
+                  username: "Deleted User",
+                  profilePicture: null
+                }
+              };
+            }
+            return conv;
+          });
         });
 
         // Store conversations in localStorage for the AsideMenu to access
@@ -244,12 +266,25 @@ const Messages = () => {
 
       const data = await response.json();
 
-      // Process messages to mark deleted messages
+      // Process messages to mark deleted messages and handle deleted users
       const processedMessages = data.map((message) => {
         // Check if this is a deleted message
         if (message.text === "This message was deleted") {
           return { ...message, isDeleted: true };
         }
+        
+        // Handle case where sender might be null (deleted account)
+        if (!message.sender) {
+          return {
+            ...message,
+            sender: {
+              _id: "deleted",
+              username: "Deleted User",
+              profilePicture: null
+            }
+          };
+        }
+        
         return message;
       });
 
@@ -798,6 +833,9 @@ const Messages = () => {
                   <div className="ml-3">
                     <h3 className="font-semibold">
                       {selectedConversation.user.username}
+                      {selectedConversation.user._id === "deleted" && 
+                        <span className="ml-2 text-sm opacity-70">(account deleted)</span>
+                      }
                     </h3>
                   </div>
                 </div>
