@@ -541,7 +541,7 @@ const Messages = () => {
         throw new Error("Failed to delete conversation");
       }
 
-      // Remove the conversation from the UI
+      // Remove the conversation from the UI for the current user only
       setConversations((prevConversations) => 
         prevConversations.filter((conv) => conv.id !== conversationId)
       );
@@ -563,7 +563,7 @@ const Messages = () => {
       setShowConfirmAlert(false);
       
       // Show success alert
-      setSuccessMessage("Conversation deleted successfully");
+      setSuccessMessage("Conversation deleted from your inbox");
       setShowSuccessAlert(true);
     } catch (error) {
       console.error("Error deleting conversation:", error);
@@ -930,7 +930,7 @@ const Messages = () => {
       {/* Confirmation Alert */}
       {showConfirmAlert && (
         <Alert
-          message="Are you sure you want to delete this conversation? This action cannot be undone."
+          message="Are you sure you want to delete this conversation? It will be removed from your inbox only. The other person will still be able to see it."
           onConfirm={() => deleteConversationForMe(conversationToDelete)}
           onCancel={() => {
             setShowConfirmAlert(false);
