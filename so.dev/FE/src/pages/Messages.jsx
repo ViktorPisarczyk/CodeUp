@@ -665,7 +665,10 @@ const Messages = () => {
           {/* Conversations List */}
           <div
             className="w-1/3 border-r flex flex-col"
-            style={{ backgroundColor: "var(--secondary)" }}
+            style={{
+              backgroundColor: "var(--secondary)",
+              maxWidth: "350px",
+            }}
           >
             <div
               className="p-4 border-b"
@@ -804,7 +807,10 @@ const Messages = () => {
           {/* Chat Area */}
           <div
             className="w-2/3 flex flex-col"
-            style={{ backgroundColor: "var(--primary)" }}
+            style={{
+              backgroundColor: "var(--primary)",
+              maxWidth: "calc(100% - 350px)",
+            }}
           >
             {selectedConversation ? (
               <>
@@ -867,10 +873,11 @@ const Messages = () => {
                         <div
                           key={message._id}
                           className={`mb-4 max-w-[70%] ${
-                            sender._id === currentUserId
-                              ? "ml-auto"
-                              : "mr-auto"
+                            sender._id === currentUserId ? "ml-auto" : "mr-auto"
                           }`}
+                          style={{
+                            maxWidth: "400px",
+                          }}
                         >
                           <div
                             className={`p-3 rounded-lg ${
@@ -883,10 +890,14 @@ const Messages = () => {
                                 sender._id === currentUserId
                                   ? "var(--tertiary)"
                                   : "var(--secondary)",
+                              wordBreak: "break-word",
+                              overflowWrap: "break-word",
                             }}
                           >
                             <div className="flex justify-between items-start">
-                              <div className="pr-6">{message.text}</div>
+                              <div className="pr-6 whitespace-pre-wrap">
+                                {message.text}
+                              </div>
                               <div
                                 className="relative ml-2 message-dropdown-container"
                                 onClick={(e) => {
@@ -921,7 +932,9 @@ const Messages = () => {
                                         <button
                                           className="flex items-center w-full text-left p-2 hover:bg-gray-100 rounded"
                                           onClick={() =>
-                                            deleteMessageForEveryone(message._id)
+                                            deleteMessageForEveryone(
+                                              message._id
+                                            )
                                           }
                                         >
                                           <FaTrash className="mr-2" />
@@ -946,9 +959,7 @@ const Messages = () => {
                           </div>
                           <div
                             className={`text-xs mt-1 opacity-70 ${
-                              sender._id === currentUserId
-                                ? "text-right"
-                                : ""
+                              sender._id === currentUserId ? "text-right" : ""
                             }`}
                           >
                             {formatTime(message.createdAt)}
