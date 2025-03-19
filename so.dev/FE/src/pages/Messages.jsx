@@ -83,6 +83,15 @@ const Messages = () => {
 
             // Update existing conversations with new data
             data.forEach((newConv) => {
+              // Handle case where user might be null (deleted account)
+              if (!newConv.user) {
+                newConv.user = {
+                  _id: "deleted",
+                  username: "Deleted User",
+                  profilePicture: null,
+                };
+              }
+
               const existingIndex = updatedConversations.findIndex(
                 (conv) => conv.id === newConv.id
               );
@@ -102,7 +111,20 @@ const Messages = () => {
             return updatedConversations;
           }
 
-          return data;
+          // Handle case where user might be null (deleted account) in initial data
+          return data.map((conv) => {
+            if (!conv.user) {
+              return {
+                ...conv,
+                user: {
+                  _id: "deleted",
+                  username: "Deleted User",
+                  profilePicture: null,
+                },
+              };
+            }
+            return conv;
+          });
         });
 
         // Store conversations in localStorage for the AsideMenu to access
@@ -244,12 +266,25 @@ const Messages = () => {
 
       const data = await response.json();
 
-      // Process messages to mark deleted messages
+      // Process messages to mark deleted messages and handle deleted users
       const processedMessages = data.map((message) => {
         // Check if this is a deleted message
         if (message.text === "This message was deleted") {
           return { ...message, isDeleted: true };
         }
+
+        // Handle case where sender might be null (deleted account)
+        if (!message.sender) {
+          return {
+            ...message,
+            sender: {
+              _id: "deleted",
+              username: "Deleted User",
+              profilePicture: null,
+            },
+          };
+        }
+
         return message;
       });
 
@@ -798,6 +833,11 @@ const Messages = () => {
                   <div className="ml-3">
                     <h3 className="font-semibold">
                       {selectedConversation.user.username}
+                      {selectedConversation.user._id === "deleted" && (
+                        <span className="ml-2 text-sm opacity-70">
+                          (account deleted)
+                        </span>
+                      )}
                     </h3>
                   </div>
                 </div>
@@ -815,52 +855,80 @@ const Messages = () => {
                       <p>No messages yet. Start the conversation!</p>
                     </div>
                   ) : (
-                    messages.map((message) => (
-                      <div
-                        key={message._id}
-                        className={`mb-4 max-w-[70%] ${
-                          message.sender._id === currentUserId
-                            ? "ml-auto"
-                            : "mr-auto"
-                        }`}
-                      >
+                    messages.map((message) => {
+                      // Ensure sender exists, if not, create a fallback
+                      const sender = message.sender || {
+                        _id: "deleted",
+                        username: "Deleted User",
+                        profilePicture: null,
+                      };
+
+                      return (
                         <div
-                          className={`p-3 rounded-lg ${
-                            message.sender._id === currentUserId
-                              ? "rounded-tr-none text-white"
-                              : "rounded-tl-none"
-                          } ${message.isDeleted ? "italic opacity-60" : ""}`}
-                          style={{
-                            backgroundColor:
-                              message.sender._id === currentUserId
-                                ? "var(--tertiary)"
-                                : "var(--secondary)",
-                          }}
+                          key={message._id}
+                          className={`mb-4 max-w-[70%] ${
+                            sender._id === currentUserId
+                              ? "ml-auto"
+                              : "mr-auto"
+                          }`}
                         >
-                          <div className="flex justify-between items-start">
-                            <div className="pr-6">{message.text}</div>
-                            <div
-                              className="relative ml-2 message-dropdown-container"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleDropdown(message._id);
-                              }}
-                            >
-                              <BsThreeDotsVertical
-                                size={16}
-                                className="cursor-pointer opacity-70 hover:opacity-100"
-                              />
-                              {activeDropdown === message._id && (
-                                <div
-                                  className={`absolute ${
-                                    message.sender._id === currentUserId
-                                      ? "right-0"
-                                      : "left-0"
-                                  } bg-white shadow-md rounded p-1 z-10 mt-1 w-40 text-black message-dropdown-container`}
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {message.sender._id === currentUserId ? (
-                                    <>
+                          <div
+                            className={`p-3 rounded-lg ${
+                              sender._id === currentUserId
+                                ? "rounded-tr-none text-white"
+                                : "rounded-tl-none"
+                            } ${message.isDeleted ? "italic opacity-60" : ""}`}
+                            style={{
+                              backgroundColor:
+                                sender._id === currentUserId
+                                  ? "var(--tertiary)"
+                                  : "var(--secondary)",
+                            }}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div className="pr-6">{message.text}</div>
+                              <div
+                                className="relative ml-2 message-dropdown-container"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleDropdown(message._id);
+                                }}
+                              >
+                                <BsThreeDotsVertical
+                                  size={16}
+                                  className="cursor-pointer opacity-70 hover:opacity-100"
+                                />
+                                {activeDropdown === message._id && (
+                                  <div
+                                    className={`absolute ${
+                                      sender._id === currentUserId
+                                        ? "right-0"
+                                        : "left-0"
+                                    } bg-white shadow-md rounded p-1 z-10 mt-1 w-40 text-black message-dropdown-container`}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {sender._id === currentUserId ? (
+                                      <>
+                                        <button
+                                          className="flex items-center w-full text-left p-2 hover:bg-gray-100 rounded"
+                                          onClick={() =>
+                                            deleteMessageForMe(message._id)
+                                          }
+                                        >
+                                          <FaTrash className="mr-2" />
+                                          Delete for me
+                                        </button>
+                                        <button
+                                          className="flex items-center w-full text-left p-2 hover:bg-gray-100 rounded"
+                                          onClick={() =>
+                                            deleteMessageForEveryone(message._id)
+                                          }
+                                        >
+                                          <FaTrash className="mr-2" />
+                                          Delete for everyone
+                                        </button>
+                                      </>
+                                    ) : (
                                       <button
                                         className="flex items-center w-full text-left p-2 hover:bg-gray-100 rounded"
                                         onClick={() =>
@@ -870,43 +938,24 @@ const Messages = () => {
                                         <FaTrash className="mr-2" />
                                         Delete for me
                                       </button>
-                                      <button
-                                        className="flex items-center w-full text-left p-2 hover:bg-gray-100 rounded"
-                                        onClick={() =>
-                                          deleteMessageForEveryone(message._id)
-                                        }
-                                      >
-                                        <FaTrash className="mr-2" />
-                                        Delete for everyone
-                                      </button>
-                                    </>
-                                  ) : (
-                                    <button
-                                      className="flex items-center w-full text-left p-2 hover:bg-gray-100 rounded"
-                                      onClick={() =>
-                                        deleteMessageForMe(message._id)
-                                      }
-                                    >
-                                      <FaTrash className="mr-2" />
-                                      Delete for me
-                                    </button>
-                                  )}
-                                </div>
-                              )}
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
+                          <div
+                            className={`text-xs mt-1 opacity-70 ${
+                              sender._id === currentUserId
+                                ? "text-right"
+                                : ""
+                            }`}
+                          >
+                            {formatTime(message.createdAt)}
+                          </div>
                         </div>
-                        <div
-                          className={`text-xs mt-1 opacity-70 ${
-                            message.sender._id === currentUserId
-                              ? "text-right"
-                              : ""
-                          }`}
-                        >
-                          {formatTime(message.createdAt)}
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                   <div ref={messagesEndRef} />
                 </div>
