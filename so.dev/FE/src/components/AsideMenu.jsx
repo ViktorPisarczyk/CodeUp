@@ -321,7 +321,11 @@ const AsideMenu = () => {
             >
               Edit Profile
             </button>
-            <button className="h-10 pl-3 w-full text-left hover:bg-[var(--primarySoft)] rounded-full">
+
+            <button
+            onClick={() => handleNavigation("/privacy")} 
+            className="h-10 pl-3 w-full text-left hover:bg-[var(--primarySoft)] rounded-full">
+
               Privacy
             </button>
             <button
