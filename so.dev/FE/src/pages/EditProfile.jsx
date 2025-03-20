@@ -3,6 +3,7 @@ import AsideMenu from "../components/AsideMenu";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Alert from "../components/Alert"; // Import the Alert component
+import API_URL from "../config/api.js";
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ const EditProfile = () => {
       try {
         const token = localStorage.getItem("token");
         const response = await fetch(
-          `http://localhost:5001/users/${loggedInUserId}`,
+          `${API_URL}/users/${loggedInUserId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -110,7 +111,7 @@ const EditProfile = () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:5001/users/${loggedInUserId}`,
+        `${API_URL}/users/${loggedInUserId}`,
         {
           method: "PATCH",
           headers: { Authorization: `Bearer ${token}` },

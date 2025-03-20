@@ -13,6 +13,7 @@ import ChatBot from "./ChatBot";
 import onlyLogoLM from "../assets/NewOnlyLogoLM.png";
 import onlyLogoDM from "../assets/NewOnlyLogoDM.png";
 import { FaBars } from "react-icons/fa";
+import API_URL from "../config/api.js";
 
 const AsideMenu = () => {
   const navigate = useNavigate();
@@ -53,9 +54,17 @@ const AsideMenu = () => {
 
   const logoutHandler = async () => {
     try {
-      await fetch("http://localhost:5001/users/logout", {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      await fetch(`${API_URL}/users/logout`, {
         method: "POST",
-        credentials: "include",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       localStorage.removeItem("token");
@@ -87,14 +96,14 @@ const AsideMenu = () => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!token) {
+          return;
+        }
 
         const response = await fetch(
-          `http://localhost:5001/users/${loggedInUserId}`,
+          `${API_URL}/users/${loggedInUserId}`,
           {
-            method: "GET",
             headers: {
-              "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
           }
@@ -126,11 +135,9 @@ const AsideMenu = () => {
 
         // Always fetch from API to ensure we have the latest data
         const response = await fetch(
-          "http://localhost:5001/messages/conversations",
+          `${API_URL}/messages/conversations`,
           {
-            method: "GET",
             headers: {
-              "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
           }

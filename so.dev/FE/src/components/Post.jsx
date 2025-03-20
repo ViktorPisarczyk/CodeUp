@@ -14,6 +14,7 @@ import Alert from "./Alert";
 import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css";
 import { IoImage } from "react-icons/io5";
+import API_URL from "../config/api.js";
 
 const Post = ({
   post,
@@ -137,7 +138,7 @@ const Post = ({
         const originalOnDelete = onDelete;
 
         // Call the API directly to delete the post
-        const response = await fetch(`http://localhost:5001/posts/${postId}`, {
+        const response = await fetch(`${API_URL}/posts/${postId}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -156,7 +157,7 @@ const Post = ({
         // We'll call the original onDelete in handleSuccessConfirm
         successCallbackRef.current = () => originalOnDelete(postId);
       } else {
-        const response = await fetch(`http://localhost:5001/posts/${postId}`, {
+        const response = await fetch(`${API_URL}/posts/${postId}`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -283,7 +284,7 @@ const Post = ({
       }
 
       // Make PATCH request to update the post
-      const response = await fetch(`http://localhost:5001/posts/${post._id}`, {
+      const response = await fetch(`${API_URL}/posts/${post._id}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -337,7 +338,6 @@ const Post = ({
       }
 
       // Make PATCH request to update the comment
-      const API_URL = "http://localhost:5001";
       const response = await fetch(`${API_URL}/comments/${editedCommentId}`, {
         method: "PATCH",
         headers: {

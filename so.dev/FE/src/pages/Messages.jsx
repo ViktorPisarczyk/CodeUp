@@ -7,8 +7,7 @@ import { IoSend } from "react-icons/io5";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaTrash } from "react-icons/fa";
 import { IoArrowBack } from "react-icons/io5";
-
-const API_URL = "http://localhost:5001";
+import API_URL from "../config/api.js";
 
 const Messages = () => {
   const [conversations, setConversations] = useState([]);
@@ -772,6 +771,11 @@ const Messages = () => {
                       <div className="flex justify-between items-center">
                         <h3 className="font-semibold truncate">
                           {conversation.user.username}
+                          {conversation.user._id === "deleted" && (
+                            <span className="ml-2 text-sm opacity-70">
+                              (account deleted)
+                            </span>
+                          )}
                         </h3>
                         <span className="text-xs opacity-70">
                           {formatTime(conversation.timestamp)}

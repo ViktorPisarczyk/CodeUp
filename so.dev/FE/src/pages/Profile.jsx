@@ -7,6 +7,7 @@ import { BsThreeDots } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
 import { FiMessageSquare } from "react-icons/fi";
 import Alert from "../components/Alert";
+import API_URL from "../config/api.js";
 
 function Profile() {
   const { id } = useParams();
@@ -46,7 +47,7 @@ function Profile() {
       if (!token) throw new Error("No token found");
 
       const response = await fetch(
-        `http://localhost:5001/posts/user/${userId}?populate=comments`,
+        `${API_URL}/posts/user/${userId}?populate=comments`,
         {
           method: "GET",
           headers: {
@@ -77,7 +78,7 @@ function Profile() {
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token found");
 
-        const response = await fetch(`http://localhost:5001/users/${userId}`, {
+        const response = await fetch(`${API_URL}/users/${userId}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -106,7 +107,7 @@ function Profile() {
 
     try {
       const response = await fetch(
-        `http://localhost:5001/posts/${postId}/like`,
+        `${API_URL}/posts/${postId}/like`,
         {
           method: "POST",
           headers: {
@@ -142,7 +143,7 @@ function Profile() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/comments`, {
+      const response = await fetch(`${API_URL}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -203,7 +204,7 @@ function Profile() {
       }
 
       const response = await fetch(
-        `http://localhost:5001/users/${loggedInUserId}`,
+        `${API_URL}/users/${loggedInUserId}`,
         {
           method: "DELETE",
           headers: {
@@ -260,7 +261,7 @@ function Profile() {
       console.log("Starting conversation with user ID:", userId);
 
       const response = await fetch(
-        `http://localhost:5001/messages/conversations/user/${userId}`,
+        `${API_URL}/messages/conversations/user/${userId}`,
         {
           method: "GET",
           headers: {

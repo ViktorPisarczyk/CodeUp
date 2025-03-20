@@ -11,8 +11,9 @@ import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css"; // Choose a theme of your choice
 import "prismjs/components/prism-javascript";
 import { MdSend } from "react-icons/md";
+import API_URL from "../config/api.js";
 
-const API_URL = "http://localhost:5001";
+const MAX_POST_LENGTH = 500; // Define maximum post length
 
 export default function Feed() {
   const [posts, setPosts] = useState([]);
@@ -31,7 +32,6 @@ export default function Feed() {
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
-  const MAX_POST_LENGTH = 500; // Define maximum post length
   const observer = useRef();
   const navigate = useNavigate();
 
