@@ -16,10 +16,26 @@ import { authRouter } from "./routes/authRouter.js";
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
+// CORS configuration for both development and production
+const allowedOrigins = [
+  "https://final-project-h7mg.onrender.com",
+  "http://localhost:5173",
+  // Add any other frontend domains that need access
+];
+
 app.use(
   cors({
-    // origin: "http://localhost:5173",
-    origin: "https://final-project-h7mg.onrender.com",
+    origin: function(origin, callback) {
+      // Allow requests with no origin (like mobile apps, curl requests)
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        console.log("Blocked by CORS:", origin);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   })
 );

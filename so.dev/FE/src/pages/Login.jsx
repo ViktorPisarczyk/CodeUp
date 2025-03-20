@@ -4,6 +4,7 @@ import logoLM from "../assets/newLogoLM.png";
 import logoDM from "../assets/newLogoDM.png";
 import { MyContext } from "../context/ThemeContext";
 import Alert from "../components/Alert";
+import API_URL from "../config/api.js";
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -32,7 +33,7 @@ export default function Login() {
     };
 
     try {
-      const response = await fetch("http://localhost:5001/users/login", {
+      const response = await fetch(`${API_URL}/users/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -93,7 +94,7 @@ export default function Login() {
     };
 
     try {
-      const response = await fetch("http://localhost:5001/users/signup", {
+      const response = await fetch(`${API_URL}/users/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
