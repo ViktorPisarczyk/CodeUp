@@ -153,8 +153,6 @@ const AsideMenu = () => {
           0
         );
 
-        console.log("Unread messages count:", unread);
-
         setHasUnreadMessages(hasUnread);
         setUnreadCount(unread);
       } catch (error) {
