@@ -861,7 +861,7 @@ const Messages = () => {
                 >
                   {isMobileView && (
                     <button
-                      className="mr-3 text-white"
+                      className="mr-3"
                       onClick={() => setShowConversations(true)}
                     >
                       <IoArrowBack size={20} />
