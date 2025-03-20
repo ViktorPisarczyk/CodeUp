@@ -18,7 +18,8 @@ const upload = multer({ dest: "uploads/" });
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    // origin: "http://localhost:5173",
+    origin: "https://final-project-h7mg.onrender.com",
     credentials: true,
   })
 );
