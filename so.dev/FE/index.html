@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="src/assets/NewOnlyLogoLM.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -11,6 +11,31 @@
       rel="stylesheet"
     />
     <title>CodeUp</title>
+    <style>
+      :root {
+        --sat: env(safe-area-inset-top);
+        --sar: env(safe-area-inset-right);
+        --sab: env(safe-area-inset-bottom);
+        --sal: env(safe-area-inset-left);
+      }
+      
+      body {
+        padding: 0;
+        margin: 0;
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+        width: 100%;
+      }
+      
+      #root {
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+        padding-top: var(--sat);
+        padding-right: var(--sar);
+        padding-bottom: var(--sab);
+        padding-left: var(--sal);
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
