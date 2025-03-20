@@ -18,7 +18,7 @@ const upload = multer({ dest: "uploads/" });
 
 // CORS configuration for both development and production
 const allowedOrigins = [
-  "https://final-project-h7mg.onrender.com",
+  "https://final-project-h7mg.onrender.com", // Frontend static site URL
   "http://localhost:5173",
   // Add any other frontend domains that need access
 ];
