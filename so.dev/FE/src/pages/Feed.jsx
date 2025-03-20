@@ -562,13 +562,8 @@ export default function Feed() {
                 {filteredUsers.map((user) => (
                   <li
                     key={user._id}
-                    className="p-2 cursor-pointer shadow-md rounded-md transition-all duration-300 hover:scale-101"
+                    className="p-2 cursor-pointer shadow-md rounded-md transition-colors duration-300 w-full bg-[var(--dropDown)] hover:bg-[var(--tertiary)]"
                     onClick={() => handleUserClick(user._id)}
-                    style={{
-                      backgroundColor: "var(--secondary)",
-                      transition:
-                        "background-color 0.3s ease, transform 0.2s ease",
-                    }}
                   >
                     <div className="flex items-center space-x-2">
                       {user.profilePicture ? (
