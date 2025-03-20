@@ -853,7 +853,7 @@ const Messages = () => {
               <>
                 {/* Chat Header */}
                 <div
-                  className="p-4 border-b flex sticky items-center"
+                  className="p-4 border-b flex items-center sticky top-0 z-10"
                   style={{
                     backgroundColor: "var(--secondary)",
                     borderColor: "var(--quaternary)",
