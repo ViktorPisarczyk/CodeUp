@@ -28,6 +28,9 @@ export default function Feed() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const MAX_POST_LENGTH = 500; // Define maximum post length
   const observer = useRef();
   const navigate = useNavigate();
@@ -307,29 +310,76 @@ export default function Feed() {
     setShowCommentForm(postId === showCommentForm ? null : postId);
   };
 
-  const handleEditPost = async (postId, newContent) => {
-    const token = localStorage.getItem("token");
-    try {
-      const response = await fetch(`${API_URL}/posts/${postId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content: newContent }),
-      });
-      if (!response.ok) throw new Error("Failed to edit post");
-      fetchPosts();
-    } catch (error) {
-      console.error("Error editing post:", error);
+  const { darkMode } = useContext(MyContext);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/users`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
+        }
+
+        const allUsers = await response.json();
+        setUsers(allUsers);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredUsers([]);
+      return;
     }
+
+    const results = users.filter((user) =>
+      user.username.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredUsers(results);
+  }, [searchTerm, users]);
+
+  const handleUserClick = (userId) => {
+    navigate(`/profile/${userId}`);
+    setSearchTerm(""); // Clear search bar
+    setFilteredUsers([]); // Hide dropdown
   };
 
-  const { darkMode } = useContext(MyContext);
+  const searchRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setFilteredUsers([]);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <div
-      className="flex flex-row  max-w-full"
+      className="flex flex-row max-w-full"
       style={{ backgroundColor: "var(--primary)" }}
     >
       <AsideMenu />
@@ -367,7 +417,19 @@ export default function Feed() {
             }}
             placeholder="What's on your mind?"
             className="w-full p-2 rounded-md text-black border-gray-300 focus:border-blue-400 focus:ring-blue-400"
-            style={{ backgroundColor: "var(--textarea)" }}
+            style={{
+              backgroundColor: "var(--textarea)",
+              borderColor: "var(--secondary)",
+              borderWidth: "1px",
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = "var(--secondary)";
+              e.target.style.outlineColor = "var(--secondary)";
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = "var(--secondary)";
+              e.target.style.outlineColor = "transparent";
+            }}
             rows="3"
             maxLength={MAX_POST_LENGTH}
             onKeyDown={(e) => {
@@ -451,7 +513,7 @@ export default function Feed() {
               className="px-4 py-2 text-white rounded-md hover:opacity-80 ml-auto flex items-center justify-center"
               style={{ backgroundColor: "var(--tertiary)" }}
             >
-              <MdSend size={26} color={darkMode ? "white" : "black"} />
+              <MdSend size={26} color={"white"} />
             </button>
           </div>
 
@@ -467,6 +529,69 @@ export default function Feed() {
             />
           )}
         </form>
+
+        <div
+          ref={searchRef}
+          className="relative flex rounded-lg p-4 mb-6 shadow-md"
+          style={{ backgroundColor: "var(--secondary)" }}
+        >
+          <div className="relative flex flex-col w-full mr-2">
+            <input
+              type="text"
+              placeholder="Search user..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full p-2 rounded-md mr-2 text-black"
+              style={{
+                backgroundColor: "var(--textarea)",
+                borderColor: "var(--secondary)",
+                borderWidth: "1px",
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = "var(--secondary)";
+                e.target.style.outlineColor = "var(--secondary)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "var(--secondary)";
+                e.target.style.outlineColor = "transparent";
+              }}
+            />
+
+            {filteredUsers.length > 0 && (
+              <ul className="absolute w-full shadow-md rounded-md mt-10 z-10">
+                {filteredUsers.map((user) => (
+                  <li
+                    key={user._id}
+                    className="p-2 cursor-pointer shadow-md rounded-md transition-colors duration-300 w-full bg-[var(--dropDown)] hover:bg-[var(--tertiary)]"
+                    onClick={() => handleUserClick(user._id)}
+                  >
+                    <div className="flex items-center space-x-2">
+                      {user.profilePicture ? (
+                        <img
+                          src={user.profilePicture}
+                          alt="Profile"
+                          className="w-6 h-6 object-cover rounded-full"
+                        />
+                      ) : (
+                        <span className="w-6 h-6 rounded-full bg-blue-400 flex items-center justify-center text-white text-xs">
+                          {user.username ? user.username[0].toUpperCase() : "?"}
+                        </span>
+                      )}
+                      <span>{user.username}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="px-4 py-2 text-white rounded-md hover:opacity-80 ml-auto flex items-center justify-center"
+            style={{ backgroundColor: "var(--tertiary)" }}
+          >
+            <MdSend size={26} color={"white"} />
+          </button>
+        </div>
 
         <div className="space-y-6 max-w-full">
           {posts && posts.length > 0 ? (

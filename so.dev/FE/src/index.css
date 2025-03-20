@@ -5,20 +5,27 @@
 
 .dark {
   --primary: #0a010e;
+  --primarySoft: rgba(10, 1, 14, 0.5);
   --secondary: #27212b;
   --tertiary: #5f416d;
   --quaternary: #ebd3f8;
   --textarea: #e1d8e9;
   --textGrey: #c9c9c9;
+  --dropDown: #353138;
+  --dropDownHover: #5f416d;
   color: white;
 }
+
 .light {
   --primary: #fff2f2;
+  --primarySoft: rgba(255, 242, 242, 0.5);
   --secondary: #e5e0ff;
   --tertiary: #5dacf7;
   --quaternary: #3792dd;
   --textarea: #ecf3fd;
   --textGrey: #414141;
+  --dropDown: #fdfdfd;
+  --dropDownHover: #5dacf7;
   color: black;
 }
 button {

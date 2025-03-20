@@ -258,7 +258,7 @@ function Profile() {
       }
 
       console.log("Starting conversation with user ID:", userId);
-      
+
       const response = await fetch(
         `http://localhost:5001/messages/conversations/user/${userId}`,
         {
@@ -283,7 +283,11 @@ function Profile() {
       navigate("/messages", { state: { activeConversation: conversation.id } });
     } catch (error) {
       console.error("Error in startConversation:", error);
-      alert(`Failed to start conversation: ${error.message || "Please try again later"}`);
+      alert(
+        `Failed to start conversation: ${
+          error.message || "Please try again later"
+        }`
+      );
     }
   };
 
@@ -371,17 +375,10 @@ function Profile() {
                       minWidth: "150px",
                     }}
                   >
-                    <div className="flex justify-end px-2">
-                      <IoClose
-                        className="cursor-pointer text-white hover:opacity-70 text-xl"
-                        onClick={() => setShowDropdown(false)}
-                      />
-                    </div>
-
                     {loggedInUserId === userId ? (
                       <>
                         <button
-                          className="w-full text-white text-left px-4 py-2 hover:opacity-70"
+                          className="w-full text-white text-left px-4 py-1 hover:opacity-70"
                           onClick={() => {
                             navigate("/edit-profile");
                             setShowDropdown(false);
@@ -390,7 +387,7 @@ function Profile() {
                           Edit Profile
                         </button>
                         <button
-                          className="w-full text-left text-white px-4 py-2 hover:opacity-70"
+                          className="w-full text-left text-white px-4 py-1 hover:opacity-70"
                           onClick={handleDeleteAccount}
                         >
                           Delete Account

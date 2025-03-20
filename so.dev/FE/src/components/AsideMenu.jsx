@@ -153,8 +153,6 @@ const AsideMenu = () => {
           0
         );
 
-        console.log("Unread messages count:", unread);
-
         setHasUnreadMessages(hasUnread);
         setUnreadCount(unread);
       } catch (error) {
@@ -261,7 +259,7 @@ const AsideMenu = () => {
 
           <button
             onClick={() => handleNavigation("/feed")}
-            className="flex items-center pl-5 h-10 hover:bg-(--primary) rounded-full"
+            className="flex items-center pl-5 h-10 rounded-full hover:bg-[var(--primarySoft)]"
           >
             <MdHome
               className="mr-2"
@@ -272,7 +270,7 @@ const AsideMenu = () => {
           </button>
           <button
             onClick={() => handleNavigation(`/profile/${loggedInUserId}`)}
-            className="flex items-center pl-5 h-10 hover:bg-(--primary) rounded-full"
+            className="flex items-center pl-5 h-10 rounded-full hover:bg-[var(--primarySoft)]"
           >
             <CgProfile
               className="mr-2"
@@ -283,7 +281,7 @@ const AsideMenu = () => {
           </button>
           <button
             onClick={() => handleNavigation("/messages")}
-            className="flex items-center pl-5 h-10 hover:bg-(--primary) rounded-full relative"
+            className="flex items-center pl-5 h-10 rounded-full hover:bg-[var(--primarySoft)]"
           >
             <BiMessageSquareDots
               className="mr-2"
@@ -299,7 +297,7 @@ const AsideMenu = () => {
           </button>
           <button
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-            className="flex items-center pl-5 h-10 hover:bg-(--primary) rounded-full"
+            className="flex items-center pl-5 h-10 rounded-full hover:bg-[var(--primarySoft)]"
           >
             <FaGear
               className="mr-2"
@@ -319,24 +317,26 @@ const AsideMenu = () => {
           >
             <button
               onClick={() => handleNavigation("/edit-profile")}
-              className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full"
+              className="h-10 pl-3 w-full text-left hover:bg-[var(--primarySoft)] rounded-full"
             >
               Edit Profile
             </button>
+
             <button
             onClick={() => handleNavigation("/privacy")} 
-            className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full">
+            className="h-10 pl-3 w-full text-left hover:bg-[var(--primarySoft)] rounded-full">
+
               Privacy
             </button>
             <button
               onClick={() => setIsChatOpen(true)}
-              className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full"
+              className="h-10 pl-3 w-full text-left hover:bg-[var(--primarySoft)] rounded-full"
             >
               Help
             </button>
             <button
               onClick={() => handleNavigation("/about")}
-              className="h-10 pl-3 w-full text-left hover:bg-(--primary) rounded-full"
+              className="h-10 pl-3 w-full text-left hover:bg-[var(--primarySoft)] rounded-full"
             >
               About
             </button>
@@ -351,7 +351,7 @@ const AsideMenu = () => {
                 setMenuToggle(false);
               }
             }}
-            className="flex absolute bottom-5 pl-5 w-full items-center h-10 hover:bg-(--primary) rounded-full"
+            className="flex absolute bottom-5 pl-5 w-full items-center h-10 hover:bg-[var(--primarySoft)] rounded-full"
           >
             <IoLogOutOutline
               className="mr-1"
