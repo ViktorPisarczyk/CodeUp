@@ -238,7 +238,7 @@ const Messages = () => {
     };
 
     // Check for new messages every 5 seconds
-    const intervalId = setInterval(checkForNewMessages, 5000);
+    const intervalId = setInterval(checkForNewMessages, 100000);
 
     // Clean up interval on unmount
     return () => clearInterval(intervalId);
@@ -844,9 +844,7 @@ const Messages = () => {
           <div
             className={`${
               !showConversations || !isMobileView ? "block" : "hidden"
-            } ${
-              isMobileView ? "w-full" : ""
-            } flex flex-col flex-grow`}
+            } ${isMobileView ? "w-full" : ""} flex flex-col flex-grow`}
             style={{
               backgroundColor: "var(--primary)",
             }}
@@ -855,7 +853,7 @@ const Messages = () => {
               <>
                 {/* Chat Header */}
                 <div
-                  className="p-4 border-b flex items-center"
+                  className="p-4 border-b flex sticky items-center"
                   style={{
                     backgroundColor: "var(--secondary)",
                     borderColor: "var(--quaternary)",
