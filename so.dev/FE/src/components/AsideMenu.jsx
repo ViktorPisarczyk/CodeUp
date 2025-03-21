@@ -10,8 +10,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { jwtDecode } from "jwt-decode";
 import Toggle from "./Toggle";
 import ChatBot from "./ChatBot";
-import onlyLogoLM from "../assets/NewOnlyLogoLM.png";
-import onlyLogoDM from "../assets/NewOnlyLogoDM.png";
+import onlyLogoLM from "../assets/finalOnlyLogoLM.png";
+import onlyLogoDM from "../assets/finalOnlyLogoDM.png";
 import { FaBars } from "react-icons/fa";
 import API_URL from "../config/api.js";
 
@@ -100,14 +100,11 @@ const AsideMenu = () => {
           return;
         }
 
-        const response = await fetch(
-          `${API_URL}/users/${loggedInUserId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await fetch(`${API_URL}/users/${loggedInUserId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (!response.ok) {
           throw new Error("Failed to fetch user data");
@@ -134,14 +131,11 @@ const AsideMenu = () => {
         if (!token) return;
 
         // Always fetch from API to ensure we have the latest data
-        const response = await fetch(
-          `${API_URL}/messages/conversations`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await fetch(`${API_URL}/messages/conversations`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (!response.ok) {
           console.error("Failed to fetch conversations");
@@ -330,9 +324,9 @@ const AsideMenu = () => {
             </button>
 
             <button
-            onClick={() => handleNavigation("/privacy")} 
-            className="h-10 pl-3 w-full text-left hover:bg-[var(--primarySoft)] rounded-full">
-
+              onClick={() => handleNavigation("/privacy")}
+              className="h-10 pl-3 w-full text-left hover:bg-[var(--primarySoft)] rounded-full"
+            >
               Privacy
             </button>
             <button
