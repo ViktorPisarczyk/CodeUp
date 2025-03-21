@@ -16,11 +16,10 @@ import Profile from "./pages/Profile.jsx";
 import About from "./pages/About.jsx";
 import Messages from "./pages/Messages.jsx";
 import Privacy from "./pages/Privacy.jsx";
+import { isLoggedIn } from "./utils/auth.js";
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
-
-  return token ? children : <Navigate to="/login" replace />;
+  return isLoggedIn() ? children : <Navigate to="/login" replace />;
 };
 
 function App() {

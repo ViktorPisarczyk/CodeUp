@@ -238,7 +238,7 @@ const Messages = () => {
     };
 
     // Check for new messages every 5 seconds
-    const intervalId = setInterval(checkForNewMessages, 100000);
+    const intervalId = setInterval(checkForNewMessages, 1000);
 
     // Clean up interval on unmount
     return () => clearInterval(intervalId);

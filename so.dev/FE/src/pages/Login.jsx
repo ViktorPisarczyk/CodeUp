@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import logoLM from "../assets/newLogoLM.png";
 import logoDM from "../assets/newLogoDM.png";
 import { MyContext } from "../context/ThemeContext";
-import Alert from "../components/Alert";
 import API_URL from "../config/api.js";
+import Alert from "../components/Alert";
+import { setToken } from "../utils/auth.js";
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -44,7 +45,7 @@ export default function Login() {
       if (response.ok) {
         const result = await response.json();
 
-        localStorage.setItem("token", result.token);
+        setToken(result.token);
 
         navigate("/feed");
       } else {
@@ -105,11 +106,11 @@ export default function Login() {
       if (response.ok) {
         const result = await response.json();
 
-        localStorage.setItem("token", result.token);
+        setToken(result.token);
 
         setAlert({
           show: true,
-          message: "Sign up successful!",
+          message: "Registration successful! You can now login.",
           isSuccess: true,
         });
         setTimeout(() => {
