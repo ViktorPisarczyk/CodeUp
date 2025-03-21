@@ -1,15 +1,13 @@
-import { useState, useEffect, useRef, useContext } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
+import { useLocation } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
-import { MyContext } from "../context/ThemeContext";
 import Alert from "../components/Alert";
 import { IoSend } from "react-icons/io5";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { FaTrash } from "react-icons/fa";
 import { IoArrowBack } from "react-icons/io5";
 import API_URL from "../config/api.js";
-import { getToken } from "../utils/auth.js";
 
 const Messages = () => {
   const [conversations, setConversations] = useState([]);
@@ -20,7 +18,6 @@ const Messages = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const messagesEndRef = useRef(null);
-  const navigate = useNavigate();
   const location = useLocation();
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [slidingConversationId, setSlidingConversationId] = useState(null);
@@ -35,7 +32,7 @@ const Messages = () => {
 
   // Get user ID from token
   const getUserIdFromToken = () => {
-    const token = getToken();
+    const token = localStorage.getItem("token");
     if (!token) return null;
 
     try {
@@ -65,11 +62,8 @@ const Messages = () => {
           setIsLoading(true);
         }
 
-        const token = getToken();
-        if (!token) {
-          navigate("/login");
-          return;
-        }
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("No token found");
 
         const response = await fetch(`${API_URL}/messages/conversations`, {
           method: "GET",
@@ -136,7 +130,7 @@ const Messages = () => {
         });
 
         // Store conversations in localStorage for the AsideMenu to access
-        // localStorage.setItem("conversations", JSON.stringify(data));
+        localStorage.setItem("conversations", JSON.stringify(data));
 
         // Check if we need to select a specific conversation from route state
         if (location.state?.activeConversation) {
@@ -176,7 +170,7 @@ const Messages = () => {
 
     const checkForNewMessages = async () => {
       try {
-        const token = getToken();
+        const token = localStorage.getItem("token");
         if (!token) return;
 
         // Fetch conversations to check for new messages
@@ -196,7 +190,7 @@ const Messages = () => {
 
         if (hasUnread) {
           // Update localStorage with the latest conversations
-          // localStorage.setItem("conversations", JSON.stringify(data));
+          localStorage.setItem("conversations", JSON.stringify(data));
 
           // Dispatch event to notify AsideMenu about new messages
           const event = new CustomEvent("newMessage");
@@ -244,7 +238,7 @@ const Messages = () => {
     };
 
     // Check for new messages every 5 seconds
-    const intervalId = setInterval(checkForNewMessages, 1000);
+    const intervalId = setInterval(checkForNewMessages, 100000);
 
     // Clean up interval on unmount
     return () => clearInterval(intervalId);
@@ -255,8 +249,8 @@ const Messages = () => {
     if (!conversationId) return;
 
     try {
-      const token = getToken();
-      if (!token) return;
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
 
       const response = await fetch(
         `${API_URL}/messages/conversations/${conversationId}/messages`,
@@ -313,10 +307,10 @@ const Messages = () => {
         );
 
         // Update localStorage with the updated conversations
-        // localStorage.setItem(
-        //   "conversations",
-        //   JSON.stringify(updatedConversations)
-        // );
+        localStorage.setItem(
+          "conversations",
+          JSON.stringify(updatedConversations)
+        );
 
         return updatedConversations;
       });
@@ -347,11 +341,8 @@ const Messages = () => {
     if (!newMessage.trim() || !selectedConversation) return;
 
     try {
-      const token = getToken();
-      if (!token) {
-        navigate("/login");
-        return;
-      }
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
 
       // Add message to UI immediately (optimistic update)
       const tempMessage = {
@@ -419,11 +410,8 @@ const Messages = () => {
   // eslint-disable-next-line no-unused-vars
   const startConversation = async (userId) => {
     try {
-      const token = getToken();
-      if (!token) {
-        navigate("/login");
-        return;
-      }
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
 
       const response = await fetch(
         `${API_URL}/messages/conversations/user/${userId}`,
@@ -511,11 +499,8 @@ const Messages = () => {
   // Delete message for me only
   const deleteMessageForMe = async (messageId) => {
     try {
-      const token = getToken();
-      if (!token) {
-        navigate("/login");
-        return;
-      }
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
 
       const response = await fetch(
         `${API_URL}/messages/${messageId}/delete-for-me`,
@@ -546,11 +531,8 @@ const Messages = () => {
   // Delete message for everyone
   const deleteMessageForEveryone = async (messageId) => {
     try {
-      const token = getToken();
-      if (!token) {
-        navigate("/login");
-        return;
-      }
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
 
       const response = await fetch(
         `${API_URL}/messages/${messageId}/delete-for-everyone`,
@@ -585,11 +567,8 @@ const Messages = () => {
   // Delete conversation for current user only
   const deleteConversationForMe = async (conversationId) => {
     try {
-      const token = getToken();
-      if (!token) {
-        navigate("/login");
-        return;
-      }
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
       const response = await fetch(
         `${API_URL}/messages/conversations/${conversationId}/delete`,
@@ -617,13 +596,13 @@ const Messages = () => {
       }
 
       // Update localStorage
-      // const updatedConversations = conversations.filter(
-      //   (conv) => conv.id !== conversationId
-      // );
-      // localStorage.setItem(
-      //   "conversations",
-      //   JSON.stringify(updatedConversations)
-      // );
+      const updatedConversations = conversations.filter(
+        (conv) => conv.id !== conversationId
+      );
+      localStorage.setItem(
+        "conversations",
+        JSON.stringify(updatedConversations)
+      );
 
       // Reset states
       setSlidingConversationId(null);

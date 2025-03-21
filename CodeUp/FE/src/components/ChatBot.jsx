@@ -33,42 +33,48 @@ const ChatBot = ({ isOpen, onClose }) => {
     // Add user message
     const userMessage = { text: input, isBot: false };
     setMessages((prev) => [...prev, userMessage]);
-    
+
     const userInput = input;
     setInput("");
     setIsLoading(true);
 
     try {
       // Call the Together AI API
-      const response = await fetch("https://api.together.xyz/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${import.meta.env.VITE_TOGETHER_API_KEY || ""}`,
-        },
-        body: JSON.stringify({
-          model: "mistralai/Mixtral-8x7B-Instruct-v0.1",
-          messages: [
-            {
-              role: "system",
-              content: "You are a helpful assistant for a programming Q&A platform called so.dev. Keep your answers concise, technical, and focused on programming topics. Provide code examples when appropriate."
-            },
-            {
-              role: "user",
-              content: userInput
-            }
-          ],
-          max_tokens: 500,
-          temperature: 0.7,
-        }),
-      });
+      const response = await fetch(
+        "https://api.together.xyz/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${
+              import.meta.env.VITE_TOGETHER_API_KEY || ""
+            }`,
+          },
+          body: JSON.stringify({
+            model: "mistralai/Mixtral-8x7B-Instruct-v0.1",
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are a helpful assistant for a social media Q&A platform called CodeUP. Keep your answers concise, and focused on helping users.",
+              },
+              {
+                role: "user",
+                content: userInput,
+              },
+            ],
+            max_tokens: 500,
+            temperature: 0.7,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`API request failed with status ${response.status}`);
       }
 
       const data = await response.json();
-      
+
       // Add bot response
       setMessages((prev) => [
         ...prev,
@@ -79,9 +85,11 @@ const ChatBot = ({ isOpen, onClose }) => {
       ]);
     } catch (error) {
       console.error("Error calling Together AI API:", error);
-      setError("Sorry, I couldn't process your request. Please try again later.");
+      setError(
+        "Sorry, I couldn't process your request. Please try again later."
+      );
       setShowErrorAlert(true);
-      
+
       // Add fallback response
       setMessages((prev) => [
         ...prev,
@@ -116,7 +124,7 @@ const ChatBot = ({ isOpen, onClose }) => {
               isSuccess={false}
             />
           )}
-          
+
           {/* Header */}
           <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center">
             <h3 className="text-lg font-semibold">AI Help Assistant</h3>

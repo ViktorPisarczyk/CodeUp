@@ -1,12 +1,12 @@
 import { useState, useEffect, useContext, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import AsideMenu from "../components/AsideMenu";
-import Post from "../components/Post";
+import AsideMenu from "../components/AsideMenu.jsx";
+import Post from "../components/Post.jsx";
 import logoLM from "../assets/finalLogoLM.png";
 import logoDM from "../assets/finalLogoDM.png";
-import { MyContext } from "../context/ThemeContext";
+import { MyContext } from "../context/ThemeContext.jsx";
 import { IoClose } from "react-icons/io5";
-import Alert from "../components/Alert"; // Import the Alert component
+import Alert from "../components/Alert.jsx"; // Import the Alert component
 import Prism from "prismjs";
 import "prismjs/themes/prism-tomorrow.css"; // Choose a theme of your choice
 import "prismjs/components/prism-javascript";
