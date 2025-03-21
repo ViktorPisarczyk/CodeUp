@@ -1,8 +1,8 @@
 import React from "react";
 import { useContext } from "react";
 import AsideMenu from "../components/AsideMenu";
-import logoDM from "../assets/newLogoDM.png";
-import logoLM from "../assets/newLogoLM.png";
+import logoDM from "../assets/finalLogoDM.png";
+import logoLM from "../assets/finalLogoLM.png";
 import { MyContext } from "../context/ThemeContext";
 import Viktor from "../assets/viktor.png";
 import Nausica from "../assets/20250314_094934.jpg";

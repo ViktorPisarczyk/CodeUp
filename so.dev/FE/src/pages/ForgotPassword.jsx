@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useContext } from "react";
-import logoLM from "../assets/newLogoLM.png";
-import logoDM from "../assets/newLogoDM.png";
+import logoLM from "../assets/finalLogoLM.png";
+import logoDM from "../assets/finalLogoDM.png";
 import { MyContext } from "../context/ThemeContext";
 
 export default function ForgotPassword() {

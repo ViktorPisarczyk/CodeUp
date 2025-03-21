@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import logoLM from "../assets/newLogoLM.png";
-import logoDM from "../assets/newLogoDM.png";
+import logoLM from "../assets/finalLogoLM.png";
+import logoDM from "../assets/finalLogoDM.png";
 import { MyContext } from "../context/ThemeContext";
 import API_URL from "../config/api.js";
 import Alert from "../components/Alert";
