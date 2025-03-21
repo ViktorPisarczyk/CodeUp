@@ -2,8 +2,8 @@ import { useState, useEffect, useContext, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import AsideMenu from "../components/AsideMenu";
 import Post from "../components/Post";
-import logoLM from "../assets/newLogoLM.png";
-import logoDM from "../assets/newLogoDM.png";
+import logoLM from "../assets/finalLogoLM.png";
+import logoDM from "../assets/finalLogoDM.png";
 import { MyContext } from "../context/ThemeContext";
 import { IoClose } from "react-icons/io5";
 import Alert from "../components/Alert"; // Import the Alert component
